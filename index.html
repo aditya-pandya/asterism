@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text ⇄ Markdown Converter</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- CDN Libraries with fallbacks -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="highlight-light">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="highlight-dark" disabled>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>
+                    <span class="logo-icon">📝</span>
+                    Rich Text ⇄ Markdown Converter
+                </h1>
+                <div class="header-actions">
+                    <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m8.66-15.66l-4.24 4.24m-4.24 4.24l-4.24 4.24M23 12h-6m-6 0H1m20.66 8.66l-4.24-4.24m-4.24-4.24l-4.24-4.24"></path>
+                        </svg>
+                    </button>
+                    <button id="helpBtn" class="icon-btn" title="Help" aria-label="Help">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Conversion Direction Toggle -->
+            <div class="conversion-toggle">
+                <button id="rtToMdBtn" class="toggle-btn active" data-direction="rtToMd">
+                    Rich Text → Markdown
+                </button>
+                <button id="mdToRtBtn" class="toggle-btn" data-direction="mdToRt">
+                    Markdown → Rich Text
+                </button>
+            </div>
+
+            <!-- Editor Container -->
+            <div class="editor-container">
+                <!-- Input Panel -->
+                <div class="editor-panel input-panel">
+                    <div class="panel-header">
+                        <h2 id="inputLabel">Rich Text Input</h2>
+                        <div class="panel-actions">
+                            <button id="clearInputBtn" class="btn-secondary btn-sm" title="Clear input">
+                                Clear
+                            </button>
+                            <button id="pasteBtn" class="btn-secondary btn-sm" title="Paste from clipboard">
+                                Paste
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rich Text Toolbar -->
+                    <div id="richTextToolbar" class="toolbar">
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" data-command="bold" title="Bold (Ctrl+B)">
+                                <strong>B</strong>
+                            </button>
+                            <button class="toolbar-btn" data-command="italic" title="Italic (Ctrl+I)">
+                                <em>I</em>
+                            </button>
+                            <button class="toolbar-btn" data-command="underline" title="Underline (Ctrl+U)">
+                                <u>U</u>
+                            </button>
+                            <button class="toolbar-btn" data-command="strikeThrough" title="Strikethrough">
+                                <s>S</s>
+                            </button>
+                        </div>
+                        <div class="toolbar-divider"></div>
+                        <div class="toolbar-group">
+                            <select class="toolbar-select" data-command="formatBlock" title="Heading">
+                                <option value="">Normal</option>
+                                <option value="h1">Heading 1</option>
+                                <option value="h2">Heading 2</option>
+                                <option value="h3">Heading 3</option>
+                                <option value="h4">Heading 4</option>
+                                <option value="h5">Heading 5</option>
+                                <option value="h6">Heading 6</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-divider"></div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
+                                ≡
+                            </button>
+                            <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
+                                ≣
+                            </button>
+                            <button class="toolbar-btn" data-command="blockquote" title="Blockquote">
+                                "
+                            </button>
+                        </div>
+                        <div class="toolbar-divider"></div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" data-command="createLink" title="Insert Link">
+                                🔗
+                            </button>
+                            <button class="toolbar-btn" data-command="insertImage" title="Insert Image">
+                                🖼️
+                            </button>
+                            <button class="toolbar-btn" data-command="insertCode" title="Code">
+                                &lt;/&gt;
+                            </button>
+                            <button class="toolbar-btn" data-command="insertHR" title="Horizontal Rule">
+                                ―
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rich Text Editor -->
+                    <div id="richTextEditor" class="rich-text-editor" contenteditable="true" spellcheck="true">
+                        <p>Start typing or paste your rich text here...</p>
+                    </div>
+
+                    <!-- Markdown Editor -->
+                    <textarea id="markdownInput" class="markdown-editor" spellcheck="false" placeholder="Enter markdown here..."></textarea>
+
+                    <div class="panel-footer">
+                        <span id="inputStats" class="stats"></span>
+                    </div>
+                </div>
+
+                <!-- Output Panel -->
+                <div class="editor-panel output-panel">
+                    <div class="panel-header">
+                        <h2 id="outputLabel">Markdown Output</h2>
+                        <div class="panel-actions">
+                            <button id="copyBtn" class="btn-primary btn-sm" title="Copy to clipboard">
+                                Copy
+                            </button>
+                            <button id="downloadBtn" class="btn-secondary btn-sm" title="Download file">
+                                Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Markdown Output -->
+                    <textarea id="markdownOutput" class="markdown-editor" readonly spellcheck="false"></textarea>
+
+                    <!-- Rich Text Preview -->
+                    <div id="richTextPreview" class="rich-text-preview"></div>
+
+                    <div class="panel-footer">
+                        <span id="outputStats" class="stats"></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="close-btn" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            <input type="checkbox" id="realtimeConversion" checked>
+                            <span>Real-time conversion</span>
+                        </label>
+                        <p class="setting-description">Convert automatically as you type</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            <span>Conversion delay (ms)</span>
+                        </label>
+                        <input type="range" id="debounceDelay" min="100" max="2000" step="100" value="300">
+                        <span id="debounceValue" class="setting-value">300ms</span>
+                        <p class="setting-description">Delay before conversion starts (reduces lag)</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            <span>Markdown flavor</span>
+                        </label>
+                        <select id="markdownFlavor" class="setting-select">
+                            <option value="gfm">GitHub Flavored Markdown (GFM)</option>
+                            <option value="commonmark">CommonMark</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            <input type="checkbox" id="syntaxHighlighting" checked>
+                            <span>Syntax highlighting</span>
+                        </label>
+                        <p class="setting-description">Highlight markdown syntax in preview</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            <span>Theme</span>
+                        </label>
+                        <select id="themeSelect" class="setting-select">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="auto">Auto (System)</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            <input type="checkbox" id="autoSave" checked>
+                            <span>Auto-save content</span>
+                        </label>
+                        <p class="setting-description">Save your work to browser storage</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <button id="clearStorageBtn" class="btn-secondary">Clear Saved Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="helpModal" class="modal">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>Help & Markdown Reference</h2>
+                    <button class="close-btn" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <section class="help-section">
+                        <h3>How to Use</h3>
+                        <ol>
+                            <li>Choose conversion direction: Rich Text → Markdown or Markdown → Rich Text</li>
+                            <li>Enter or paste your content in the input panel</li>
+                            <li>View the converted output in real-time</li>
+                            <li>Copy or download the result</li>
+                        </ol>
+                    </section>
+
+                    <section class="help-section">
+                        <h3>Keyboard Shortcuts</h3>
+                        <ul>
+                            <li><kbd>Ctrl+B</kbd> - Bold</li>
+                            <li><kbd>Ctrl+I</kbd> - Italic</li>
+                            <li><kbd>Ctrl+U</kbd> - Underline</li>
+                            <li><kbd>Ctrl+K</kbd> - Insert Link</li>
+                        </ul>
+                    </section>
+
+                    <section class="help-section">
+                        <h3>Markdown Syntax Reference</h3>
+                        <table class="markdown-reference">
+                            <thead>
+                                <tr>
+                                    <th>Element</th>
+                                    <th>Markdown Syntax</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Heading 1</td>
+                                    <td><code># Heading 1</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Heading 2</td>
+                                    <td><code>## Heading 2</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Bold</td>
+                                    <td><code>**bold text**</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Italic</td>
+                                    <td><code>*italic text*</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Strikethrough</td>
+                                    <td><code>~~strikethrough~~</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Link</td>
+                                    <td><code>[text](url)</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Image</td>
+                                    <td><code>![alt text](url)</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Unordered List</td>
+                                    <td><code>- item</code> or <code>* item</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Ordered List</td>
+                                    <td><code>1. item</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Blockquote</td>
+                                    <td><code>&gt; quote</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Inline Code</td>
+                                    <td><code>`code`</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Code Block</td>
+                                    <td><code>```language<br>code<br>```</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Horizontal Rule</td>
+                                    <td><code>---</code> or <code>***</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="help-section">
+                        <h3>About</h3>
+                        <p>This is a standalone, privacy-focused converter that runs entirely in your browser. No data is sent to external servers.</p>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
