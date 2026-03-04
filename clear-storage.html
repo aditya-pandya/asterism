@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Saved Data</title>
+    <style>
+        :root {
+            color-scheme: light;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #f6f7f9;
+            color: #1b1f23;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .card {
+            max-width: 520px;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #e1e4e8;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+        }
+        h1 {
+            margin: 0 0 12px;
+            font-size: 1.4rem;
+        }
+        p {
+            margin: 0 0 16px;
+            line-height: 1.5;
+        }
+        button {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 16px;
+            background: #0d6efd;
+            color: #ffffff;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0b5ed7;
+        }
+        .link {
+            word-break: break-all;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Clear saved data</h1>
+        <p>This opens the app with a reset flag that clears saved data for this file.</p>
+        <p><button id="clearBtn" type="button">Clear and open app</button></p>
+        <p>If the button does not work, open:</p>
+        <p class="link"><a href="index.html?clearStorage=1">index.html?clearStorage=1</a></p>
+        <noscript>
+            <p>JavaScript is required to clear saved data. Use the link above.</p>
+        </noscript>
+    </div>
+    <script>
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            window.location.href = 'index.html?clearStorage=1';
+        });
+    </script>
+</body>
+</html>

@@ -93,6 +93,131 @@ function applyFormattingWrapper(element, tagName) {
 }
 
 // ===========================
+// HTML Sanitization
+// ===========================
+
+const SANITIZE_ALLOWED_TAGS = new Set([
+    'a','abbr','b','blockquote','br','code','del','div','em','h1','h2','h3','h4','h5','h6',
+    'hr','i','img','kbd','li','ol','p','pre','span','strong','sub','sup','table','tbody',
+    'td','tfoot','th','thead','tr','u','ul'
+]);
+const SANITIZE_DROP_TAGS = new Set(['script','style','iframe','object','embed','link','meta']);
+const SANITIZE_GLOBAL_ATTRS = new Set(['class','title']);
+const SANITIZE_TAG_ATTRS = {
+    a: new Set(['href','title','target','rel']),
+    img: new Set(['src','alt','title']),
+    td: new Set(['colspan','rowspan']),
+    th: new Set(['colspan','rowspan'])
+};
+const SANITIZE_URL_ATTRS = new Set(['href','src']);
+const SANITIZE_SAFE_URL_PATTERN = /^(https?:|mailto:|tel:|#|\/|\.\/|\.\.\/)/i;
+const SANITIZE_ALLOWED_STYLES = new Set(['font-weight','font-style','text-decoration']);
+
+function sanitizeStyle(styleText) {
+    if (!styleText) return '';
+    const safeParts = [];
+    styleText.split(';').forEach(part => {
+        const [rawProp, rawValue] = part.split(':');
+        if (!rawProp || !rawValue) return;
+        const prop = rawProp.trim().toLowerCase();
+        const value = rawValue.trim().toLowerCase();
+        if (!SANITIZE_ALLOWED_STYLES.has(prop)) return;
+
+        if (prop === 'font-weight') {
+            if (!/^(normal|bold|bolder|[1-9]00)$/.test(value)) return;
+        }
+        if (prop === 'font-style') {
+            if (!/^(normal|italic)$/.test(value)) return;
+        }
+        if (prop === 'text-decoration') {
+            if (!/^(none|underline|line-through)$/.test(value)) return;
+        }
+
+        safeParts.push(`${prop}: ${value}`);
+    });
+    return safeParts.join('; ');
+}
+
+function isSafeUrl(value) {
+    if (!value) return false;
+    return SANITIZE_SAFE_URL_PATTERN.test(value.trim());
+}
+
+function isAllowedAttribute(tagName, attrName) {
+    if (SANITIZE_GLOBAL_ATTRS.has(attrName)) return true;
+    const tagAttrs = SANITIZE_TAG_ATTRS[tagName];
+    if (!tagAttrs) return false;
+    return tagAttrs.has(attrName);
+}
+
+function sanitizeHtml(html, options = {}) {
+    if (!html) return '';
+    const allowStyles = options.allowStyles === true;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT, null);
+    const nodes = [];
+    while (walker.nextNode()) {
+        nodes.push(walker.currentNode);
+    }
+
+    nodes.forEach(node => {
+        const tagName = node.tagName.toLowerCase();
+        if (!SANITIZE_ALLOWED_TAGS.has(tagName)) {
+            if (SANITIZE_DROP_TAGS.has(tagName)) {
+                node.remove();
+                return;
+            }
+            const fragment = doc.createDocumentFragment();
+            while (node.firstChild) {
+                fragment.appendChild(node.firstChild);
+            }
+            node.replaceWith(fragment);
+            return;
+        }
+
+        Array.from(node.attributes).forEach(attr => {
+            const name = attr.name.toLowerCase();
+            const value = attr.value;
+            if (name.startsWith('on')) {
+                node.removeAttribute(attr.name);
+                return;
+            }
+            if (name === 'style') {
+                if (allowStyles) {
+                    const safeStyle = sanitizeStyle(value);
+                    if (safeStyle) {
+                        node.setAttribute('style', safeStyle);
+                    } else {
+                        node.removeAttribute('style');
+                    }
+                } else {
+                    node.removeAttribute('style');
+                }
+                return;
+            }
+            if (!isAllowedAttribute(tagName, name)) {
+                node.removeAttribute(attr.name);
+                return;
+            }
+            if (SANITIZE_URL_ATTRS.has(name) && !isSafeUrl(value)) {
+                node.removeAttribute(attr.name);
+                return;
+            }
+            if (tagName === 'a' && name === 'target' && value === '_blank') {
+                const relValue = node.getAttribute('rel') || '';
+                if (!/\bnoopener\b/i.test(relValue)) {
+                    node.setAttribute('rel', `${relValue} noopener noreferrer`.trim());
+                }
+            }
+        });
+    });
+
+    return doc.body.innerHTML;
+}
+
+// ===========================
 // Initialization
 // ===========================
 
@@ -101,6 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
+    handleStartupActions();
+
     // Load saved settings and content
     loadSettings();
     loadSavedContent();
@@ -118,6 +245,20 @@ function initializeApp() {
     setConversionMode('rtToMd');
     
     console.log('Rich Text ⇄ Markdown Converter initialized');
+}
+
+function handleStartupActions() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('clearStorage') || params.has('reset')) {
+        clearStoredData();
+
+        params.delete('clearStorage');
+        params.delete('reset');
+        const query = params.toString();
+        const newUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+        history.replaceState(null, '', newUrl);
+        showToast('Saved data cleared', 'success');
+    }
 }
 
 // ===========================
@@ -439,7 +580,7 @@ function setupSettingsListeners() {
     // Clear storage
     document.getElementById('clearStorageBtn').addEventListener('click', () => {
         if (confirm('Are you sure you want to clear all saved data?')) {
-            localStorage.clear();
+            clearStoredData();
             showToast('All saved data cleared', 'success');
             setTimeout(() => location.reload(), 1000);
         }
@@ -655,7 +796,7 @@ function convertMarkdownToRichText() {
     try {
         const markdown = markdownInput.value;
         const html = marked.parse(markdown);
-        richTextPreview.innerHTML = html;
+        richTextPreview.innerHTML = sanitizeHtml(html);
         
         // Apply syntax highlighting if enabled
         if (AppState.settings.syntaxHighlighting && typeof hljs !== 'undefined') {
@@ -857,7 +998,7 @@ function applyTheme() {
     const theme = AppState.settings.theme;
     
     if (theme === 'auto') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
         document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
         updateHighlightTheme(prefersDark ? 'dark' : 'light');
     } else {
@@ -882,11 +1023,20 @@ function updateHighlightTheme(theme) {
 }
 
 // Listen for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if (AppState.settings.theme === 'auto') {
-        applyTheme();
+const themeMediaQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+if (themeMediaQuery) {
+    const handleThemeChange = () => {
+        if (AppState.settings.theme === 'auto') {
+            applyTheme();
+        }
+    };
+
+    if (typeof themeMediaQuery.addEventListener === 'function') {
+        themeMediaQuery.addEventListener('change', handleThemeChange);
+    } else if (typeof themeMediaQuery.addListener === 'function') {
+        themeMediaQuery.addListener(handleThemeChange);
     }
-});
+}
 
 // ===========================
 // Local Storage
@@ -897,6 +1047,15 @@ function saveSettings() {
         localStorage.setItem('rtmd_settings', JSON.stringify(AppState.settings));
     } catch (error) {
         console.error('Failed to save settings:', error);
+    }
+}
+
+function clearStoredData() {
+    try {
+        localStorage.removeItem('rtmd_settings');
+        localStorage.removeItem('rtmd_content');
+    } catch (error) {
+        console.error('Failed to clear storage:', error);
     }
 }
 
@@ -944,7 +1103,7 @@ function loadSavedContent() {
             
             // Only restore if saved within last 24 hours
             if (Date.now() - content.timestamp < 24 * 60 * 60 * 1000) {
-                document.getElementById('richTextEditor').innerHTML = content.richText;
+                document.getElementById('richTextEditor').innerHTML = sanitizeHtml(content.richText, { allowStyles: true });
                 document.getElementById('markdownInput').value = content.markdown;
                 
                 // Restore mode if needed

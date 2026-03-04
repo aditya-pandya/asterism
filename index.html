@@ -6,12 +6,40 @@
     <title>Rich Text ⇄ Markdown Converter</title>
     <link rel="stylesheet" href="styles.css">
     <!-- CDN Libraries with fallbacks -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js" onerror="this.onerror=null;this.src='vendor/marked.min.js';"></script>
+    <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.js" onerror="this.onerror=null;this.src='vendor/turndown.js';"></script>
+    <script src="https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.js" onerror="this.onerror=null;this.src='vendor/turndown-plugin-gfm.js';"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" onerror="this.onerror=null;this.src='vendor/highlight.min.js';"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="highlight-light">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="highlight-dark" disabled>
+    <script>
+        (function() {
+            function isStylesheetLoaded(link) {
+                if (!link || !link.sheet) return false;
+                try {
+                    return !!link.sheet.cssRules;
+                } catch (error) {
+                    return true;
+                }
+            }
+
+            function addStylesheetFallback(id, fallbackHref) {
+                var link = document.getElementById(id);
+                if (!link) return;
+                link.addEventListener('error', function() {
+                    link.href = fallbackHref;
+                });
+                window.addEventListener('load', function() {
+                    if (!isStylesheetLoaded(link)) {
+                        link.href = fallbackHref;
+                    }
+                });
+            }
+
+            addStylesheetFallback('highlight-light', 'vendor/highlight/github.min.css');
+            addStylesheetFallback('highlight-dark', 'vendor/highlight/github-dark.min.css');
+        })();
+    </script>
 </head>
 <body>
     <div class="app-container">
