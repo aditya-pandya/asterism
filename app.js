@@ -231,19 +231,22 @@ function initializeApp() {
     // Load saved settings and content
     loadSettings();
     loadSavedContent();
-    
+
     // Initialize converters
     initializeConverters();
-    
+
     // Setup event listeners
     setupEventListeners();
-    
+
     // Apply initial theme
     applyTheme();
-    
+
     // Set initial mode
     setConversionMode('rtToMd');
-    
+
+    // Setup theme toggle button in header
+    setupThemeToggle();
+
     console.log('Rich Text ⇄ Markdown Converter initialized');
 }
 
@@ -504,11 +507,12 @@ function setupEventListeners() {
 
 function setupToolbarListeners() {
     const toolbar = document.getElementById('richTextToolbar');
-    
+
     // Button commands
     toolbar.querySelectorAll('.toolbar-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
+            addRipple(btn, e);
             const command = btn.dataset.command;
             executeCommand(command);
         });
@@ -593,11 +597,17 @@ function setupSettingsListeners() {
 
 function setConversionMode(mode) {
     AppState.conversionMode = mode;
-    
+
     // Update toggle buttons
     document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.direction === mode);
+        const isActive = btn.dataset.direction === mode;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
+
+    // Animate segmented control indicator
+    const toggle = document.getElementById('conversionToggle');
+    if (toggle) toggle.dataset.active = mode;
     
     // Show/hide appropriate editors
     const richTextToolbar = document.getElementById('richTextToolbar');
@@ -765,12 +775,15 @@ function handlePaste(e) {
 function convertRichTextToMarkdown() {
     const richTextEditor = document.getElementById('richTextEditor');
     const markdownOutput = document.getElementById('markdownOutput');
-    
+    const outputPanel = document.querySelector('.output-panel');
+
     if (!turndownService) {
         markdownOutput.value = 'Error: Turndown library not loaded';
         return;
     }
-    
+
+    if (outputPanel) outputPanel.classList.add('converting');
+
     try {
         const rawHtml = richTextEditor.innerHTML;
         const normalizedHtml = normalizeHtmlForMarkdown(rawHtml);
@@ -782,33 +795,45 @@ function convertRichTextToMarkdown() {
         console.error('Error details:', error.message, error.stack);
         markdownOutput.value = 'Error converting to markdown: ' + error.message;
     }
+
+    // Remove indicator after brief delay
+    if (outputPanel) {
+        setTimeout(() => outputPanel.classList.remove('converting'), 600);
+    }
 }
 
 function convertMarkdownToRichText() {
     const markdownInput = document.getElementById('markdownInput');
     const richTextPreview = document.getElementById('richTextPreview');
-    
+    const outputPanel = document.querySelector('.output-panel');
+
     if (typeof marked === 'undefined') {
         richTextPreview.innerHTML = '<p>Error: Marked library not loaded</p>';
         return;
     }
-    
+
+    if (outputPanel) outputPanel.classList.add('converting');
+
     try {
         const markdown = markdownInput.value;
         const html = marked.parse(markdown);
         richTextPreview.innerHTML = sanitizeHtml(html);
-        
+
         // Apply syntax highlighting if enabled
         if (AppState.settings.syntaxHighlighting && typeof hljs !== 'undefined') {
             richTextPreview.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
         }
-        
+
         updateStats();
     } catch (error) {
         console.error('Conversion error:', error);
         richTextPreview.innerHTML = '<p>Error converting markdown</p>';
+    }
+
+    if (outputPanel) {
+        setTimeout(() => outputPanel.classList.remove('converting'), 600);
     }
 }
 
@@ -920,6 +945,23 @@ async function copyToClipboard() {
     }
 
     if (success) {
+        // Animate copy button to show success
+        const btn = document.getElementById('copyBtn');
+        if (btn) {
+            const iconCopy  = btn.querySelector('.icon-copy');
+            const iconCheck = btn.querySelector('.icon-check');
+            const label     = btn.querySelector('.copy-label');
+            btn.classList.add('copied');
+            if (iconCopy)  iconCopy.style.display  = 'none';
+            if (iconCheck) iconCheck.style.display = '';
+            if (label)     label.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                if (iconCopy)  iconCopy.style.display  = '';
+                if (iconCheck) iconCheck.style.display = 'none';
+                if (label)     label.textContent = 'Copy';
+            }, 2000);
+        }
         showToast('Copied to clipboard', 'success');
     } else {
         showToast('Failed to copy to clipboard', 'error');
@@ -996,11 +1038,12 @@ function closeModal(modalId) {
 
 function applyTheme() {
     const theme = AppState.settings.theme;
-    
+
     if (theme === 'auto') {
         const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
-        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-        updateHighlightTheme(prefersDark ? 'dark' : 'light');
+        const resolved = prefersDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', resolved);
+        updateHighlightTheme(resolved);
     } else {
         document.documentElement.setAttribute('data-theme', theme);
         updateHighlightTheme(theme);
@@ -1121,20 +1164,90 @@ function loadSavedContent() {
 // Toast Notifications
 // ===========================
 
+const TOAST_ICONS = {
+    success: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    error:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    warning: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    info:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+};
+
 function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.textContent = message;
-    
+
+    const icon = TOAST_ICONS[type] || TOAST_ICONS.info;
+    toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <span class="toast-message">${message}</span>
+        <div class="toast-progress"></div>
+    `;
+
     container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideIn 0.3s ease reverse';
+
+    const removeToast = () => {
+        if (!toast.parentNode) return;
+        toast.classList.add('removing');
         setTimeout(() => {
-            container.removeChild(toast);
-        }, 300);
-    }, 3000);
+            if (toast.parentNode) container.removeChild(toast);
+        }, 320);
+    };
+
+    // Auto-dismiss after 3s
+    setTimeout(removeToast, 3000);
+
+    // Click to dismiss early
+    toast.addEventListener('click', removeToast);
+}
+
+// ===========================
+// Theme Toggle Button
+// ===========================
+
+function setupThemeToggle() {
+    const btn = document.getElementById('themeToggleBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+        const current = AppState.settings.theme;
+        // Cycle: light → dark → auto → light
+        const next = current === 'light' ? 'dark' : current === 'dark' ? 'auto' : 'light';
+        AppState.settings.theme = next;
+        const select = document.getElementById('themeSelect');
+        if (select) select.value = next;
+        saveSettings();
+        applyTheme();
+
+        const labels = { light: 'Light theme', dark: 'Dark theme', auto: 'Auto (system) theme' };
+        showToast(labels[next] || 'Theme updated', 'info');
+    });
+
+    // Sync icon visibility with theme attribute
+    syncThemeToggleIcon();
+}
+
+function syncThemeToggleIcon() {
+    const html = document.documentElement;
+    const theme = html.getAttribute('data-theme') || 'light';
+    // CSS handles sun/moon visibility via [data-theme] selectors
+    // We just ensure the attribute is in sync
+    if (!['light', 'dark'].includes(theme)) {
+        // auto mode — show neither (could add a third icon, but moon is a fine fallback)
+        html.setAttribute('data-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    }
+}
+
+// ===========================
+// Toolbar Ripple Effect
+// ===========================
+
+function addRipple(btn, e) {
+    const existing = btn.querySelector('.ripple');
+    if (existing) existing.remove();
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 400);
 }
 
 // ===========================
