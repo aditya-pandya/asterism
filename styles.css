@@ -3,21 +3,21 @@
    =========================== */
 
 :root {
-    --bg-app:        #181c22;
-    --bg-primary:    rgba(34, 40, 49, 0.82);
-    --bg-secondary:  rgba(49, 54, 63, 0.88);
-    --bg-tertiary:   rgba(75, 82, 93, 0.52);
-    --text-primary:  #f7f1e3;
-    --text-secondary:#d7cab0;
-    --text-tertiary: #9d9283;
-    --border-color:  rgba(223, 208, 184, 0.16);
-    --border-subtle: rgba(223, 208, 184, 0.08);
+    --bg-app:        #f7f1e8;
+    --bg-primary:    rgba(255, 251, 245, 0.88);
+    --bg-secondary:  rgba(245, 236, 223, 0.92);
+    --bg-tertiary:   rgba(223, 208, 184, 0.42);
+    --text-primary:  #1f1912;
+    --text-secondary:#4d4337;
+    --text-tertiary: #8a7964;
+    --border-color:  rgba(73, 56, 37, 0.12);
+    --border-subtle: rgba(73, 56, 37, 0.06);
 
-    --accent-primary: #dfd0b8;
-    --accent-hover:   #f6ead5;
-    --accent-active:  #c9b89d;
-    --accent-light:   rgba(223, 208, 184, 0.16);
-    --accent-lighter: rgba(223, 208, 184, 0.07);
+    --accent-primary: #8f6f47;
+    --accent-hover:   #6f5535;
+    --accent-active:  #5b442b;
+    --accent-light:   rgba(143, 111, 71, 0.16);
+    --accent-lighter: rgba(143, 111, 71, 0.07);
 
     --success:       #94d2bd;
     --success-light: rgba(148, 210, 189, 0.14);
@@ -28,20 +28,28 @@
     --info:          #84a59d;
     --info-light:    rgba(132, 165, 157, 0.16);
 
-    --editor-bg:   rgba(18, 22, 28, 0.9);
-    --toolbar-bg:  rgba(40, 46, 56, 0.78);
+    --editor-bg:     rgba(255, 252, 247, 0.97);
+    --toolbar-bg:    rgba(246, 240, 231, 0.92);
 
-    --shadow-xs:     0 1px 2px rgba(0,0,0,.2);
-    --shadow-sm:     0 10px 24px rgba(0,0,0,.18);
-    --shadow-md:     0 24px 50px rgba(0,0,0,.26);
-    --shadow-lg:     0 30px 80px rgba(0,0,0,.3);
-    --shadow-xl:     0 40px 120px rgba(0,0,0,.38);
-    --shadow-accent: 0 16px 40px rgba(223,208,184,.14);
-    --shadow-inset:  inset 0 1px 0 rgba(255,255,255,.05);
+    --shadow-xs:     0 1px 2px rgba(67,48,27,.05);
+    --shadow-sm:     0 10px 24px rgba(67,48,27,.08);
+    --shadow-md:     0 24px 50px rgba(67,48,27,.12);
+    --shadow-lg:     0 30px 80px rgba(67,48,27,.16);
+    --shadow-xl:     0 40px 120px rgba(67,48,27,.2);
+    --shadow-accent: 0 16px 40px rgba(143,111,71,.12);
+    --shadow-inset:  inset 0 1px 0 rgba(255,255,255,.6);
 
     --font-sans: 'Figtree', 'Segoe UI', sans-serif;
-    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-display: 'Newsreader', Georgia, serif;
     --font-mono: 'Geist Mono', 'SF Mono', 'Cascadia Code', Consolas, monospace;
+
+    --body-gradient:
+        radial-gradient(circle at top left, rgba(246, 189, 96, 0.24), transparent 26%),
+        radial-gradient(circle at 84% 16%, rgba(132, 165, 157, 0.14), transparent 22%),
+        linear-gradient(145deg, #fbf5ec 0%, #f1e7da 46%, #e7d7c3 100%);
+    --ambient-grid-color: rgba(82, 58, 30, 0.06);
+    --shell-border: rgba(255,255,255,0.7);
+    --shell-sheen: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.28));
 
     --radius-xs: 6px;
     --radius-sm: 10px;
@@ -67,12 +75,36 @@
 }
 
 [data-theme="dark"] {
-    --bg-app:        #101319;
-    --bg-primary:    rgba(25, 30, 38, 0.88);
-    --bg-secondary:  rgba(36, 43, 52, 0.92);
-    --bg-tertiary:   rgba(70, 76, 86, 0.56);
-    --editor-bg:     rgba(14, 18, 24, 0.94);
-    --toolbar-bg:    rgba(34, 39, 47, 0.86);
+    --bg-app:        #030303;
+    --bg-primary:    rgba(8, 8, 8, 0.9);
+    --bg-secondary:  rgba(16, 16, 16, 0.94);
+    --bg-tertiary:   rgba(34, 34, 34, 0.86);
+    --text-primary:  #f6f0e4;
+    --text-secondary:#d2c3aa;
+    --text-tertiary: #8b7b68;
+    --border-color:  rgba(223, 208, 184, 0.13);
+    --border-subtle: rgba(223, 208, 184, 0.07);
+    --accent-primary: #dfd0b8;
+    --accent-hover:   #f6ead5;
+    --accent-active:  #c9b89d;
+    --accent-light:   rgba(223, 208, 184, 0.16);
+    --accent-lighter: rgba(223, 208, 184, 0.07);
+    --editor-bg:     rgba(1, 1, 1, 0.97);
+    --toolbar-bg:    rgba(12, 12, 12, 0.92);
+    --shadow-xs:     0 1px 2px rgba(0,0,0,.45);
+    --shadow-sm:     0 10px 24px rgba(0,0,0,.3);
+    --shadow-md:     0 24px 50px rgba(0,0,0,.46);
+    --shadow-lg:     0 30px 80px rgba(0,0,0,.56);
+    --shadow-xl:     0 40px 120px rgba(0,0,0,.66);
+    --shadow-accent: 0 16px 40px rgba(223,208,184,.12);
+    --shadow-inset:  inset 0 1px 0 rgba(255,255,255,.04);
+    --body-gradient:
+        radial-gradient(circle at top left, rgba(246, 189, 96, 0.11), transparent 24%),
+        radial-gradient(circle at 84% 16%, rgba(132, 165, 157, 0.08), transparent 22%),
+        linear-gradient(145deg, #000000 0%, #050505 36%, #0d1117 100%);
+    --ambient-grid-color: rgba(255,255,255,0.03);
+    --shell-border: rgba(255,255,255,0.08);
+    --shell-sheen: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
 }
 
 /* ===========================
@@ -158,10 +190,7 @@ body {
     font-family: var(--font-sans);
     font-size: 14px;
     line-height: 1.6;
-    background:
-        radial-gradient(circle at top left, rgba(246, 189, 96, 0.16), transparent 28%),
-        radial-gradient(circle at 85% 18%, rgba(132, 165, 157, 0.18), transparent 28%),
-        linear-gradient(140deg, #0f1318 0%, #181c22 44%, #20252e 100%);
+    background: var(--body-gradient);
     color: var(--text-primary);
     transition: background-color var(--t-slow) var(--ease-out),
                 color var(--t-slow) var(--ease-out);
@@ -204,8 +233,8 @@ body {
     position: absolute;
     inset: 0;
     background-image:
-        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+        linear-gradient(var(--ambient-grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--ambient-grid-color) 1px, transparent 1px);
     background-size: 120px 120px;
     mask-image: linear-gradient(180deg, rgba(0,0,0,.55), transparent 75%);
 }
@@ -224,8 +253,8 @@ body {
     margin: 26px auto;
     border-radius: 36px;
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid var(--shell-border);
+    background: var(--shell-sheen);
     backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.34);
@@ -237,8 +266,8 @@ body {
 
 .app-header {
     background:
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
-        linear-gradient(90deg, rgba(223,208,184,.08), transparent 22%);
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.03)),
+        linear-gradient(90deg, var(--accent-light), transparent 22%);
     border-bottom: 1px solid var(--border-color);
     padding: 0 28px;
     height: 84px;
@@ -346,11 +375,11 @@ body {
     position: relative;
     display: flex;
     align-self: flex-start;
-    background: rgba(20, 24, 31, 0.66);
+    background: var(--bg-secondary);
     padding: 6px;
     border-radius: 999px;
     box-shadow: var(--shadow-inset);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--border-subtle);
     flex-shrink: 0;
     transition: background-color var(--t-slow) var(--ease-out),
                 border-color var(--t-slow) var(--ease-out);
@@ -362,10 +391,10 @@ body {
     left: 4px;
     bottom: 4px;
     width: calc(50% - 4px);
-    background: linear-gradient(180deg, rgba(246,189,96,0.18), rgba(223,208,184,0.08));
+    background: linear-gradient(180deg, var(--accent-light), rgba(255,255,255,0.02));
     border-radius: 999px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-    border: 1px solid rgba(223,208,184,.14);
+    border: 1px solid var(--border-color);
     transition: transform var(--t-base) var(--ease-out);
     pointer-events: none;
     will-change: transform;
@@ -420,26 +449,6 @@ body {
     color: var(--accent-primary);
 }
 
-/* Dark-mode: make the active tab unmistakably obvious */
-[data-theme="dark"] .conversion-toggle {
-    background: #0f0f0f;
-    border-color: #333;
-}
-
-[data-theme="dark"] .toggle-indicator {
-    background: #2c2c2c;
-    border: 1px solid #484848;
-    box-shadow: 0 1px 4px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06);
-}
-
-[data-theme="dark"] .toggle-btn.active {
-    color: var(--accent-primary);
-}
-
-[data-theme="dark"] .toggle-btn:not(.active) {
-    color: #555;
-}
-
 /* ===========================
    Editor Container
    =========================== */
@@ -457,12 +466,12 @@ body {
     display: flex;
     flex-direction: column;
     background:
-        linear-gradient(180deg, rgba(255,255,255,.04), transparent 20%),
+        linear-gradient(180deg, rgba(255,255,255,.08), transparent 20%),
         var(--bg-primary);
     border-radius: 28px;
     box-shadow: var(--shadow-md);
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--border-subtle);
     transition: background-color var(--t-slow) var(--ease-out),
                 border-color var(--t-slow) var(--ease-out),
                 box-shadow var(--t-base) var(--ease-out);
@@ -480,7 +489,7 @@ body {
     padding: 16px 18px;
     border-bottom: 1px solid var(--border-color);
     background:
-        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01)),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
         var(--toolbar-bg);
     flex-shrink: 0;
     gap: 8px;
@@ -571,7 +580,7 @@ body {
 .toolbar-divider {
     width: 1px;
     height: 28px;
-    background-color: rgba(223,208,184,.12);
+    background-color: var(--border-color);
     margin: 0 2px;
     flex-shrink: 0;
 }
@@ -582,7 +591,7 @@ body {
     overflow: hidden;
     padding: 5px;
     border: 1px solid transparent;
-    background: rgba(255,255,255,.02);
+    background: rgba(255,255,255,.05);
     color: var(--text-secondary);
     border-radius: 12px;
     cursor: pointer;
@@ -598,9 +607,9 @@ body {
 }
 
 .toolbar-btn:hover {
-    background-color: rgba(223,208,184,.08);
+    background-color: var(--accent-light);
     color: var(--text-primary);
-    border-color: rgba(223,208,184,.12);
+    border-color: var(--border-color);
 }
 
 .toolbar-btn:active {
@@ -613,7 +622,7 @@ body {
 .toolbar-btn[aria-pressed="true"] {
     background-color: var(--accent-light);
     color: var(--accent-primary);
-    border-color: rgba(223,208,184,.12);
+    border-color: var(--border-color);
 }
 
 .toolbar-btn-text {
@@ -667,7 +676,7 @@ body {
     height: 38px;
     padding: 0 36px 0 14px;
     border: 1px solid var(--border-color);
-    background-color: rgba(18,22,28,.9);
+    background-color: var(--bg-primary);
     color: var(--text-primary);
     font-family: var(--font-sans);
     font-size: 12px;
@@ -734,7 +743,7 @@ body {
     font-family: var(--font-sans);
     background-image:
         linear-gradient(180deg, rgba(255,255,255,.025), transparent 24%),
-        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+        linear-gradient(var(--border-subtle) 1px, transparent 1px);
     background-size: auto, 100% 42px;
     background-position: 0 0, 0 16px;
 }
@@ -816,7 +825,7 @@ body {
 }
 
 .rich-text-editor pre, .rich-text-preview pre {
-    background-color: rgba(11, 14, 19, 0.92);
+    background-color: var(--bg-secondary);
     padding: 18px 20px;
     border-radius: 20px;
     overflow-x: auto;
@@ -937,9 +946,9 @@ body {
 }
 
 .btn-secondary {
-    background-color: rgba(255,255,255,.04);
+    background-color: rgba(255,255,255,.08);
     color: var(--text-primary);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--border-subtle);
     transition: background-color var(--t-fast) var(--ease-out),
                 color var(--t-fast) var(--ease-out),
                 border-color var(--t-slow) var(--ease-out),
@@ -956,9 +965,9 @@ body {
 }
 
 .btn-ghost {
-    background: rgba(255,255,255,.02);
+    background: rgba(255,255,255,.05);
     color: var(--text-secondary);
-    border: 1px solid rgba(255,255,255,.04);
+    border: 1px solid var(--border-subtle);
 }
 
 .btn-ghost:hover {
@@ -980,8 +989,8 @@ body {
     width: 42px;
     height: 42px;
     padding: 0;
-    border: 1px solid rgba(255,255,255,.06);
-    background: rgba(255,255,255,.03);
+    border: 1px solid var(--border-subtle);
+    background: rgba(255,255,255,.06);
     color: var(--text-secondary);
     border-radius: 14px;
     cursor: pointer;
@@ -995,7 +1004,7 @@ body {
 }
 
 .btn-icon:hover {
-    background-color: rgba(223,208,184,.08);
+    background-color: var(--accent-light);
     color: var(--text-primary);
 }
 
@@ -1044,15 +1053,15 @@ body {
 
 .modal-content {
     background:
-        linear-gradient(180deg, rgba(255,255,255,.04), transparent 24%),
-        rgba(26, 31, 39, 0.96);
+        linear-gradient(180deg, rgba(255,255,255,.08), transparent 24%),
+        var(--bg-primary);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
     max-width: 520px;
     width: 100%;
     max-height: 88vh;
     overflow-y: auto;
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid var(--border-subtle);
     animation: scaleIn var(--t-slow) var(--ease-spring);
     transition: background-color var(--t-slow) var(--ease-out);
 }
@@ -1156,7 +1165,7 @@ body {
 }
 
 .setting-row:hover {
-    background-color: rgba(255,255,255,.03);
+    background-color: var(--bg-secondary);
 }
 
 .setting-info {
@@ -1345,7 +1354,7 @@ input[type="range"] {
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background: rgba(255,255,255,.03);
+    background: var(--bg-secondary);
     border-radius: var(--radius-md);
     gap: 8px;
     font-size: 13px;
@@ -1422,7 +1431,7 @@ kbd {
     display: flex;
     align-items: center;
     gap: 10px;
-    background-color: rgba(25, 30, 38, 0.96);
+    background-color: var(--bg-primary);
     color: var(--text-primary);
     padding: 11px 16px;
     border-radius: var(--radius-md);
