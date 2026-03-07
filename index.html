@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rich Text ⇄ Markdown</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;family=Geist+Mono:wght@400;500;600&amp;family=Instrument+Serif:ital@0;1&amp;display=swap">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="styles.css">
 
     <!-- Highlight.js themes -->
@@ -38,64 +42,38 @@
     </script>
 </head>
 <body>
+<div class="ambient-backdrop" aria-hidden="true">
+    <span class="ambient-orb ambient-orb-one"></span>
+    <span class="ambient-orb ambient-orb-two"></span>
+    <span class="ambient-grid"></span>
+</div>
 <div class="app-container">
 
     <!-- ==================== HEADER ==================== -->
     <header class="app-header">
         <div class="header-content">
             <div class="header-brand">
-                <!-- Logo badge -->
                 <div class="logo-badge" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Markdown M symbol in white -->
-                        <path d="M2 15V5l3.5 5L9 5v10" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 15V5" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-                        <path d="M12 10l4 5V5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <i class="ph ph-text-aa"></i>
                 </div>
-                <span class="header-title">Rich Text <span>⇄</span> Markdown</span>
+                <div class="brand-copy">
+                    <span class="brand-kicker">Editorial Workspace</span>
+                    <span class="header-title">Rich Text <span>⇄</span> Markdown</span>
+                </div>
             </div>
 
             <div class="header-actions">
-                <!-- Theme Toggle -->
                 <button id="themeToggleBtn" class="btn-icon" title="Toggle theme" aria-label="Toggle theme">
-                    <!-- Sun (shown in dark mode) -->
-                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"/>
-                        <line x1="12" y1="1"  x2="12" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="23"/>
-                        <line x1="4.22"  y1="4.22"  x2="5.64"  y2="5.64"/>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                        <line x1="1"  y1="12" x2="3"  y2="12"/>
-                        <line x1="21" y1="12" x2="23" y2="12"/>
-                        <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
-                        <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
-                    </svg>
-                    <!-- Moon (shown in light mode) -->
-                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                    </svg>
+                    <i class="ph ph-sun icon-sun"></i>
+                    <i class="ph ph-moon icon-moon"></i>
                 </button>
 
-                <!-- Settings -->
                 <button id="settingsBtn" class="btn-icon" title="Settings" aria-label="Settings">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
+                    <i class="ph ph-sliders-horizontal"></i>
                 </button>
 
-                <!-- Help -->
                 <button id="helpBtn" class="btn-icon" title="Help &amp; Reference" aria-label="Help">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
+                    <i class="ph ph-question"></i>
                 </button>
             </div>
         </div>
@@ -107,14 +85,7 @@
         <!-- Segmented Control Toggle -->
         <div class="conversion-toggle" id="conversionToggle" data-active="rtToMd">
             <button id="rtToMdBtn" class="toggle-btn active" data-direction="rtToMd" aria-pressed="true">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                </svg>
+                <i class="ph ph-file-text"></i>
                 <span class="btn-label">Rich Text → Markdown</span>
             </button>
 
@@ -122,13 +93,7 @@
             <div class="toggle-indicator" aria-hidden="true"></div>
 
             <button id="mdToRtBtn" class="toggle-btn" data-direction="mdToRt" aria-pressed="false">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-                    <polyline points="13 2 13 9 20 9"/>
-                    <line x1="9" y1="14" x2="15" y2="14"/>
-                    <line x1="9" y1="18" x2="15" y2="18"/>
-                </svg>
+                <i class="ph ph-text-align-left"></i>
                 <span class="btn-label">Markdown → Rich Text</span>
             </button>
         </div>
@@ -140,31 +105,16 @@
             <div class="editor-panel input-panel">
                 <div class="panel-header">
                     <div class="panel-label">
-                        <!-- Icon swaps depending on mode; handled by JS class -->
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
+                        <i class="ph ph-pencil-simple-line"></i>
                         <span id="inputLabel">Rich Text Input</span>
                     </div>
                     <div class="panel-actions">
                         <button id="clearInputBtn" class="btn-ghost btn-sm" title="Clear editor">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"/>
-                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                                <path d="M10 11v6M14 11v6"/>
-                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                            </svg>
+                            <i class="ph ph-trash"></i>
                             Clear
                         </button>
                         <button id="pasteBtn" class="btn-ghost btn-sm" title="Paste from clipboard">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-                            </svg>
+                            <i class="ph ph-clipboard-text"></i>
                             Paste
                         </button>
                     </div>
@@ -173,36 +123,10 @@
                 <!-- Formatting Toolbar (Rich Text mode only) -->
                 <div id="richTextToolbar" class="toolbar" role="toolbar" aria-label="Text formatting">
                     <div class="toolbar-group" role="group" aria-label="Inline formatting">
-                        <button class="toolbar-btn" data-command="bold" title="Bold (Ctrl+B)" aria-label="Bold">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
-                                <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="italic" title="Italic (Ctrl+I)" aria-label="Italic">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="19" y1="4"  x2="10" y2="4"/>
-                                <line x1="14" y1="20" x2="5"  y2="20"/>
-                                <line x1="15" y1="4"  x2="9"  y2="20"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="underline" title="Underline (Ctrl+U)" aria-label="Underline">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 3v7a6 6 0 0 0 12 0V3"/>
-                                <line x1="4" y1="21" x2="20" y2="21"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="strikeThrough" title="Strikethrough" aria-label="Strikethrough">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="4" y1="12" x2="20" y2="12"/>
-                                <path d="M17.5 6.5C17 5 15.5 4 13.5 4c-2.5 0-4 1.5-4 3.5 0 1.2.5 2.1 1.4 2.7"/>
-                                <path d="M6.5 17.5C7.1 19.2 8.8 21 12 21c2.7 0 4.5-1.6 4.5-3.5 0-.9-.3-1.7-.8-2.3"/>
-                            </svg>
-                        </button>
+                        <button class="toolbar-btn toolbar-btn-text" data-command="bold" title="Bold (Ctrl+B)" aria-label="Bold">B</button>
+                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-italic" data-command="italic" title="Italic (Ctrl+I)" aria-label="Italic">I</button>
+                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-underline" data-command="underline" title="Underline (Ctrl+U)" aria-label="Underline">U</button>
+                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-strike" data-command="strikeThrough" title="Strikethrough" aria-label="Strikethrough">S</button>
                     </div>
 
                     <div class="toolbar-divider" aria-hidden="true"></div>
@@ -225,70 +149,18 @@
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
                     <div class="toolbar-group" role="group" aria-label="Lists and blocks">
-                        <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet list" aria-label="Bullet list">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="9" y1="6"  x2="20" y2="6"/>
-                                <line x1="9" y1="12" x2="20" y2="12"/>
-                                <line x1="9" y1="18" x2="20" y2="18"/>
-                                <circle cx="4" cy="6"  r="1.5" fill="currentColor" stroke="none"/>
-                                <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-                                <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="10" y1="6"  x2="21" y2="6"/>
-                                <line x1="10" y1="12" x2="21" y2="12"/>
-                                <line x1="10" y1="18" x2="21" y2="18"/>
-                                <path d="M4 6h1v4" stroke-width="2"/>
-                                <path d="M4 10h2"  stroke-width="2"/>
-                                <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" stroke-width="2"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="blockquote" title="Blockquote" aria-label="Blockquote">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
-                                <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
-                            </svg>
-                        </button>
+                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertUnorderedList" title="Bullet list" aria-label="Bullet list">*</button>
+                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">1.</button>
+                        <button class="toolbar-btn toolbar-btn-symbol" data-command="blockquote" title="Blockquote" aria-label="Blockquote">"</button>
                     </div>
 
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
                     <div class="toolbar-group" role="group" aria-label="Insert elements">
-                        <button class="toolbar-btn" data-command="createLink" title="Insert link (Ctrl+K)" aria-label="Insert link">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="insertImage" title="Insert image" aria-label="Insert image">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                <polyline points="21 15 16 10 5 21"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="insertCode" title="Inline code" aria-label="Inline code">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="16 18 22 12 16 6"/>
-                                <polyline points="8 6 2 12 8 18"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="insertHR" title="Horizontal rule" aria-label="Horizontal rule">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                                <line x1="5"  y1="12" x2="19" y2="12" stroke-width="2.5"/>
-                                <line x1="3"  y1="6"  x2="21" y2="6"  stroke-width="1.5" stroke-opacity="0.35"/>
-                                <line x1="3"  y1="18" x2="21" y2="18" stroke-width="1.5" stroke-opacity="0.35"/>
-                            </svg>
-                        </button>
+                        <button class="toolbar-btn toolbar-btn-symbol" data-command="createLink" title="Insert link (Ctrl+K)" aria-label="Insert link">@</button>
+                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertImage" title="Insert image" aria-label="Insert image">[]</button>
+                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertCode" title="Inline code" aria-label="Inline code">&lt;/&gt;</button>
+                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertHR" title="Horizontal rule" aria-label="Horizontal rule">-</button>
                     </div>
                 </div>
 
@@ -312,36 +184,18 @@
             <div class="editor-panel output-panel">
                 <div class="panel-header">
                     <div class="panel-label">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
+                        <i class="ph ph-sparkle"></i>
                         <span id="outputLabel">Markdown Output</span>
                         <span class="activity-dot" aria-hidden="true"></span>
                     </div>
                     <div class="panel-actions">
                         <button id="copyBtn" class="btn-primary btn-sm" title="Copy to clipboard">
-                            <!-- Default icon -->
-                            <svg class="icon-copy" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                            <!-- Success icon (hidden by default) -->
-                            <svg class="icon-check" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-                                 style="display:none;">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
+                            <i class="ph ph-copy icon-copy"></i>
+                            <i class="ph ph-check icon-check" style="display:none;"></i>
                             <span class="copy-label">Copy</span>
                         </button>
                         <button id="downloadBtn" class="btn-secondary btn-sm" title="Download file">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7 10 12 15 17 10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
-                            </svg>
+                            <i class="ph ph-download-simple"></i>
                             Download
                         </button>
                     </div>
@@ -366,23 +220,15 @@
     <!-- ==================== SETTINGS MODAL ==================== -->
     <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
         <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-header-left">
-                    <div class="modal-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
+                <div class="modal-header">
+                    <div class="modal-header-left">
+                        <div class="modal-icon">
+                            <i class="ph ph-sliders-horizontal"></i>
+                        </div>
+                        <h2 id="settingsTitle">Settings</h2>
                     </div>
-                    <h2 id="settingsTitle">Settings</h2>
-                </div>
                 <button class="modal-close close-btn" aria-label="Close settings">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6"  y1="6" x2="18" y2="18"/>
-                    </svg>
+                    <i class="ph ph-x"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -487,12 +333,7 @@
                         </div>
                         <div class="setting-control">
                             <button id="clearStorageBtn" class="btn-ghost btn-sm" style="color:var(--danger)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                                </svg>
+                                <i class="ph ph-trash"></i>
                                 Clear
                             </button>
                         </div>
@@ -506,24 +347,15 @@
     <!-- ==================== HELP MODAL ==================== -->
     <div id="helpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
         <div class="modal-content modal-large">
-            <div class="modal-header">
-                <div class="modal-header-left">
-                    <div class="modal-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                            <line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
+                <div class="modal-header">
+                    <div class="modal-header-left">
+                        <div class="modal-icon">
+                        <i class="ph ph-question"></i>
                     </div>
                     <h2 id="helpTitle">Help &amp; Reference</h2>
                 </div>
                 <button class="modal-close close-btn" aria-label="Close help">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6"  y1="6" x2="18" y2="18"/>
-                    </svg>
+                    <i class="ph ph-x"></i>
                 </button>
             </div>
             <div class="modal-body">
