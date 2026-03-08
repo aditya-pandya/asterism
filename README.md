@@ -1,16 +1,9 @@
 # Rich Text to Markdown
 
-<p align="center">
-  <img src="./favicon.svg" alt="Rich Text to Markdown logo" width="88">
-</p>
+![Rich Text to Markdown logo](./favicon.svg)
 
-<p align="center">
-  A local-first editor for converting rich text and Markdown in either direction.
-</p>
-
-<p align="center">
-  Works in the browser, runs offline, and is also packaged as a native macOS app.
-</p>
+Local-first rich text and Markdown conversion for the browser and macOS.
+Works offline, keeps your content on-device, and supports both directions: `Rich Text → Markdown` and `Markdown → Rich Text`.
 
 ## What It Does
 
@@ -30,9 +23,9 @@
 
 ### macOS App
 
-1. Run `npm install`
-2. Start the desktop app with `npm run dev`
-3. Build the app with `npm run dist:mac`
+1. Run `npm install`.
+2. Start the desktop app with `npm run dev`.
+3. Build the macOS app with `npm run dist:mac`.
 
 ## A Few Nice Details
 
@@ -44,7 +37,7 @@
 
 ## Privacy
 
-Your content stays local. The app does its work in your browser or desktop app and does not send text to an external service.
+Your content stays local. The app runs entirely in your browser or desktop app and does not send your writing to an external service.
 
 ## Third-Party Notices
 
