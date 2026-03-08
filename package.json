@@ -16,6 +16,7 @@
     "appId": "com.apandya.richtexttomarkdown",
     "productName": "Rich Text to Markdown",
     "files": [
+      "assets/**/*",
       "electron/**/*",
       "index.html",
       "styles.css",

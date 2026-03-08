@@ -325,13 +325,9 @@ body.is-electron [contenteditable="true"] {
 .logo-badge {
     width: 48px;
     height: 48px;
-    background: linear-gradient(145deg, rgba(246, 189, 96, 0.95), rgba(223, 208, 184, 0.7));
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     box-shadow: var(--shadow-accent);
     flex-shrink: 0;
+    display: block;
     transition: transform var(--t-spring) var(--ease-spring),
                 box-shadow var(--t-base) var(--ease-out);
 }
@@ -341,20 +337,11 @@ body.is-electron [contenteditable="true"] {
     box-shadow: 0 18px 36px rgba(246, 189, 96, 0.24);
 }
 
-.logo-glyph {
-    font-family: 'Nanum Myeongjo', var(--font-display);
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: -0.08em;
-    color: #17120b;
-    line-height: 1;
-    transform: translateY(-1px);
-}
-
 .brand-copy {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    transform: translateY(1px);
 }
 
 .brand-kicker {
@@ -362,6 +349,7 @@ body.is-electron [contenteditable="true"] {
     font-size: 10px;
     letter-spacing: 0.28em;
     text-transform: uppercase;
+    transform: translateX(1px);
 }
 
 .header-title {
