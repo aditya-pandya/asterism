@@ -268,6 +268,26 @@ body.is-electron .app-container {
     box-shadow: none;
 }
 
+body.is-electron .app-header {
+    height: 102px;
+    padding: 16px 28px 0 92px;
+    -webkit-app-region: drag;
+}
+
+body.is-electron .header-content {
+    height: calc(100% - 8px);
+}
+
+body.is-electron .header-actions,
+body.is-electron .header-actions *,
+body.is-electron button,
+body.is-electron select,
+body.is-electron input,
+body.is-electron textarea,
+body.is-electron [contenteditable="true"] {
+    -webkit-app-region: no-drag;
+}
+
 /* ===========================
    Header
    =========================== */
