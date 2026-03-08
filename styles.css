@@ -260,6 +260,14 @@ body {
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.34);
 }
 
+body.is-electron .app-container {
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+}
+
 /* ===========================
    Header
    =========================== */
@@ -535,6 +543,10 @@ kbd {
     transition: background-color var(--t-slow) var(--ease-out),
                 border-color var(--t-slow) var(--ease-out),
                 box-shadow var(--t-base) var(--ease-out);
+}
+
+body.is-electron .editor-panel {
+    border-radius: 0;
 }
 
 .editor-panel:focus-within {
@@ -1124,6 +1136,10 @@ kbd {
     border: 1px solid var(--border-subtle);
     animation: scaleIn var(--t-slow) var(--ease-spring);
     transition: background-color var(--t-slow) var(--ease-out);
+}
+
+body.is-electron .modal-content {
+    border-radius: 0;
 }
 
 .modal-large {

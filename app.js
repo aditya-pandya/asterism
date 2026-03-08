@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
+    applyRuntimeEnvironment();
     handleStartupActions();
 
     // Load saved settings and content
@@ -248,6 +249,11 @@ function initializeApp() {
     setupThemeToggle();
 
     console.log('Rich Text ⇄ Markdown Converter initialized');
+}
+
+function applyRuntimeEnvironment() {
+    const isElectron = /Electron/i.test(navigator.userAgent);
+    document.body.classList.toggle('is-electron', isElectron);
 }
 
 function handleStartupActions() {
