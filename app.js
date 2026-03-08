@@ -20,7 +20,8 @@ const AppState = {
     lastFocusedElement: null,
     desktopMenuCleanup: null,
     lastSavedSignature: null,
-    savedSelection: null
+    savedSelection: null,
+    commandInputResolve: null
 };
 
 // ===========================
@@ -513,7 +514,12 @@ function setupEventListeners() {
     // Close buttons for modals
     document.querySelectorAll('.close-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            closeModal(e.target.closest('.modal').id);
+            const modalId = e.target.closest('.modal').id;
+            if (modalId === 'commandInputModal') {
+                resolveCommandInput(null);
+                return;
+            }
+            closeModal(modalId);
         });
     });
     
@@ -531,9 +537,35 @@ function setupEventListeners() {
             setSettingsTab(tabButton.dataset.settingsTabTrigger);
         });
     });
+
+    setupCommandInputModal();
     
     // Settings controls
     setupSettingsListeners();
+}
+
+function setupCommandInputModal() {
+    const form = document.getElementById('commandInputForm');
+    const cancelButton = document.getElementById('commandInputCancel');
+    const modal = document.getElementById('commandInputModal');
+
+    if (!form || !cancelButton || !modal) return;
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const input = document.getElementById('commandInputField');
+        resolveCommandInput(input?.value?.trim() || '');
+    });
+
+    cancelButton.addEventListener('click', () => {
+        resolveCommandInput(null);
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            resolveCommandInput(null);
+        }
+    });
 }
 
 function setupToolbarListeners() {
@@ -701,7 +733,7 @@ function setConversionMode(mode) {
 // Rich Text Editor Commands
 // ===========================
 
-function executeCommand(command) {
+async function executeCommand(command) {
     const editor = document.getElementById('richTextEditor');
     restoreEditorSelection();
     
@@ -724,7 +756,14 @@ function executeCommand(command) {
             
         case 'createLink':
             saveEditorSelection();
-            const url = prompt('Enter URL:');
+            const url = await showCommandInputDialog({
+                title: 'Insert link',
+                label: 'URL',
+                help: 'Paste the full URL you want to attach to the selected text.',
+                placeholder: 'https://example.com',
+                submitLabel: 'Insert link',
+                iconClass: 'ph-link-simple'
+            });
             if (url) {
                 restoreEditorSelection();
                 document.execCommand('createLink', false, url);
@@ -733,7 +772,14 @@ function executeCommand(command) {
             
         case 'insertImage':
             saveEditorSelection();
-            const imgUrl = prompt('Enter image URL:');
+            const imgUrl = await showCommandInputDialog({
+                title: 'Insert image',
+                label: 'Image URL',
+                help: 'Paste a direct image URL to embed it into the rich text editor.',
+                placeholder: 'https://example.com/image.png',
+                submitLabel: 'Insert image',
+                iconClass: 'ph-image-square'
+            });
             if (imgUrl) {
                 restoreEditorSelection();
                 document.execCommand('insertImage', false, imgUrl);
@@ -777,6 +823,47 @@ function restoreEditorSelection() {
 
     selection.removeAllRanges();
     selection.addRange(AppState.savedSelection);
+}
+
+function showCommandInputDialog(options) {
+    const modal = document.getElementById('commandInputModal');
+    const title = document.getElementById('commandInputTitle');
+    const label = document.getElementById('commandInputLabel');
+    const input = document.getElementById('commandInputField');
+    const help = document.getElementById('commandInputHelp');
+    const submit = document.getElementById('commandInputSubmit');
+    const icon = document.getElementById('commandInputIcon');
+
+    if (!modal || !title || !label || !input || !help || !submit || !icon) {
+        return Promise.resolve(window.prompt(options?.title || 'Enter value:') || null);
+    }
+
+    title.textContent = options.title || 'Insert value';
+    label.textContent = options.label || 'Value';
+    input.value = options.value || '';
+    input.placeholder = options.placeholder || '';
+    help.textContent = options.help || '';
+    submit.textContent = options.submitLabel || 'Insert';
+    icon.className = `ph ${options.iconClass || 'ph-link-simple'}`;
+
+    openModal('commandInputModal');
+
+    return new Promise((resolve) => {
+        AppState.commandInputResolve = resolve;
+        requestAnimationFrame(() => input.focus());
+    });
+}
+
+function resolveCommandInput(value) {
+    if (!AppState.commandInputResolve) {
+        closeModal('commandInputModal');
+        return;
+    }
+
+    const resolve = AppState.commandInputResolve;
+    AppState.commandInputResolve = null;
+    closeModal('commandInputModal');
+    resolve(value);
 }
 
 function handleKeyboardShortcuts(e) {
@@ -1293,6 +1380,10 @@ function handleModalKeydown(event) {
 
     if (event.key === 'Escape') {
         event.preventDefault();
+        if (activeModalId === 'commandInputModal') {
+            resolveCommandInput(null);
+            return;
+        }
         closeModal(activeModalId);
         return;
     }

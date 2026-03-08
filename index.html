@@ -396,6 +396,33 @@
         </div>
     </div>
 
+    <div id="commandInputModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="commandInputTitle">
+        <div class="modal-content modal-compact">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <div class="modal-icon">
+                        <i id="commandInputIcon" class="ph ph-link-simple"></i>
+                    </div>
+                    <h2 id="commandInputTitle">Insert link</h2>
+                </div>
+                <button class="modal-close close-btn" aria-label="Close dialog">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="commandInputForm" class="command-input-form">
+                    <label class="command-input-label" for="commandInputField" id="commandInputLabel">URL</label>
+                    <input id="commandInputField" class="command-input-field" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com">
+                    <p id="commandInputHelp" class="command-input-help">Paste the full URL you want to insert.</p>
+                    <div class="command-input-actions">
+                        <button type="button" id="commandInputCancel" class="btn-secondary btn-sm">Cancel</button>
+                        <button type="submit" id="commandInputSubmit" class="btn-primary btn-sm">Insert</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container" role="region" aria-live="polite" aria-label="Notifications"></div>
 
