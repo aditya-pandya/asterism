@@ -509,7 +509,6 @@ function setupEventListeners() {
     
     // Modal controls
     document.getElementById('settingsBtn').addEventListener('click', () => openModal('settingsModal', { settingsTab: 'settings' }));
-    document.getElementById('helpBtn').addEventListener('click', () => openModal('settingsModal', { settingsTab: 'reference' }));
     
     // Close buttons for modals
     document.querySelectorAll('.close-btn').forEach(btn => {
@@ -527,6 +526,10 @@ function setupEventListeners() {
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
+                if (modal.id === 'commandInputModal') {
+                    resolveCommandInput(null);
+                    return;
+                }
                 closeModal(modal.id);
             }
         });
@@ -1611,11 +1614,9 @@ function showToast(message, type = 'info') {
 function setupDesktopIntegration() {
     if (!window.desktopBridge?.onMenuAction) return;
 
-    AppState.desktopMenuCleanup = window.desktopBridge.onMenuAction(async (action) => {
+        AppState.desktopMenuCleanup = window.desktopBridge.onMenuAction(async (action) => {
         if (action === 'open-settings') {
             openModal('settingsModal', { settingsTab: 'settings' });
-        } else if (action === 'open-reference') {
-            openModal('settingsModal', { settingsTab: 'reference' });
         } else if (action === 'new-document') {
             clearInput();
         } else if (action === 'open-document') {

@@ -694,7 +694,6 @@ kbd {
 /* Toolbar Buttons */
 .toolbar-btn {
     position: relative;
-    overflow: hidden;
     padding: 5px;
     border: 1px solid transparent;
     background: rgba(255,255,255,.05);
@@ -1021,7 +1020,6 @@ kbd {
                 transform var(--t-fast) var(--ease-out),
                 box-shadow var(--t-fast) var(--ease-out);
     position: relative;
-    overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     text-transform: uppercase;
     letter-spacing: 0.14em;
@@ -1637,13 +1635,17 @@ kbd {
 
 .btn-icon[data-tooltip],
 .toolbar-btn[data-tooltip],
-.btn-sm[data-tooltip] {
+.btn-sm[data-tooltip],
+.toolbar-select[data-tooltip] {
     position: relative;
+    overflow: visible;
+    z-index: 3;
 }
 
 .btn-icon[data-tooltip]::before,
 .toolbar-btn[data-tooltip]::before,
-.btn-sm[data-tooltip]::before {
+.btn-sm[data-tooltip]::before,
+.toolbar-select[data-tooltip]::before {
     content: attr(data-tooltip);
     position: absolute;
     left: 50%;
@@ -1670,7 +1672,8 @@ kbd {
 
 .btn-icon[data-tooltip]::after,
 .toolbar-btn[data-tooltip]::after,
-.btn-sm[data-tooltip]::after {
+.btn-sm[data-tooltip]::after,
+.toolbar-select[data-tooltip]::after {
     content: '';
     position: absolute;
     left: 50%;
@@ -1699,7 +1702,11 @@ kbd {
 .btn-sm[data-tooltip]:hover::before,
 .btn-sm[data-tooltip]:hover::after,
 .btn-sm[data-tooltip]:focus-visible::before,
-.btn-sm[data-tooltip]:focus-visible::after {
+.btn-sm[data-tooltip]:focus-visible::after,
+.toolbar-select[data-tooltip]:hover::before,
+.toolbar-select[data-tooltip]:hover::after,
+.toolbar-select[data-tooltip]:focus-visible::before,
+.toolbar-select[data-tooltip]:focus-visible::after {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }

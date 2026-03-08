@@ -72,11 +72,6 @@ function buildMenu() {
           accelerator: 'CommandOrControl+,',
           click: () => sendMenuAction('open-settings')
         },
-        {
-          label: 'Help & Reference',
-          accelerator: 'F1',
-          click: () => sendMenuAction('open-reference')
-        },
         { type: 'separator' },
         { role: 'services' },
         { type: 'separator' },
