@@ -1164,10 +1164,12 @@ kbd {
     max-width: 520px;
     width: 100%;
     max-height: 88vh;
-    overflow-y: auto;
+    overflow: hidden;
     border: 1px solid var(--border-subtle);
     animation: scaleIn var(--t-slow) var(--ease-spring);
     transition: background-color var(--t-slow) var(--ease-out);
+    display: flex;
+    flex-direction: column;
 }
 
 
@@ -1251,6 +1253,9 @@ kbd {
 
 .modal-body {
     padding: 22px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .modal-tabs {
