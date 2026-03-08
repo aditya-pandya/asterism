@@ -247,6 +247,7 @@ function initializeApp() {
 
     // Setup theme toggle button in header
     setupThemeToggle();
+    setupGlobalShortcuts();
 
     console.log('Rich Text ⇄ Markdown Converter initialized');
 }
@@ -1230,6 +1231,16 @@ function setupThemeToggle() {
 
     // Sync icon visibility with theme attribute
     syncThemeToggleIcon();
+}
+
+function setupGlobalShortcuts() {
+    document.addEventListener('keydown', (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key === ',') {
+            event.preventDefault();
+            const settingsButton = document.getElementById('settingsBtn');
+            if (settingsButton) settingsButton.click();
+        }
+    });
 }
 
 function syncThemeToggleIcon() {

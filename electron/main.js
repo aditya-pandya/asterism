@@ -2,6 +2,18 @@ const path = require('node:path');
 const { app, BrowserWindow, Menu, shell } = require('electron');
 const pkg = require('../package.json');
 
+function openSettings(window) {
+  const targetWindow = window || BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+  if (!targetWindow || targetWindow.isDestroyed()) return;
+
+  targetWindow.webContents.executeJavaScript(`
+    (() => {
+      const button = document.getElementById('settingsBtn');
+      if (button) button.click();
+    })();
+  `).catch(() => {});
+}
+
 function createMainWindow() {
   const mainWindow = new BrowserWindow({
     width: 1440,
@@ -45,6 +57,12 @@ function buildMenu() {
       label: app.name,
       submenu: [
         { role: 'about' },
+        { type: 'separator' },
+        {
+          label: 'Settings…',
+          accelerator: 'CommandOrControl+,',
+          click: () => openSettings()
+        },
         { type: 'separator' },
         { role: 'services' },
         { type: 'separator' },
@@ -102,9 +120,7 @@ app.whenReady().then(() => {
     applicationName: pkg.productName,
     applicationVersion: '1.0',
     version: '',
-    website: 'https://aditya.pandya.co/',
-    authors: ['Aditya Pandya'],
-    copyright: 'Made with love by Aditya Pandya'
+    copyright: '© 2026 Aditya Pandya'
   });
 
   buildMenu();

@@ -17,6 +17,7 @@
     "productName": "Rich Text to Markdown",
     "files": [
       "electron/**/*",
+      "Credits.html",
       "index.html",
       "styles.css",
       "app.js",
