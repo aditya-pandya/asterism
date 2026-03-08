@@ -545,10 +545,6 @@ kbd {
                 box-shadow var(--t-base) var(--ease-out);
 }
 
-body.is-electron .editor-panel {
-    border-radius: 0;
-}
-
 .editor-panel:focus-within {
     box-shadow: var(--shadow-lg), 0 0 0 1px rgba(246,189,96,.18);
     border-color: rgba(246,189,96,.24);
@@ -1138,9 +1134,6 @@ body.is-electron .editor-panel {
     transition: background-color var(--t-slow) var(--ease-out);
 }
 
-body.is-electron .modal-content {
-    border-radius: 0;
-}
 
 .modal-large {
     max-width: 760px;
