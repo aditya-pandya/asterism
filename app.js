@@ -12,7 +12,14 @@ const AppState = {
         theme: 'dark',
         autoSave: true
     },
-    debounceTimer: null
+    conversionTimer: null,
+    statsTimer: null,
+    saveTimer: null,
+    activityTimer: null,
+    activeModalId: null,
+    lastFocusedElement: null,
+    desktopMenuCleanup: null,
+    lastSavedSignature: null
 };
 
 // ===========================
@@ -238,12 +245,13 @@ function initializeApp() {
 
     // Setup event listeners
     setupEventListeners();
+    setupDesktopIntegration();
 
     // Apply initial theme
     applyTheme();
 
     // Set initial mode
-    setConversionMode('rtToMd');
+    setConversionMode(AppState.conversionMode);
 
     // Setup theme toggle button in header
     setupThemeToggle();
@@ -253,7 +261,7 @@ function initializeApp() {
 }
 
 function applyRuntimeEnvironment() {
-    const isElectron = /Electron/i.test(navigator.userAgent);
+    const isElectron = Boolean(window.desktopBridge?.isElectron) || /Electron/i.test(navigator.userAgent);
     document.body.classList.toggle('is-electron', isElectron);
 }
 
@@ -279,6 +287,8 @@ let turndownService;
 let markedInstance;
 
 function initializeConverters() {
+    const markdownFlavor = AppState.settings.markdownFlavor === 'commonmark' ? 'commonmark' : 'gfm';
+
     // Initialize Turndown (HTML to Markdown)
     if (typeof TurndownService !== 'undefined') {
         turndownService = new TurndownService({
@@ -290,8 +300,8 @@ function initializeConverters() {
             strongDelimiter: '**'
         });
 
-        // Add GFM plugin if available (includes table support)
-        if (typeof turndownPluginGfm !== 'undefined') {
+        // Add GFM plugin when GitHub Flavored Markdown is selected.
+        if (markdownFlavor === 'gfm' && typeof turndownPluginGfm !== 'undefined') {
             const gfm = turndownPluginGfm.gfm;
             turndownService.use(gfm);
         }
@@ -450,11 +460,11 @@ function initializeConverters() {
     // Configure Marked (Markdown to HTML)
     if (typeof marked !== 'undefined') {
         marked.setOptions({
-            gfm: true,
-            breaks: true,
+            gfm: markdownFlavor === 'gfm',
+            breaks: markdownFlavor === 'gfm',
             headerIds: true,
             mangle: false,
-            tables: true
+            tables: markdownFlavor === 'gfm'
         });
     }
 }
@@ -565,11 +575,15 @@ function setupSettingsListeners() {
     // Markdown flavor
     document.getElementById('markdownFlavor').addEventListener('change', (e) => {
         AppState.settings.markdownFlavor = e.target.value;
+        initializeConverters();
         saveSettings();
-        // Re-convert with new flavor
-        if (AppState.conversionMode === 'mdToRt') {
-            convertMarkdownToRichText();
-        }
+        runConversionNow();
+        showToast(
+            AppState.settings.markdownFlavor === 'commonmark'
+                ? 'CommonMark mode enabled'
+                : 'GitHub Flavored Markdown enabled',
+            'info'
+        );
     });
     
     // Syntax highlighting
@@ -658,6 +672,10 @@ function setConversionMode(mode) {
     }
     
     updateStats();
+
+    if (AppState.settings.autoSave) {
+        scheduleSaveContent();
+    }
 }
 
 // ===========================
@@ -747,27 +765,50 @@ function handleKeyboardShortcuts(e) {
 
 function handleRichTextInput() {
     if (AppState.settings.realtimeConversion) {
-        debounceConversion(() => convertRichTextToMarkdown());
+        scheduleConversion(() => convertRichTextToMarkdown());
     }
-    updateStats();
+    scheduleStatsUpdate();
     if (AppState.settings.autoSave) {
-        saveContent();
+        scheduleSaveContent();
     }
 }
 
 function handleMarkdownInput() {
     if (AppState.settings.realtimeConversion) {
-        debounceConversion(() => convertMarkdownToRichText());
+        scheduleConversion(() => convertMarkdownToRichText());
     }
-    updateStats();
+    scheduleStatsUpdate();
     if (AppState.settings.autoSave) {
-        saveContent();
+        scheduleSaveContent();
     }
 }
 
-function debounceConversion(callback) {
-    clearTimeout(AppState.debounceTimer);
-    AppState.debounceTimer = setTimeout(callback, AppState.settings.debounceDelay);
+function scheduleConversion(callback) {
+    clearTimeout(AppState.conversionTimer);
+    AppState.conversionTimer = setTimeout(callback, AppState.settings.debounceDelay);
+}
+
+function scheduleStatsUpdate() {
+    clearTimeout(AppState.statsTimer);
+    AppState.statsTimer = setTimeout(() => {
+        updateStats();
+    }, 120);
+}
+
+function scheduleSaveContent() {
+    clearTimeout(AppState.saveTimer);
+    AppState.saveTimer = setTimeout(() => {
+        saveContent();
+    }, 900);
+}
+
+function runConversionNow() {
+    clearTimeout(AppState.conversionTimer);
+    if (AppState.conversionMode === 'rtToMd') {
+        convertRichTextToMarkdown();
+    } else {
+        convertMarkdownToRichText();
+    }
 }
 
 function handlePaste(e) {
@@ -788,14 +829,13 @@ function handlePaste(e) {
 function convertRichTextToMarkdown() {
     const richTextEditor = document.getElementById('richTextEditor');
     const markdownOutput = document.getElementById('markdownOutput');
-    const outputPanel = document.querySelector('.output-panel');
 
     if (!turndownService) {
         markdownOutput.value = 'Error: Turndown library not loaded';
         return;
     }
 
-    if (outputPanel) outputPanel.classList.add('converting');
+    setOutputActivity(true);
 
     try {
         const rawHtml = richTextEditor.innerHTML;
@@ -810,22 +850,19 @@ function convertRichTextToMarkdown() {
     }
 
     // Remove indicator after brief delay
-    if (outputPanel) {
-        setTimeout(() => outputPanel.classList.remove('converting'), 600);
-    }
+    setOutputActivity(false);
 }
 
 function convertMarkdownToRichText() {
     const markdownInput = document.getElementById('markdownInput');
     const richTextPreview = document.getElementById('richTextPreview');
-    const outputPanel = document.querySelector('.output-panel');
 
     if (typeof marked === 'undefined') {
         richTextPreview.innerHTML = '<p>Error: Marked library not loaded</p>';
         return;
     }
 
-    if (outputPanel) outputPanel.classList.add('converting');
+    setOutputActivity(true);
 
     try {
         const markdown = markdownInput.value;
@@ -845,9 +882,7 @@ function convertMarkdownToRichText() {
         richTextPreview.innerHTML = '<p>Error converting markdown</p>';
     }
 
-    if (outputPanel) {
-        setTimeout(() => outputPanel.classList.remove('converting'), 600);
-    }
+    setOutputActivity(false);
 }
 
 // ===========================
@@ -868,12 +903,21 @@ function clearInput() {
 
 async function pasteFromClipboard() {
     try {
-        const text = await navigator.clipboard.readText();
         if (AppState.conversionMode === 'rtToMd') {
             const editor = document.getElementById('richTextEditor');
             editor.focus();
-            document.execCommand('insertText', false, text);
+            const richClipboardHtml = await readRichClipboardHtml();
+
+            if (richClipboardHtml) {
+                insertHtmlAtCursor(sanitizeHtml(richClipboardHtml, { allowStyles: true }));
+            } else {
+                const text = await navigator.clipboard.readText();
+                document.execCommand('insertText', false, text);
+            }
+
+            handleRichTextInput();
         } else {
+            const text = await navigator.clipboard.readText();
             const input = document.getElementById('markdownInput');
             input.value = text;
             handleMarkdownInput();
@@ -881,6 +925,53 @@ async function pasteFromClipboard() {
         showToast('Pasted from clipboard', 'success');
     } catch (error) {
         showToast('Failed to paste from clipboard', 'error');
+    }
+}
+
+async function readRichClipboardHtml() {
+    try {
+        if (!navigator.clipboard?.read) return null;
+
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+            if (!item.types.includes('text/html')) continue;
+            const blob = await item.getType('text/html');
+            return await blob.text();
+        }
+    } catch (error) {
+        console.debug('Rich clipboard read unavailable:', error);
+    }
+
+    return null;
+}
+
+function insertHtmlAtCursor(html) {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+        document.execCommand('insertHTML', false, html);
+        return;
+    }
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    const fragment = document.createDocumentFragment();
+    let node;
+    let lastNode = null;
+
+    while ((node = temp.firstChild)) {
+        lastNode = fragment.appendChild(node);
+    }
+
+    range.insertNode(fragment);
+
+    if (lastNode) {
+        range.setStartAfter(lastNode);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
     }
 }
 
@@ -981,19 +1072,55 @@ async function copyToClipboard() {
     }
 }
 
-function downloadOutput() {
-    let content, filename, mimeType;
+function buildStandaloneHtmlDocument(bodyHtml) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Export</title>
+</head>
+<body>
+${bodyHtml}
+</body>
+</html>`;
+}
+
+function getOutputPayload() {
+    let content;
+    let filename;
+    let mimeType;
     
     if (AppState.conversionMode === 'rtToMd') {
         content = document.getElementById('markdownOutput').value;
         filename = 'output.md';
         mimeType = 'text/markdown';
     } else {
-        content = document.getElementById('richTextPreview').innerHTML;
+        content = buildStandaloneHtmlDocument(document.getElementById('richTextPreview').innerHTML);
         filename = 'output.html';
         mimeType = 'text/html';
     }
-    
+    return { content, filename, mimeType };
+}
+
+async function downloadOutput() {
+    const { content, filename, mimeType } = getOutputPayload();
+
+    if (window.desktopBridge?.saveFile) {
+        const result = await window.desktopBridge.saveFile({
+            content,
+            defaultPath: filename,
+            filters: AppState.conversionMode === 'rtToMd'
+                ? [{ name: 'Markdown', extensions: ['md', 'markdown', 'txt'] }]
+                : [{ name: 'HTML', extensions: ['html', 'htm'] }]
+        });
+
+        if (!result?.canceled) {
+            showToast(`Saved ${result.filePath.split('/').pop()}`, 'success');
+        }
+        return;
+    }
+
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1015,11 +1142,11 @@ function updateStats() {
     let inputText, outputText;
     
     if (AppState.conversionMode === 'rtToMd') {
-        inputText = document.getElementById('richTextEditor').innerText;
+        inputText = document.getElementById('richTextEditor').textContent || '';
         outputText = document.getElementById('markdownOutput').value;
     } else {
         inputText = document.getElementById('markdownInput').value;
-        outputText = document.getElementById('richTextPreview').innerText;
+        outputText = document.getElementById('richTextPreview').textContent || '';
     }
     
     const inputWords = inputText.trim() ? inputText.trim().split(/\s+/).length : 0;
@@ -1031,6 +1158,22 @@ function updateStats() {
         `${inputWords} words, ${inputChars} characters`;
     document.getElementById('outputStats').textContent = 
         `${outputWords} words, ${outputChars} characters`;
+}
+
+function setOutputActivity(isActive) {
+    const outputPanel = document.querySelector('.output-panel');
+    if (!outputPanel) return;
+
+    clearTimeout(AppState.activityTimer);
+
+    if (isActive) {
+        outputPanel.classList.add('converting');
+        return;
+    }
+
+    AppState.activityTimer = setTimeout(() => {
+        outputPanel.classList.remove('converting');
+    }, 240);
 }
 
 // ===========================
@@ -1054,16 +1197,99 @@ function setSettingsTab(tabName = 'settings') {
     });
 }
 
+function getFocusableElements(container) {
+    return Array.from(
+        container.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+    ).filter(element => element.offsetParent !== null);
+}
+
 function openModal(modalId, options = {}) {
     if (modalId === 'settingsModal') {
         setSettingsTab(options.settingsTab);
     }
 
-    document.getElementById(modalId).classList.add('active');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    AppState.lastFocusedElement = document.activeElement;
+    AppState.activeModalId = modalId;
+    modal.classList.add('active');
+
+    const preferredFocus = modal.querySelector(
+        modalId === 'settingsModal'
+            ? `[data-settings-tab-trigger="${options.settingsTab === 'reference' ? 'reference' : 'settings'}"]`
+            : '.close-btn'
+    );
+    const focusableElements = getFocusableElements(modal);
+    (preferredFocus || focusableElements[0] || modal).focus();
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    modal.classList.remove('active');
+    if (AppState.activeModalId === modalId) {
+        AppState.activeModalId = null;
+    }
+
+    if (AppState.lastFocusedElement && typeof AppState.lastFocusedElement.focus === 'function') {
+        AppState.lastFocusedElement.focus();
+        AppState.lastFocusedElement = null;
+    }
+}
+
+function handleModalKeydown(event) {
+    const activeModalId = AppState.activeModalId;
+    if (!activeModalId) return;
+
+    const modal = document.getElementById(activeModalId);
+    if (!modal) return;
+
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        closeModal(activeModalId);
+        return;
+    }
+
+    if (event.key === 'Tab') {
+        const focusableElements = getFocusableElements(modal);
+        if (focusableElements.length === 0) return;
+
+        const first = focusableElements[0];
+        const last = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+        return;
+    }
+
+    const activeTab = document.activeElement?.closest?.('[data-settings-tab-trigger]');
+    if (!activeTab) return;
+
+    const tabs = Array.from(document.querySelectorAll('[data-settings-tab-trigger]'));
+    const currentIndex = tabs.indexOf(activeTab);
+    if (currentIndex === -1) return;
+
+    let nextIndex = null;
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = tabs.length - 1;
+
+    if (nextIndex !== null) {
+        event.preventDefault();
+        const nextTab = tabs[nextIndex];
+        setSettingsTab(nextTab.dataset.settingsTabTrigger);
+        nextTab.focus();
+    }
 }
 
 // ===========================
@@ -1160,6 +1386,14 @@ function saveContent() {
     if (!AppState.settings.autoSave) return;
     
     try {
+        const signature = JSON.stringify({
+            richText: document.getElementById('richTextEditor').innerHTML,
+            markdown: document.getElementById('markdownInput').value,
+            mode: AppState.conversionMode
+        });
+
+        if (signature === AppState.lastSavedSignature) return;
+
         const content = {
             richText: document.getElementById('richTextEditor').innerHTML,
             markdown: document.getElementById('markdownInput').value,
@@ -1167,6 +1401,7 @@ function saveContent() {
             timestamp: Date.now()
         };
         localStorage.setItem('rtmd_content', JSON.stringify(content));
+        AppState.lastSavedSignature = signature;
     } catch (error) {
         console.error('Failed to save content:', error);
     }
@@ -1182,6 +1417,11 @@ function loadSavedContent() {
             if (Date.now() - content.timestamp < 24 * 60 * 60 * 1000) {
                 document.getElementById('richTextEditor').innerHTML = sanitizeHtml(content.richText, { allowStyles: true });
                 document.getElementById('markdownInput').value = content.markdown;
+                AppState.lastSavedSignature = JSON.stringify({
+                    richText: content.richText,
+                    markdown: content.markdown,
+                    mode: content.mode || AppState.conversionMode
+                });
                 
                 // Restore mode if needed
                 if (content.mode) {
@@ -1234,6 +1474,53 @@ function showToast(message, type = 'info') {
     toast.addEventListener('click', removeToast);
 }
 
+function setupDesktopIntegration() {
+    if (!window.desktopBridge?.onMenuAction) return;
+
+    AppState.desktopMenuCleanup = window.desktopBridge.onMenuAction(async (action) => {
+        if (action === 'open-settings') {
+            openModal('settingsModal', { settingsTab: 'settings' });
+        } else if (action === 'open-reference') {
+            openModal('settingsModal', { settingsTab: 'reference' });
+        } else if (action === 'new-document') {
+            clearInput();
+        } else if (action === 'open-document') {
+            await openDocumentFromDesktop();
+        } else if (action === 'save-output') {
+            await downloadOutput();
+        }
+    });
+}
+
+async function openDocumentFromDesktop() {
+    if (!window.desktopBridge?.openFile) return;
+
+    const result = await window.desktopBridge.openFile();
+    if (!result || result.canceled) return;
+
+    if (result.kind === 'markdown') {
+        document.getElementById('markdownInput').value = result.content;
+        setConversionMode('mdToRt');
+        handleMarkdownInput();
+        showToast(`Opened ${result.name}`, 'success');
+        return;
+    }
+
+    if (result.kind === 'html') {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(result.content, 'text/html');
+        const html = doc.body ? doc.body.innerHTML : result.content;
+        document.getElementById('richTextEditor').innerHTML = sanitizeHtml(html, { allowStyles: true });
+    } else {
+        const editor = document.getElementById('richTextEditor');
+        editor.textContent = result.content;
+    }
+
+    setConversionMode('rtToMd');
+    handleRichTextInput();
+    showToast(`Opened ${result.name}`, 'success');
+}
+
 // ===========================
 // Theme Toggle Button
 // ===========================
@@ -1262,6 +1549,8 @@ function setupThemeToggle() {
 
 function setupGlobalShortcuts() {
     document.addEventListener('keydown', (event) => {
+        handleModalKeydown(event);
+
         if ((event.metaKey || event.ctrlKey) && event.key === ',') {
             event.preventDefault();
             openModal('settingsModal', { settingsTab: 'settings' });

@@ -10,15 +10,17 @@ A privacy-first rich text and Markdown converter that works both as a standalone
 
 **Full WYSIWYG toolbar** — Bold, italic, underline, strikethrough, six heading levels, bullet and numbered lists, blockquotes, links, images, inline code, and horizontal rules. All accessible via keyboard shortcuts too.
 
-**GitHub Flavored Markdown (GFM)** — Tables, fenced code blocks, strikethrough, and task lists all convert correctly. You can switch to plain CommonMark in Settings.
+**Markdown flavor control** — Switch between GitHub Flavored Markdown (GFM) and a plainer CommonMark-style mode in Settings.
 
 **Syntax highlighting** — Code blocks in the preview are highlighted using highlight.js, with separate light and dark themes.
 
 **Dark mode** — Light, dark, or auto (follows your system preference). Toggle instantly from the header.
 
-**Auto-save** — Your content is saved to `localStorage` every 30 seconds and restored on the next visit (up to 24 hours).
+**Smarter auto-save** — Drafts are saved locally with debounced writes instead of blocking every keystroke, then restored on the next visit (up to 24 hours).
 
-**Works offline** — CDN libraries have local fallbacks in the `vendor/` directory. After the first load, the app works without internet.
+**Native desktop workflows** — The Electron build now supports native open and save dialogs from the File menu, plus `Cmd+,` for Settings.
+
+**Works offline** — Fonts, icons, and conversion libraries are bundled locally in `vendor/`, so both the browser app and Electron app can run without internet.
 
 ---
 
@@ -48,6 +50,7 @@ For a local unpacked app bundle without creating a DMG, use `npm run pack:mac`.
 | Italic | `Ctrl+I` / `Cmd+I` |
 | Underline | `Ctrl+U` / `Cmd+U` |
 | Insert link | `Ctrl+K` / `Cmd+K` |
+| Settings | `Cmd+,` |
 
 ---
 
@@ -96,10 +99,13 @@ styles.css      Design system, themes, animations
 app.js          Conversion logic and UI behaviour
 electron/
   main.js       Electron main process and macOS app window
+  preload.js    Safe bridge for native file dialogs and menu actions
 build/          macOS build resources (generated app icon)
 README.md       This file
 
 vendor/
+  fonts/        Bundled local font files
+  phosphor/     Bundled local icon font
   marked.min.js
   turndown.js
   turndown-plugin-gfm.js
@@ -113,7 +119,7 @@ vendor/
 
 ## Dependencies
 
-Frontend libraries are loaded from CDN with local fallbacks:
+Frontend libraries are loaded locally:
 
 | Library | Version | Purpose |
 |---------|---------|---------|
@@ -139,7 +145,7 @@ Chrome 90+, Firefox 88+, Safari 14+, Edge 90+. Requires JavaScript enabled.
 
 ## Privacy
 
-All processing happens locally in your browser. No content, telemetry, or usage data is sent anywhere. The only external requests are to load the CDN libraries on first use — after that, local fallbacks in `vendor/` take over.
+All processing happens locally in your browser or desktop app. No content, telemetry, or usage data is sent anywhere, and the UI no longer depends on runtime CDN requests.
 
 ---
 

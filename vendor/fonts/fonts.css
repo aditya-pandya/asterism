@@ -1,0 +1,111 @@
+@font-face {
+    font-family: 'Figtree';
+    src: url('./Figtree-400.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Figtree';
+    src: url('./Figtree-500.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Figtree';
+    src: url('./Figtree-600.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Figtree';
+    src: url('./Figtree-700.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Figtree';
+    src: url('./Figtree-800.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist Mono';
+    src: url('./GeistMono-400.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist Mono';
+    src: url('./GeistMono-500.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist Mono';
+    src: url('./GeistMono-600.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Nanum Myeongjo';
+    src: url('./NanumMyeongjo-400.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Nanum Myeongjo';
+    src: url('./NanumMyeongjo-700.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Nanum Myeongjo';
+    src: url('./NanumMyeongjo-800.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Newsreader';
+    src: url('./Newsreader-400.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Newsreader';
+    src: url('./Newsreader-500.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Newsreader';
+    src: url('./Newsreader-600.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+}

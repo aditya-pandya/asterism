@@ -1,17 +1,25 @@
 const path = require('node:path');
-const { app, BrowserWindow, Menu, shell } = require('electron');
+const fs = require('node:fs/promises');
+const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require('electron');
 const pkg = require('../package.json');
 
-function openSettings(window) {
-  const targetWindow = window || BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-  if (!targetWindow || targetWindow.isDestroyed()) return;
+function getPrimaryWindow() {
+  return BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0] || null;
+}
 
-  targetWindow.webContents.executeJavaScript(`
-    (() => {
-      const button = document.getElementById('settingsBtn');
-      if (button) button.click();
-    })();
-  `).catch(() => {});
+function sendMenuAction(action) {
+  const targetWindow = getPrimaryWindow();
+  if (!targetWindow || targetWindow.isDestroyed()) return;
+  targetWindow.webContents.send('menu:action', action);
+}
+
+function inferDocumentKind(filePath, content) {
+  const extension = path.extname(filePath).toLowerCase();
+  if (['.md', '.markdown'].includes(extension)) return 'markdown';
+  if (['.html', '.htm'].includes(extension)) return 'html';
+  if (extension === '.txt') return 'text';
+  if (/<(html|body|p|div|h1|h2|blockquote|ul|ol)\b/i.test(content)) return 'html';
+  return 'text';
 }
 
 function createMainWindow() {
@@ -24,6 +32,7 @@ function createMainWindow() {
     titleBarStyle: 'hiddenInset',
     show: false,
     webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       sandbox: true,
       nodeIntegration: false,
@@ -61,7 +70,12 @@ function buildMenu() {
         {
           label: 'Settings…',
           accelerator: 'CommandOrControl+,',
-          click: () => openSettings()
+          click: () => sendMenuAction('open-settings')
+        },
+        {
+          label: 'Help & Reference',
+          accelerator: 'F1',
+          click: () => sendMenuAction('open-reference')
         },
         { type: 'separator' },
         { role: 'services' },
@@ -71,6 +85,27 @@ function buildMenu() {
         { role: 'unhide' },
         { type: 'separator' },
         { role: 'quit' }
+      ]
+    },
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'New',
+          accelerator: 'CommandOrControl+N',
+          click: () => sendMenuAction('new-document')
+        },
+        {
+          label: 'Open…',
+          accelerator: 'CommandOrControl+O',
+          click: () => sendMenuAction('open-document')
+        },
+        { type: 'separator' },
+        {
+          label: 'Save Output…',
+          accelerator: 'CommandOrControl+S',
+          click: () => sendMenuAction('save-output')
+        }
       ]
     },
     {
@@ -115,14 +150,60 @@ function buildMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
+function registerIpcHandlers() {
+  ipcMain.handle('desktop:open-file', async () => {
+    const targetWindow = getPrimaryWindow();
+    const result = await dialog.showOpenDialog(targetWindow, {
+      properties: ['openFile'],
+      filters: [
+        { name: 'Supported Documents', extensions: ['md', 'markdown', 'html', 'htm', 'txt'] },
+        { name: 'Markdown', extensions: ['md', 'markdown'] },
+        { name: 'HTML', extensions: ['html', 'htm'] },
+        { name: 'Text', extensions: ['txt'] }
+      ]
+    });
+
+    if (result.canceled || !result.filePaths[0]) {
+      return { canceled: true };
+    }
+
+    const filePath = result.filePaths[0];
+    const content = await fs.readFile(filePath, 'utf8');
+
+    return {
+      canceled: false,
+      filePath,
+      name: path.basename(filePath),
+      kind: inferDocumentKind(filePath, content),
+      content
+    };
+  });
+
+  ipcMain.handle('desktop:save-file', async (_event, options = {}) => {
+    const targetWindow = getPrimaryWindow();
+    const result = await dialog.showSaveDialog(targetWindow, {
+      defaultPath: options.defaultPath || 'output.txt',
+      filters: options.filters || []
+    });
+
+    if (result.canceled || !result.filePath) {
+      return { canceled: true };
+    }
+
+    await fs.writeFile(result.filePath, options.content || '', 'utf8');
+    return { canceled: false, filePath: result.filePath };
+  });
+}
+
 app.whenReady().then(() => {
   app.setAboutPanelOptions({
     applicationName: pkg.productName,
-    applicationVersion: '1.0',
+    applicationVersion: '1.1',
     version: '',
     copyright: '© 2026 Aditya Pandya • https://aditya.pandya.co/'
   });
 
+  registerIpcHandlers();
   buildMenu();
   createMainWindow();
 

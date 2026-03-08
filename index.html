@@ -5,41 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rich Text ⇄ Markdown</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;family=Geist+Mono:wght@400;500;600&amp;family=Nanum+Myeongjo:wght@400;700;800&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&amp;display=swap">
-    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="vendor/fonts/fonts.css">
+    <link rel="stylesheet" href="vendor/phosphor/style.css">
     <link rel="stylesheet" href="styles.css">
 
     <!-- Highlight.js themes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"      id="highlight-light">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="highlight-dark" disabled>
+    <link rel="stylesheet" href="vendor/highlight/github.min.css" id="highlight-light">
+    <link rel="stylesheet" href="vendor/highlight/github-dark.min.css" id="highlight-dark" disabled>
 
-    <!-- CDN Libraries with local fallbacks -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"                              onerror="this.onerror=null;this.src='vendor/marked.min.js';"></script>
-    <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.js"                          onerror="this.onerror=null;this.src='vendor/turndown.js';"></script>
-    <script src="https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.js"   onerror="this.onerror=null;this.src='vendor/turndown-plugin-gfm.js';"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"           onerror="this.onerror=null;this.src='vendor/highlight.min.js';"></script>
-
-    <script>
-        /* Highlight.js stylesheet fallbacks */
-        (function() {
-            function isLoaded(link) {
-                if (!link || !link.sheet) return false;
-                try { return !!link.sheet.cssRules; } catch(e) { return true; }
-            }
-            function addFallback(id, href) {
-                var link = document.getElementById(id);
-                if (!link) return;
-                link.addEventListener('error', function() { link.href = href; });
-                window.addEventListener('load', function() {
-                    if (!isLoaded(link)) link.href = href;
-                });
-            }
-            addFallback('highlight-light', 'vendor/highlight/github.min.css');
-            addFallback('highlight-dark',  'vendor/highlight/github-dark.min.css');
-        })();
-    </script>
+    <!-- Local libraries -->
+    <script src="vendor/marked.min.js"></script>
+    <script src="vendor/turndown.js"></script>
+    <script src="vendor/turndown-plugin-gfm.js"></script>
+    <script src="vendor/highlight.min.js"></script>
 </head>
 <body>
 <div class="ambient-backdrop" aria-hidden="true">
@@ -378,6 +356,7 @@
                         <div class="shortcut-item"><span>Italic</span><kbd>Ctrl+I</kbd></div>
                         <div class="shortcut-item"><span>Underline</span><kbd>Ctrl+U</kbd></div>
                         <div class="shortcut-item"><span>Insert link</span><kbd>Ctrl+K</kbd></div>
+                        <div class="shortcut-item"><span>Open settings</span><kbd>Cmd+,</kbd></div>
                     </div>
                 </div>
 

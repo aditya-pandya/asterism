@@ -1252,6 +1252,11 @@ kbd {
     color: var(--text-primary);
 }
 
+.modal-tab:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-light);
+}
+
 .modal-tab.active {
     color: var(--text-primary);
     background: linear-gradient(180deg, var(--accent-light), rgba(255,255,255,0.03));
