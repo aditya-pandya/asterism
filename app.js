@@ -245,6 +245,7 @@ function initializeApp() {
 
     // Setup event listeners
     setupEventListeners();
+    normalizeTooltipBehavior();
     setupDesktopIntegration();
 
     // Apply initial theme
@@ -258,6 +259,12 @@ function initializeApp() {
     setupGlobalShortcuts();
 
     console.log('Rich Text ⇄ Markdown Converter initialized');
+}
+
+function normalizeTooltipBehavior() {
+    document.querySelectorAll('[data-tooltip][title]').forEach((element) => {
+        element.removeAttribute('title');
+    });
 }
 
 function applyRuntimeEnvironment() {
