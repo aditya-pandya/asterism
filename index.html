@@ -7,7 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;family=Geist+Mono:wght@400;500;600&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;family=Geist+Mono:wght@400;500;600&amp;family=Nanum+Myeongjo:wght@400;700;800&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&amp;display=swap">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="styles.css">
 
@@ -149,18 +149,32 @@
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
                     <div class="toolbar-group" role="group" aria-label="Lists and blocks">
-                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertUnorderedList" title="Bullet list" aria-label="Bullet list">*</button>
-                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">1.</button>
-                        <button class="toolbar-btn toolbar-btn-symbol" data-command="blockquote" title="Blockquote" aria-label="Blockquote">"</button>
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertUnorderedList" title="Bullet list" aria-label="Bullet list">
+                            <i class="ph ph-list-bullets"></i>
+                        </button>
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">
+                            <i class="ph ph-list-numbers"></i>
+                        </button>
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="blockquote" title="Blockquote" aria-label="Blockquote">
+                            <i class="ph ph-quotes"></i>
+                        </button>
                     </div>
 
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
                     <div class="toolbar-group" role="group" aria-label="Insert elements">
-                        <button class="toolbar-btn toolbar-btn-symbol" data-command="createLink" title="Insert link (Ctrl+K)" aria-label="Insert link">@</button>
-                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertImage" title="Insert image" aria-label="Insert image">[]</button>
-                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertCode" title="Inline code" aria-label="Inline code">&lt;/&gt;</button>
-                        <button class="toolbar-btn toolbar-btn-symbol" data-command="insertHR" title="Horizontal rule" aria-label="Horizontal rule">-</button>
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="createLink" title="Insert link (Ctrl+K)" aria-label="Insert link">
+                            <i class="ph ph-link-simple"></i>
+                        </button>
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertImage" title="Insert image" aria-label="Insert image">
+                            <i class="ph ph-image-square"></i>
+                        </button>
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertCode" title="Inline code" aria-label="Inline code">
+                            <i class="ph ph-code"></i>
+                        </button>
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertHR" title="Horizontal rule" aria-label="Horizontal rule">
+                            <i class="ph ph-minus"></i>
+                        </button>
                     </div>
                 </div>
 

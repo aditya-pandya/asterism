@@ -342,10 +342,10 @@ body.is-electron [contenteditable="true"] {
 }
 
 .logo-glyph {
-    font-family: var(--font-sans);
-    font-size: 21px;
-    font-weight: 500;
-    letter-spacing: -0.06em;
+    font-family: 'Nanum Myeongjo', var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.08em;
     color: #17120b;
     line-height: 1;
     transform: translateY(-1px);
@@ -718,6 +718,11 @@ kbd {
     font-size: 19px;
 }
 
+.toolbar-btn-icon i {
+    font-size: 18px;
+    line-height: 1;
+}
+
 .toolbar-btn-italic {
     font-style: italic;
 }
@@ -731,12 +736,6 @@ kbd {
 .toolbar-btn-strike {
     text-decoration: line-through;
     text-decoration-thickness: 1px;
-}
-
-.toolbar-btn-symbol {
-    font-size: 14px;
-    font-weight: 600;
-    font-family: var(--font-sans);
 }
 
 /* Ripple Effect */
