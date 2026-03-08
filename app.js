@@ -19,7 +19,8 @@ const AppState = {
     activeModalId: null,
     lastFocusedElement: null,
     desktopMenuCleanup: null,
-    lastSavedSignature: null
+    lastSavedSignature: null,
+    savedSelection: null
 };
 
 // ===========================
@@ -540,6 +541,11 @@ function setupToolbarListeners() {
 
     // Button commands
     toolbar.querySelectorAll('.toolbar-btn').forEach(btn => {
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            saveEditorSelection();
+        });
+
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             addRipple(btn, e);
@@ -550,13 +556,19 @@ function setupToolbarListeners() {
     
     // Select commands
     toolbar.querySelectorAll('.toolbar-select').forEach(select => {
+        select.addEventListener('mousedown', () => {
+            saveEditorSelection();
+        });
+
         select.addEventListener('change', (e) => {
             const command = select.dataset.command;
             const value = select.value;
             if (value) {
+                restoreEditorSelection();
                 document.execCommand(command, false, value);
                 select.value = '';
                 document.getElementById('richTextEditor').focus();
+                saveEditorSelection();
             }
         });
     });
@@ -691,6 +703,7 @@ function setConversionMode(mode) {
 
 function executeCommand(command) {
     const editor = document.getElementById('richTextEditor');
+    restoreEditorSelection();
     
     switch (command) {
         case 'bold':
@@ -710,15 +723,19 @@ function executeCommand(command) {
             break;
             
         case 'createLink':
+            saveEditorSelection();
             const url = prompt('Enter URL:');
             if (url) {
+                restoreEditorSelection();
                 document.execCommand('createLink', false, url);
             }
             break;
             
         case 'insertImage':
+            saveEditorSelection();
             const imgUrl = prompt('Enter image URL:');
             if (imgUrl) {
+                restoreEditorSelection();
                 document.execCommand('insertImage', false, imgUrl);
             }
             break;
@@ -740,7 +757,26 @@ function executeCommand(command) {
     }
     
     editor.focus();
+    saveEditorSelection();
     handleRichTextInput();
+}
+
+function saveEditorSelection() {
+    const editor = document.getElementById('richTextEditor');
+    const selection = window.getSelection();
+    if (!editor || !selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (!editor.contains(range.commonAncestorContainer)) return;
+    AppState.savedSelection = range.cloneRange();
+}
+
+function restoreEditorSelection() {
+    const selection = window.getSelection();
+    if (!selection || !AppState.savedSelection) return;
+
+    selection.removeAllRanges();
+    selection.addRange(AppState.savedSelection);
 }
 
 function handleKeyboardShortcuts(e) {

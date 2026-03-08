@@ -109,9 +109,9 @@
 
 [data-theme="black"] {
     --bg-app:        #000000;
-    --bg-primary:    rgba(0, 0, 0, 0.98);
-    --bg-secondary:  rgba(4, 4, 4, 0.98);
-    --bg-tertiary:   rgba(14, 14, 14, 0.96);
+    --bg-primary:    #000000;
+    --bg-secondary:  #020202;
+    --bg-tertiary:   #0a0a0a;
     --text-primary:  #f7f2e9;
     --text-secondary:#d8cab3;
     --text-tertiary: #8f8270;
@@ -122,8 +122,8 @@
     --accent-active:  #ccb997;
     --accent-light:   rgba(229, 213, 186, 0.14);
     --accent-lighter: rgba(229, 213, 186, 0.06);
-    --editor-bg:      rgba(0, 0, 0, 1);
-    --toolbar-bg:     rgba(3, 3, 3, 0.97);
+    --editor-bg:      #000000;
+    --toolbar-bg:     #010101;
     --shadow-xs:      0 1px 2px rgba(0,0,0,.7);
     --shadow-sm:      0 10px 24px rgba(0,0,0,.5);
     --shadow-md:      0 24px 50px rgba(0,0,0,.62);
@@ -131,13 +131,10 @@
     --shadow-xl:      0 40px 120px rgba(0,0,0,.82);
     --shadow-accent:  0 16px 40px rgba(229,213,186,.08);
     --shadow-inset:   inset 0 1px 0 rgba(255,255,255,.03);
-    --body-gradient:
-        radial-gradient(circle at top left, rgba(246, 189, 96, 0.06), transparent 22%),
-        radial-gradient(circle at 84% 16%, rgba(132, 165, 157, 0.04), transparent 20%),
-        linear-gradient(145deg, #000000 0%, #000000 58%, #020202 100%);
-    --ambient-grid-color: rgba(255,255,255,0.02);
-    --shell-border: rgba(255,255,255,0.05);
-    --shell-sheen: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+    --body-gradient: linear-gradient(180deg, #000000 0%, #000000 100%);
+    --ambient-grid-color: rgba(255,255,255,0.012);
+    --shell-border: rgba(255,255,255,0.04);
+    --shell-sheen: #000000;
 }
 
 /* ===========================
