@@ -18,11 +18,13 @@
     "files": [
       "electron/**/*",
       "Credits.html",
+      "THIRD_PARTY_NOTICES.md",
       "index.html",
       "styles.css",
       "app.js",
       "clear-storage.html",
       "favicon.svg",
+      "licenses/**/*",
       "vendor/**/*",
       "package.json"
     ],

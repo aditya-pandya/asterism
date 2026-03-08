@@ -149,6 +149,12 @@ All processing happens locally in your browser or desktop app. No content, telem
 
 ---
 
+## Third-party notices
+
+Bundled third-party libraries, fonts, and icons are documented in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md). The referenced license texts are included in the [`licenses/`](./licenses) directory and are packaged with the Electron app build.
+
+---
+
 ## License
 
 MIT — use, modify, and distribute freely.
