@@ -14,7 +14,7 @@ A privacy-first rich text and Markdown converter that works both as a standalone
 
 **Syntax highlighting** — Code blocks in the preview are highlighted using highlight.js, with separate light and dark themes.
 
-**Dark mode** — Light, dark, or auto (follows your system preference). Toggle instantly from the header.
+**Themes** — Light, dark, pure black, or auto (follows your system preference). Toggle instantly from the header.
 
 **Smarter auto-save** — Drafts are saved locally with debounced writes instead of blocking every keystroke, then restored on the next visit (up to 24 hours).
 
@@ -84,7 +84,7 @@ Open the gear icon (⚙) in the top-right corner.
 | Real-time conversion | Convert as you type (toggle off for large documents) |
 | Conversion delay | Debounce delay in ms — increase if conversion feels sluggish |
 | Markdown flavor | GFM (default) or CommonMark |
-| Theme | Light / Dark / Auto |
+| Theme | Light / Dark / Black / Auto |
 | Syntax highlighting | Highlight code blocks in the Markdown → Rich Text preview |
 | Auto-save | Save content and settings to browser storage |
 | Clear saved data | Wipe all stored content and reset to defaults |

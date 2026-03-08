@@ -1538,15 +1538,24 @@ function setupThemeToggle() {
 
     btn.addEventListener('click', () => {
         const current = AppState.settings.theme;
-        // Cycle: light → dark → auto → light
-        const next = current === 'light' ? 'dark' : current === 'dark' ? 'auto' : 'light';
+        // Cycle: light → dark → black → auto → light
+        const next =
+            current === 'light' ? 'dark' :
+            current === 'dark' ? 'black' :
+            current === 'black' ? 'auto' :
+            'light';
         AppState.settings.theme = next;
         const select = document.getElementById('themeSelect');
         if (select) select.value = next;
         saveSettings();
         applyTheme();
 
-        const labels = { light: 'Light theme', dark: 'Dark theme', auto: 'Auto (system) theme' };
+        const labels = {
+            light: 'Light theme',
+            dark: 'Dark theme',
+            black: 'Pure black theme',
+            auto: 'Auto (system) theme'
+        };
         showToast(labels[next] || 'Theme updated', 'info');
     });
 
@@ -1570,7 +1579,7 @@ function syncThemeToggleIcon() {
     const theme = html.getAttribute('data-theme') || 'light';
     // CSS handles sun/moon visibility via [data-theme] selectors
     // We just ensure the attribute is in sync
-    if (!['light', 'dark'].includes(theme)) {
+    if (!['light', 'dark', 'black'].includes(theme)) {
         // auto mode — show neither (could add a third icon, but moon is a fine fallback)
         html.setAttribute('data-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     }
