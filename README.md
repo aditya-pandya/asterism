@@ -1,6 +1,6 @@
 # Rich Text to Markdown
 
-![Rich Text to Markdown logo](./assets/readme-logo.png)
+<img src="./assets/readme-logo.png" alt="Rich Text to Markdown logo" width="88">
 
 Local-first rich text and Markdown conversion for the browser and macOS.
 Works offline, keeps your content on-device, and supports both directions: `Rich Text → Markdown` and `Markdown → Rich Text`.
