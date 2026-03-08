@@ -1,6 +1,6 @@
 # Rich Text ⇄ Markdown Converter
 
-A standalone, privacy-first browser tool for converting between rich text and Markdown. No server, no signup, no tracking — just open `index.html` and go.
+A privacy-first rich text and Markdown converter that works both as a standalone browser tool and as a packaged Electron macOS app.
 
 ---
 
@@ -24,9 +24,19 @@ A standalone, privacy-first browser tool for converting between rich text and Ma
 
 ## Getting started
 
+### Browser mode
+
 1. Download or clone this repository.
 2. Open `index.html` in any modern browser — no build step, no server needed.
 3. Pick a conversion direction from the toggle at the top, paste or type content, and copy or download the output.
+
+### Electron macOS app
+
+1. Install dependencies with `npm install`
+2. Run the desktop app in development with `npm run dev`
+3. Build a distributable macOS app with `npm run dist:mac`
+
+For a local unpacked app bundle without creating a DMG, use `npm run pack:mac`.
 
 ---
 
@@ -84,6 +94,9 @@ Open the gear icon (⚙) in the top-right corner.
 index.html      Main app structure and markup
 styles.css      Design system, themes, animations
 app.js          Conversion logic and UI behaviour
+electron/
+  main.js       Electron main process and macOS app window
+build/          macOS build resources (generated app icon)
 README.md       This file
 
 vendor/
@@ -100,7 +113,7 @@ vendor/
 
 ## Dependencies
 
-All loaded from CDN with local fallbacks:
+Frontend libraries are loaded from CDN with local fallbacks:
 
 | Library | Version | Purpose |
 |---------|---------|---------|
@@ -108,6 +121,13 @@ All loaded from CDN with local fallbacks:
 | [Turndown](https://github.com/mixmark-io/turndown) | 7.1.2 | HTML → Markdown |
 | [turndown-plugin-gfm](https://github.com/mixmark-io/turndown-plugin-gfm) | 1.0.2 | GFM table and checkbox support |
 | [highlight.js](https://highlightjs.org/) | 11.9.0 | Code syntax highlighting |
+
+Desktop packaging dependencies:
+
+| Tool | Purpose |
+|------|---------|
+| [Electron](https://www.electronjs.org/) | Native desktop shell for macOS |
+| [electron-builder](https://www.electron.build/) | macOS app and DMG packaging |
 
 ---
 

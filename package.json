@@ -1,0 +1,44 @@
+{
+  "name": "rich-text-to-markdown",
+  "productName": "Rich Text to Markdown",
+  "version": "1.0.0",
+  "description": "A privacy-first rich text and Markdown converter for the browser and macOS desktop.",
+  "author": "apandya",
+  "license": "MIT",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "pack:mac": "electron-builder --dir --mac",
+    "dist:mac": "electron-builder --mac dmg zip"
+  },
+  "build": {
+    "appId": "com.apandya.richtexttomarkdown",
+    "productName": "Rich Text to Markdown",
+    "files": [
+      "electron/**/*",
+      "index.html",
+      "styles.css",
+      "app.js",
+      "clear-storage.html",
+      "favicon.svg",
+      "vendor/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  }
+}
