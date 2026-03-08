@@ -120,7 +120,7 @@ app.whenReady().then(() => {
     applicationName: pkg.productName,
     applicationVersion: '1.0',
     version: '',
-    copyright: '© 2026 Aditya Pandya'
+    copyright: '© 2026 Aditya Pandya • https://aditya.pandya.co/'
   });
 
   buildMenu();

@@ -1446,25 +1446,6 @@ input[type="range"] {
     border-bottom-color: var(--accent-primary);
 }
 
-.about-website {
-    margin-top: 10px;
-}
-
-.about-website span {
-    display: inline-flex;
-    align-items: center;
-    margin-top: 8px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    line-height: 1.4;
-    word-break: break-all;
-}
-
 .steps-list {
     list-style: none;
     counter-reset: steps;
