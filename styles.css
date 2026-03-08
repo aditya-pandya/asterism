@@ -356,6 +356,61 @@ body {
     gap: 10px;
 }
 
+/* Prevent accidental text selection across UI chrome */
+.app-header,
+.header-brand,
+.brand-copy,
+.brand-kicker,
+.header-title,
+.header-actions,
+.conversion-toggle,
+.toggle-btn,
+.panel-header,
+.panel-label,
+.panel-actions,
+.panel-footer,
+.stats,
+.toolbar,
+.toolbar-group,
+.toolbar-divider,
+.toolbar-btn,
+.toolbar-select-wrap,
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-icon,
+.modal-header,
+.modal-header-left,
+.modal-icon,
+.modal-close,
+.settings-list,
+.setting-row,
+.setting-info,
+.setting-name,
+.setting-desc,
+.setting-control,
+.help-section h3,
+.steps-list,
+.shortcut-item,
+.markdown-reference th {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Editors and reference content should remain copyable/selectable */
+.rich-text-editor,
+.markdown-editor,
+.rich-text-preview,
+.help-section p,
+.steps-list li,
+.shortcut-item span,
+.markdown-reference td,
+.markdown-reference code,
+kbd {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
 /* ===========================
    Main Content
    =========================== */
