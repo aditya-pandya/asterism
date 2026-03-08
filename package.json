@@ -3,7 +3,7 @@
   "productName": "Rich Text to Markdown",
   "version": "1.0.0",
   "description": "A privacy-first rich text and Markdown converter for the browser and macOS desktop.",
-  "author": "apandya",
+  "author": "Aditya Pandya",
   "license": "MIT",
   "main": "electron/main.js",
   "scripts": {

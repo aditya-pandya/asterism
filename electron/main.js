@@ -1,5 +1,6 @@
 const path = require('node:path');
 const { app, BrowserWindow, Menu, shell } = require('electron');
+const pkg = require('../package.json');
 
 function createMainWindow() {
   const mainWindow = new BrowserWindow({
@@ -97,6 +98,15 @@ function buildMenu() {
 }
 
 app.whenReady().then(() => {
+  app.setAboutPanelOptions({
+    applicationName: pkg.productName,
+    applicationVersion: '1.0',
+    version: '',
+    website: 'https://aditya.pandya.co/',
+    authors: ['Aditya Pandya'],
+    copyright: 'Made with love by Aditya Pandya'
+  });
+
   buildMenu();
   createMainWindow();
 
