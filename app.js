@@ -489,8 +489,8 @@ function setupEventListeners() {
     document.getElementById('downloadBtn').addEventListener('click', downloadOutput);
     
     // Modal controls
-    document.getElementById('settingsBtn').addEventListener('click', () => openModal('settingsModal'));
-    document.getElementById('helpBtn').addEventListener('click', () => openModal('helpModal'));
+    document.getElementById('settingsBtn').addEventListener('click', () => openModal('settingsModal', { settingsTab: 'settings' }));
+    document.getElementById('helpBtn').addEventListener('click', () => openModal('settingsModal', { settingsTab: 'reference' }));
     
     // Close buttons for modals
     document.querySelectorAll('.close-btn').forEach(btn => {
@@ -505,6 +505,12 @@ function setupEventListeners() {
             if (e.target === modal) {
                 closeModal(modal.id);
             }
+        });
+    });
+
+    document.querySelectorAll('[data-settings-tab-trigger]').forEach(tabButton => {
+        tabButton.addEventListener('click', () => {
+            setSettingsTab(tabButton.dataset.settingsTabTrigger);
         });
     });
     
@@ -1031,7 +1037,28 @@ function updateStats() {
 // Modal Management
 // ===========================
 
-function openModal(modalId) {
+function setSettingsTab(tabName = 'settings') {
+    const tabs = document.querySelectorAll('[data-settings-tab-trigger]');
+    const panels = document.querySelectorAll('[data-settings-tab-panel]');
+    const activeTab = tabName === 'reference' ? 'reference' : 'settings';
+
+    tabs.forEach(tab => {
+        const isActive = tab.dataset.settingsTabTrigger === activeTab;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        tab.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
+
+    panels.forEach(panel => {
+        panel.classList.toggle('active', panel.dataset.settingsTabPanel === activeTab);
+    });
+}
+
+function openModal(modalId, options = {}) {
+    if (modalId === 'settingsModal') {
+        setSettingsTab(options.settingsTab);
+    }
+
     document.getElementById(modalId).classList.add('active');
 }
 
@@ -1237,8 +1264,7 @@ function setupGlobalShortcuts() {
     document.addEventListener('keydown', (event) => {
         if ((event.metaKey || event.ctrlKey) && event.key === ',') {
             event.preventDefault();
-            const settingsButton = document.getElementById('settingsBtn');
-            if (settingsButton) settingsButton.click();
+            openModal('settingsModal', { settingsTab: 'settings' });
         }
     });
 }

@@ -61,16 +61,16 @@
             </div>
 
             <div class="header-actions">
-                <button id="themeToggleBtn" class="btn-icon" title="Toggle theme" aria-label="Toggle theme">
+                <button id="themeToggleBtn" class="btn-icon" title="Toggle theme" aria-label="Toggle theme" data-tooltip="Toggle theme">
                     <i class="ph ph-sun icon-sun"></i>
                     <i class="ph ph-moon icon-moon"></i>
                 </button>
 
-                <button id="settingsBtn" class="btn-icon" title="Settings" aria-label="Settings">
+                <button id="settingsBtn" class="btn-icon" title="Settings" aria-label="Settings" data-tooltip="Settings">
                     <i class="ph ph-sliders-horizontal"></i>
                 </button>
 
-                <button id="helpBtn" class="btn-icon" title="Help &amp; Reference" aria-label="Help">
+                <button id="helpBtn" class="btn-icon" title="Help &amp; Reference" aria-label="Help" data-tooltip="Help &amp; reference">
                     <i class="ph ph-question"></i>
                 </button>
             </div>
@@ -107,11 +107,11 @@
                         <span id="inputLabel">Rich Text Input</span>
                     </div>
                     <div class="panel-actions">
-                        <button id="clearInputBtn" class="btn-ghost btn-sm" title="Clear editor">
+                        <button id="clearInputBtn" class="btn-ghost btn-sm" title="Clear editor" data-tooltip="Clear editor">
                             <i class="ph ph-trash"></i>
                             Clear
                         </button>
-                        <button id="pasteBtn" class="btn-ghost btn-sm" title="Paste from clipboard">
+                        <button id="pasteBtn" class="btn-ghost btn-sm" title="Paste from clipboard" data-tooltip="Paste from clipboard">
                             <i class="ph ph-clipboard-text"></i>
                             Paste
                         </button>
@@ -121,10 +121,10 @@
                 <!-- Formatting Toolbar (Rich Text mode only) -->
                 <div id="richTextToolbar" class="toolbar" role="toolbar" aria-label="Text formatting">
                     <div class="toolbar-group" role="group" aria-label="Inline formatting">
-                        <button class="toolbar-btn toolbar-btn-text" data-command="bold" title="Bold (Ctrl+B)" aria-label="Bold">B</button>
-                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-italic" data-command="italic" title="Italic (Ctrl+I)" aria-label="Italic">I</button>
-                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-underline" data-command="underline" title="Underline (Ctrl+U)" aria-label="Underline">U</button>
-                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-strike" data-command="strikeThrough" title="Strikethrough" aria-label="Strikethrough">S</button>
+                        <button class="toolbar-btn toolbar-btn-text" data-command="bold" title="Bold (Ctrl+B)" aria-label="Bold" data-tooltip="Bold (Ctrl/Cmd+B)">B</button>
+                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-italic" data-command="italic" title="Italic (Ctrl+I)" aria-label="Italic" data-tooltip="Italic (Ctrl/Cmd+I)">I</button>
+                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-underline" data-command="underline" title="Underline (Ctrl+U)" aria-label="Underline" data-tooltip="Underline (Ctrl/Cmd+U)">U</button>
+                        <button class="toolbar-btn toolbar-btn-text toolbar-btn-strike" data-command="strikeThrough" title="Strikethrough" aria-label="Strikethrough" data-tooltip="Strikethrough">S</button>
                     </div>
 
                     <div class="toolbar-divider" aria-hidden="true"></div>
@@ -132,7 +132,7 @@
                     <div class="toolbar-group">
                         <div class="toolbar-select-wrap">
                             <select class="toolbar-select" data-command="formatBlock"
-                                    title="Text style" aria-label="Text style">
+                                    title="Text style" aria-label="Text style" data-tooltip="Text style">
                                 <option value="">Normal</option>
                                 <option value="h1">Heading 1</option>
                                 <option value="h2">Heading 2</option>
@@ -147,13 +147,13 @@
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
                     <div class="toolbar-group" role="group" aria-label="Lists and blocks">
-                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertUnorderedList" title="Bullet list" aria-label="Bullet list">
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertUnorderedList" title="Bullet list" aria-label="Bullet list" data-tooltip="Bullet list">
                             <i class="ph ph-list-bullets"></i>
                         </button>
-                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list" data-tooltip="Numbered list">
                             <i class="ph ph-list-numbers"></i>
                         </button>
-                        <button class="toolbar-btn toolbar-btn-icon" data-command="blockquote" title="Blockquote" aria-label="Blockquote">
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="blockquote" title="Blockquote" aria-label="Blockquote" data-tooltip="Blockquote">
                             <i class="ph ph-quotes"></i>
                         </button>
                     </div>
@@ -161,16 +161,16 @@
                     <div class="toolbar-divider" aria-hidden="true"></div>
 
                     <div class="toolbar-group" role="group" aria-label="Insert elements">
-                        <button class="toolbar-btn toolbar-btn-icon" data-command="createLink" title="Insert link (Ctrl+K)" aria-label="Insert link">
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="createLink" title="Insert link (Ctrl+K)" aria-label="Insert link" data-tooltip="Insert link (Ctrl/Cmd+K)">
                             <i class="ph ph-link-simple"></i>
                         </button>
-                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertImage" title="Insert image" aria-label="Insert image">
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertImage" title="Insert image" aria-label="Insert image" data-tooltip="Insert image">
                             <i class="ph ph-image-square"></i>
                         </button>
-                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertCode" title="Inline code" aria-label="Inline code">
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertCode" title="Inline code" aria-label="Inline code" data-tooltip="Inline code">
                             <i class="ph ph-code"></i>
                         </button>
-                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertHR" title="Horizontal rule" aria-label="Horizontal rule">
+                        <button class="toolbar-btn toolbar-btn-icon" data-command="insertHR" title="Horizontal rule" aria-label="Horizontal rule" data-tooltip="Horizontal rule">
                             <i class="ph ph-minus"></i>
                         </button>
                     </div>
@@ -201,12 +201,12 @@
                         <span class="activity-dot" aria-hidden="true"></span>
                     </div>
                     <div class="panel-actions">
-                        <button id="copyBtn" class="btn-primary btn-sm" title="Copy to clipboard">
+                        <button id="copyBtn" class="btn-primary btn-sm" title="Copy to clipboard" data-tooltip="Copy output">
                             <i class="ph ph-copy icon-copy"></i>
                             <i class="ph ph-check icon-check" style="display:none;"></i>
                             <span class="copy-label">Copy</span>
                         </button>
-                        <button id="downloadBtn" class="btn-secondary btn-sm" title="Download file">
+                        <button id="downloadBtn" class="btn-secondary btn-sm" title="Download file" data-tooltip="Download output">
                             <i class="ph ph-download-simple"></i>
                             Download
                         </button>
@@ -231,7 +231,7 @@
 
     <!-- ==================== SETTINGS MODAL ==================== -->
     <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <div class="modal-content">
+        <div class="modal-content modal-large">
                 <div class="modal-header">
                     <div class="modal-header-left">
                         <div class="modal-icon">
@@ -244,6 +244,12 @@
                 </button>
             </div>
             <div class="modal-body">
+                <div class="modal-tabs" role="tablist" aria-label="Settings sections">
+                    <button class="modal-tab active" id="settingsTabBtn" data-settings-tab-trigger="settings" role="tab" aria-selected="true" aria-controls="settingsTabPanel">Settings</button>
+                    <button class="modal-tab" id="referenceTabBtn" data-settings-tab-trigger="reference" role="tab" aria-selected="false" aria-controls="referenceTabPanel">Help &amp; Reference</button>
+                </div>
+
+                <section class="modal-tab-panel active" id="settingsTabPanel" data-settings-tab-panel="settings" role="tabpanel" aria-labelledby="settingsTabBtn">
                 <div class="settings-list">
 
                     <!-- Real-time conversion -->
@@ -352,26 +358,9 @@
                     </div>
 
                 </div>
-            </div>
-        </div>
-    </div>
+                </section>
 
-    <!-- ==================== HELP MODAL ==================== -->
-    <div id="helpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-        <div class="modal-content modal-large">
-                <div class="modal-header">
-                    <div class="modal-header-left">
-                        <div class="modal-icon">
-                        <i class="ph ph-question"></i>
-                    </div>
-                    <h2 id="helpTitle">Help &amp; Reference</h2>
-                </div>
-                <button class="modal-close close-btn" aria-label="Close help">
-                    <i class="ph ph-x"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-
+                <section class="modal-tab-panel" id="referenceTabPanel" data-settings-tab-panel="reference" role="tabpanel" aria-labelledby="referenceTabBtn">
                 <div class="help-section">
                     <h3>How to use</h3>
                     <ol class="steps-list">
@@ -421,8 +410,9 @@
                     <h3>About</h3>
                     <p>A standalone, privacy-focused converter that runs entirely in your browser. No data is sent to any external server. Works offline after the initial page load.</p>
                     <p>Made with ❤️ by <a href="https://aditya.pandya.co/" target="_blank" rel="noopener noreferrer">Aditya Pandya</a>.</p>
+                    <p class="about-website">Website: <span>https://aditya.pandya.co/</span></p>
                 </div>
-
+                </section>
             </div>
         </div>
     </div>
