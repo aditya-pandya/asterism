@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rich Text ⇄ Markdown</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title>Inkdown</title>
+    <link id="appFavicon" rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles.css">
 
     <!-- Highlight.js themes -->
@@ -44,16 +44,11 @@
     <header class="app-header">
         <div class="header-content">
             <div class="header-brand">
-                <!-- Logo badge -->
-                <div class="logo-badge" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Markdown M symbol in white -->
-                        <path d="M2 15V5l3.5 5L9 5v10" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 15V5" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-                        <path d="M12 10l4 5V5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                <img id="logoBadge" class="logo-badge" src="assets/inkdown-mark.svg" alt="Inkdown logo" width="40" height="40">
+                <div class="brand-lockup">
+                    <span class="brand-kicker">Rich Text <span>⇄</span> Markdown</span>
+                    <span class="header-title">Inkdown</span>
                 </div>
-                <span class="header-title">Rich Text <span>⇄</span> Markdown</span>
             </div>
 
             <div class="header-actions">
@@ -77,6 +72,12 @@
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                     </svg>
+                    <svg class="icon-system" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="12" rx="2"/>
+                        <path d="M8 20h8"/>
+                        <path d="M12 16v4"/>
+                    </svg>
                 </button>
 
                 <!-- Settings -->
@@ -88,15 +89,6 @@
                     </svg>
                 </button>
 
-                <!-- Help -->
-                <button id="helpBtn" class="btn-icon" title="Help &amp; Reference" aria-label="Help">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
-                </button>
             </div>
         </div>
     </header>
@@ -109,11 +101,11 @@
             <button id="rtToMdBtn" class="toggle-btn active" data-direction="rtToMd" aria-pressed="true">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
+                    <path d="M4 7h7"/>
+                    <path d="M4 12h9"/>
+                    <path d="M4 17h7"/>
+                    <path d="M14 8l4 4-4 4"/>
+                    <path d="M18 12h-4"/>
                 </svg>
                 <span class="btn-label">Rich Text → Markdown</span>
             </button>
@@ -124,10 +116,11 @@
             <button id="mdToRtBtn" class="toggle-btn" data-direction="mdToRt" aria-pressed="false">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-                    <polyline points="13 2 13 9 20 9"/>
-                    <line x1="9" y1="14" x2="15" y2="14"/>
-                    <line x1="9" y1="18" x2="15" y2="18"/>
+                    <path d="M7 8l-3 4 3 4"/>
+                    <path d="M10 19l4-14"/>
+                    <path d="M17 8l3 4-3 4"/>
+                    <path d="M11 7h9"/>
+                    <path d="M13 17h7"/>
                 </svg>
                 <span class="btn-label">Markdown → Rich Text</span>
             </button>
@@ -209,16 +202,29 @@
 
                     <div class="toolbar-group">
                         <div class="toolbar-select-wrap">
-                            <select class="toolbar-select" data-command="formatBlock"
-                                    title="Text style" aria-label="Text style">
-                                <option value="">Normal</option>
-                                <option value="h1">Heading 1</option>
-                                <option value="h2">Heading 2</option>
-                                <option value="h3">Heading 3</option>
-                                <option value="h4">Heading 4</option>
-                                <option value="h5">Heading 5</option>
-                                <option value="h6">Heading 6</option>
-                            </select>
+                            <div id="formatPicker" class="toolbar-format-picker">
+                                <button id="formatPickerBtn" class="toolbar-format-btn" type="button"
+                                        title="Text style" aria-label="Text style" aria-haspopup="listbox"
+                                        aria-expanded="false" aria-controls="formatPickerDropdown">
+                                    <span id="formatPickerLabel" class="format-picker-label">Normal</span>
+                                    <svg class="format-picker-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                         aria-hidden="true">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </button>
+
+                                <ul id="formatPickerDropdown" class="format-picker-dropdown" role="listbox"
+                                    tabindex="-1" aria-label="Text style">
+                                    <li id="formatOptionNormal" role="option" tabindex="-1" data-format-value="p" aria-selected="true">Normal</li>
+                                    <li id="formatOptionH1" role="option" tabindex="-1" data-format-value="h1" aria-selected="false">Heading 1</li>
+                                    <li id="formatOptionH2" role="option" tabindex="-1" data-format-value="h2" aria-selected="false">Heading 2</li>
+                                    <li id="formatOptionH3" role="option" tabindex="-1" data-format-value="h3" aria-selected="false">Heading 3</li>
+                                    <li id="formatOptionH4" role="option" tabindex="-1" data-format-value="h4" aria-selected="false">Heading 4</li>
+                                    <li id="formatOptionH5" role="option" tabindex="-1" data-format-value="h5" aria-selected="false">Heading 5</li>
+                                    <li id="formatOptionH6" role="option" tabindex="-1" data-format-value="h6" aria-selected="false">Heading 6</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
 
@@ -295,9 +301,8 @@
                 <!-- Rich Text Editor (RT→MD mode) -->
                 <div id="richTextEditor" class="rich-text-editor"
                      contenteditable="true" spellcheck="true"
-                     role="textbox" aria-multiline="true" aria-label="Rich text input">
-                    <p>Start typing or paste your rich text here…</p>
-                </div>
+                     role="textbox" aria-multiline="true" aria-label="Rich text input"
+                     data-placeholder="Start typing or paste your rich text here…"></div>
 
                 <!-- Markdown Editor (MD→RT mode) -->
                 <textarea id="markdownInput" class="markdown-editor" spellcheck="false"
@@ -386,6 +391,12 @@
                 </button>
             </div>
             <div class="modal-body">
+                <div class="modal-tabs" role="tablist" aria-label="Settings sections">
+                    <button class="modal-tab active" id="settingsTabBtn" data-settings-tab-trigger="settings" role="tab" aria-selected="true" aria-controls="settingsTabPanel">Settings</button>
+                    <button class="modal-tab" id="referenceTabBtn" data-settings-tab-trigger="reference" role="tab" aria-selected="false" aria-controls="referenceTabPanel">Help &amp; Reference</button>
+                </div>
+
+                <section class="modal-tab-panel active" id="settingsTabPanel" data-settings-tab-panel="settings" role="tabpanel" aria-labelledby="settingsTabBtn">
                 <div class="settings-list">
 
                     <!-- Real-time conversion -->
@@ -434,12 +445,79 @@
                     <div class="setting-row">
                         <div class="setting-info">
                             <span class="setting-name">Theme</span>
-                            <span class="setting-desc">Color scheme preference</span>
-                            <select id="themeSelect" class="setting-select">
+                            <span class="setting-desc">Choose a presentation mode first, then a palette family.</span>
+                            <span class="theme-section-label">Mode</span>
+                            <select id="themeModeSelect" class="setting-select visually-hidden" aria-hidden="true" tabindex="-1">
                                 <option value="light">Light</option>
                                 <option value="dark">Dark</option>
-                                <option value="auto">Auto (System)</option>
+                                <option value="system">System</option>
                             </select>
+                            <div class="theme-mode-group" role="group" aria-label="Theme mode">
+                                <button type="button" class="theme-mode-option" data-theme-mode-value="light">Light</button>
+                                <button type="button" class="theme-mode-option" data-theme-mode-value="dark">Dark</button>
+                                <button type="button" class="theme-mode-option" data-theme-mode-value="system">System</button>
+                            </div>
+                            <span class="theme-section-label">Palette</span>
+                            <select id="themePaletteSelect" class="setting-select visually-hidden" aria-hidden="true" tabindex="-1">
+                                <option value="pure-black">Pure Black / White</option>
+                                <option value="black-ledger">Black Ledger</option>
+                                <option value="copper-press">Copper Press</option>
+                                <option value="graphite-modern">Graphite Modern</option>
+                                <option value="ember-manuscript">Ember Manuscript</option>
+                                <option value="ultramarine-margin">Ultramarine Margin</option>
+                                <option value="verdant-notes">Verdant Notes</option>
+                            </select>
+                            <div class="theme-palette-grid" aria-label="Theme palette">
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="pure-black" style="--preview-dark-bg:#000000;--preview-dark-surface:#050505;--preview-light-bg:#faf9f7;--preview-light-surface:#f0efec;--preview-accent:#7c7c7c;--preview-accent-light:#111111;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Pure Black / White</strong><small>Neutral, stark, minimal</small></span>
+                                </button>
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="black-ledger" style="--preview-dark-bg:#000000;--preview-dark-surface:#090909;--preview-light-bg:#fbf5eb;--preview-light-surface:#f2e7d6;--preview-accent:#e2bc74;--preview-accent-light:#b88943;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Black Ledger</strong><small>Warm editorial gold</small></span>
+                                </button>
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="copper-press" style="--preview-dark-bg:#000000;--preview-dark-surface:#0d0806;--preview-light-bg:#fbf4eb;--preview-light-surface:#f2e0ca;--preview-accent:#c48a64;--preview-accent-light:#b97752;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Copper Press</strong><small>Crafted, print-inspired</small></span>
+                                </button>
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="graphite-modern" style="--preview-dark-bg:#000000;--preview-dark-surface:#091018;--preview-light-bg:#f8fafc;--preview-light-surface:#edf2f7;--preview-accent:#8a9bae;--preview-accent-light:#63788f;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Graphite Modern</strong><small>Cool, product-forward</small></span>
+                                </button>
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="ember-manuscript" style="--preview-dark-bg:#000000;--preview-dark-surface:#0d0605;--preview-light-bg:#fff8f4;--preview-light-surface:#fae8df;--preview-accent:#e96c3e;--preview-accent-light:#d65d31;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Ember Manuscript</strong><small>Expressive serif warmth</small></span>
+                                </button>
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="ultramarine-margin" style="--preview-dark-bg:#000000;--preview-dark-surface:#061019;--preview-light-bg:#f9fbff;--preview-light-surface:#edf3ff;--preview-accent:#74a6ff;--preview-accent-light:#5f8fe7;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Ultramarine Margin</strong><small>Electric blue contrast</small></span>
+                                </button>
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="verdant-notes" style="--preview-dark-bg:#010403;--preview-dark-surface:#08100b;--preview-light-bg:#f8fbf7;--preview-light-surface:#ecf1ea;--preview-accent:#78a97f;--preview-accent-light:#5d8b66;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Verdant Notes</strong><small>Calm editorial green</small></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -499,35 +577,9 @@
                     </div>
 
                 </div>
-            </div>
-        </div>
-    </div>
+                </section>
 
-    <!-- ==================== HELP MODAL ==================== -->
-    <div id="helpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <div class="modal-header-left">
-                    <div class="modal-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                            <line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
-                    </div>
-                    <h2 id="helpTitle">Help &amp; Reference</h2>
-                </div>
-                <button class="modal-close close-btn" aria-label="Close help">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6"  y1="6" x2="18" y2="18"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="modal-body">
-
+                <section class="modal-tab-panel" id="referenceTabPanel" data-settings-tab-panel="reference" role="tabpanel" aria-labelledby="referenceTabBtn">
                 <div class="help-section">
                     <h3>How to use</h3>
                     <ol class="steps-list">
@@ -575,9 +627,10 @@
 
                 <div class="help-section">
                     <h3>About</h3>
-                    <p>A standalone, privacy-focused converter that runs entirely in your browser. No data is sent to any external server. Works offline after the initial page load.</p>
+                    <p>Inkdown is a standalone, privacy-focused converter that runs entirely in your browser. No data is sent to any external server, and it works offline after the initial page load.</p>
+                    <p>Made with ❤️ by <a href="https://aditya.pandya.co/" target="_blank" rel="noopener noreferrer">Aditya Pandya</a>.</p>
                 </div>
-
+                </section>
             </div>
         </div>
     </div>

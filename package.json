@@ -1,0 +1,43 @@
+{
+  "name": "inkdown",
+  "productName": "Inkdown",
+  "version": "1.1.0",
+  "description": "A premium, privacy-first rich text and Markdown converter for the browser and macOS desktop.",
+  "author": "Aditya Pandya",
+  "license": "MIT",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack:mac": "electron-builder --mac dir --arm64",
+    "dist:mac": "electron-builder --mac dmg zip --arm64"
+  },
+  "build": {
+    "appId": "com.apandya.inkdown",
+    "productName": "Inkdown",
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "files": [
+      "electron/**/*",
+      "assets/**/*",
+      "index.html",
+      "styles.css",
+      "app.js",
+      "clear-storage.html",
+      "favicon.svg",
+      "vendor/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
+      "target": [
+        "dmg",
+        "zip",
+        "dir"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "37.10.3",
+    "electron-builder": "26.8.1"
+  }
+}
