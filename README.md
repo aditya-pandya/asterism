@@ -14,11 +14,18 @@ No account, no server, no build step. Open the file, paste your content, and con
 
 ## How to Use It
 
-1. Clone or download this repository.
+1. Clone or download the `Inkdown` repository.
 2. Open [index.html](./index.html) in any modern browser.
 3. Choose a conversion direction.
 4. Paste or type your content.
 5. Copy or download the output.
+
+## Clone
+
+```bash
+git clone https://github.com/aditya-pandya/Inkdown.git
+cd Inkdown
+```
 
 ## Features
 

@@ -5,6 +5,14 @@
   "description": "A premium, privacy-first rich text and Markdown converter for the browser and macOS desktop.",
   "author": "Aditya Pandya",
   "license": "MIT",
+  "homepage": "https://github.com/aditya-pandya/Inkdown",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aditya-pandya/Inkdown.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aditya-pandya/Inkdown/issues"
+  },
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
