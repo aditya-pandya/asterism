@@ -346,7 +346,6 @@ function initializeApp() {
     // Setup theme toggle button in header
     setupThemeToggle();
 
-    console.log(`${APP_NAME} initialized`);
 }
 
 function getRichTextEditor() {
@@ -1242,6 +1241,11 @@ function convertMarkdownToRichText() {
 // ===========================
 
 function clearInput() {
+    const hasContent = AppState.conversionMode === 'rtToMd'
+        ? !isRichTextEditorEmpty()
+        : document.getElementById('markdownInput').value.trim() !== '';
+    if (hasContent && !confirm('Clear all input?')) return;
+
     if (AppState.conversionMode === 'rtToMd') {
         document.getElementById('richTextEditor').innerHTML = '';
         document.getElementById('markdownOutput').value = '';
@@ -1295,7 +1299,10 @@ async function pasteFromClipboard() {
             document.execCommand('insertText', false, text);
         } else {
             const input = document.getElementById('markdownInput');
-            input.value = text;
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            input.value = input.value.slice(0, start) + text + input.value.slice(end);
+            input.selectionStart = input.selectionEnd = start + text.length;
             handleMarkdownInput();
         }
         showToast('Pasted from clipboard', 'success');
@@ -1904,9 +1911,10 @@ function showToast(message, type = 'info') {
     const icon = TOAST_ICONS[type] || TOAST_ICONS.info;
     toast.innerHTML = `
         <div class="toast-icon">${icon}</div>
-        <span class="toast-message">${message}</span>
+        <span class="toast-message"></span>
         <div class="toast-progress"></div>
     `;
+    toast.querySelector('.toast-message').textContent = message;
 
     container.appendChild(toast);
 
@@ -2022,7 +2030,7 @@ window.addEventListener('beforeunload', (e) => {
 });
 
 // Auto-save periodically
-setInterval(() => {
+AppState.autoSaveIntervalId = setInterval(() => {
     if (AppState.settings.autoSave) {
         saveContent();
     }
