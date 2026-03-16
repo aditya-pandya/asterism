@@ -354,11 +354,13 @@
 
                 <!-- Markdown Output (RT→MD mode) -->
                 <textarea id="markdownOutput" class="markdown-editor" readonly spellcheck="false"
-                          aria-label="Markdown output" aria-readonly="true"></textarea>
+                          aria-label="Markdown output" aria-readonly="true"
+                          placeholder="Your markdown will appear here..."></textarea>
 
                 <!-- Rich Text Preview (MD→RT mode) -->
                 <div id="richTextPreview" class="rich-text-preview"
-                     role="region" aria-label="Rich text preview" aria-live="polite"></div>
+                     role="region" aria-label="Rich text preview" aria-live="polite"
+                     data-placeholder="Your rendered content will appear here..."></div>
 
                 <div class="panel-footer">
                     <span id="outputStats" class="stats"></span>
