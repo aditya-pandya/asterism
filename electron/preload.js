@@ -14,5 +14,13 @@ contextBridge.exposeInMainWorld('desktopBridge', {
     return () => {
       ipcRenderer.removeListener('menu:action', handler);
     };
+  },
+  onOpenFile: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const handler = (_event, filePath) => callback(filePath);
+    ipcRenderer.on('open-file', handler);
+    return () => {
+      ipcRenderer.removeListener('open-file', handler);
+    };
   }
 });

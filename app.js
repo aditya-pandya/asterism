@@ -3,15 +3,21 @@
 // ===========================
 
 const AppState = {
-    conversionMode: 'rtToMd', // 'rtToMd' or 'mdToRt'
+    conversionMode: 'rtToMd', // 'rtToMd', 'mdToRt', or 'mdReader'
     settings: {
         realtimeConversion: true,
         debounceDelay: 300,
         markdownFlavor: 'gfm',
         syntaxHighlighting: true,
         themeMode: 'system',
-        themePalette: 'black-ledger',
-        autoSave: true
+        themePalette: 'obsidian',
+        autoSave: true,
+        contentFont: 'theme',
+        trueDark: false,
+        contentFontSize: 15,
+        contentFontWeight: 400,
+        contentLineHeight: 1.75,
+        contentMaxWidth: 1200
     },
     debounceTimer: null,
     activeModalId: null,
@@ -22,7 +28,7 @@ const AppState = {
 };
 
 const DEFAULT_THEME_MODE = 'system';
-const DEFAULT_THEME_PALETTE = 'black-ledger';
+const DEFAULT_THEME_PALETTE = 'obsidian';
 const APP_NAME = 'Inkdown';
 const STORAGE_KEYS = {
     settings: 'inkdown_settings',
@@ -31,30 +37,45 @@ const STORAGE_KEYS = {
     legacyContent: 'rtmd_content'
 };
 const THEME_PALETTES = new Set([
-    'pure-black',
-    'black-ledger',
-    'copper-press',
-    'graphite-modern',
-    'ember-manuscript',
-    'ultramarine-margin',
-    'verdant-notes'
+    'obsidian',
+    'warm-clay',
+    'arctic',
+    'ink-wash',
+    'navy-orange',
+    'teal-rose',
+    'indigo-gold',
+    'sunset-dusk',
+    'midnight-sun'
 ]);
 
 const LEGACY_THEME_PALETTE_MAP = {
-    'monochrome-signal': 'verdant-notes'
+    'monochrome-signal': 'obsidian',
+    'pure-black': 'obsidian',
+    'black-ledger': 'obsidian',
+    'copper-press': 'warm-clay',
+    'graphite-modern': 'arctic',
+    'ember-manuscript': 'warm-clay',
+    'ultramarine-margin': 'arctic',
+    'verdant-notes': 'obsidian',
+    'neon-horizon': 'teal-rose',
+    'solar-flare': 'navy-orange',
+    'aurora': 'teal-rose',
+    'candy-dusk': 'sunset-dusk'
 };
 
 const THEME_MODES = new Set(['light', 'dark', 'system']);
 let syncFormatPickerWithSelection = () => {};
 
 const THEME_PALETTE_LABELS = {
-    'pure-black': 'Pure Black / White',
-    'black-ledger': 'Black Ledger',
-    'copper-press': 'Copper Press',
-    'graphite-modern': 'Graphite Modern',
-    'ember-manuscript': 'Ember Manuscript',
-    'ultramarine-margin': 'Ultramarine Margin',
-    'verdant-notes': 'Verdant Notes'
+    'obsidian': 'Obsidian',
+    'warm-clay': 'Warm Clay',
+    'arctic': 'Arctic',
+    'ink-wash': 'Ink Wash',
+    'navy-orange': 'Navy & Orange',
+    'teal-rose': 'Teal & Rose',
+    'indigo-gold': 'Indigo & Gold',
+    'sunset-dusk': 'Sunset Dusk',
+    'midnight-sun': 'Midnight Sun'
 };
 
 const THEME_MODE_LABELS = {
@@ -63,11 +84,19 @@ const THEME_MODE_LABELS = {
     system: 'System'
 };
 
+const CONTENT_FONTS = {
+    'theme': null,
+    'manrope': "'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    'cormorant': "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+    'lora': "'Lora', Georgia, 'Times New Roman', serif",
+    'roboto-slab': "'Roboto Slab', 'Rockwell', 'Courier New', serif"
+};
+
 const LEGACY_THEME_MAP = {
-    light: { themeMode: 'light', themePalette: 'black-ledger' },
-    dark: { themeMode: 'dark', themePalette: 'black-ledger' },
-    auto: { themeMode: 'system', themePalette: 'black-ledger' },
-    black: { themeMode: 'dark', themePalette: 'pure-black' }
+    light: { themeMode: 'light', themePalette: 'obsidian' },
+    dark: { themeMode: 'dark', themePalette: 'obsidian' },
+    auto: { themeMode: 'system', themePalette: 'obsidian' },
+    black: { themeMode: 'dark', themePalette: 'obsidian' }
 };
 
 function normalizeThemePalette(palette) {
@@ -336,6 +365,8 @@ function initializeApp() {
     setupEventListeners();
     setupDesktopIntegration();
     setupGlobalShortcuts();
+    setupReaderDragDrop();
+    setupGlobalFileDrop();
 
     // Apply initial theme
     applyTheme();
@@ -603,7 +634,12 @@ function setupEventListeners() {
     // Conversion mode toggle
     document.getElementById('rtToMdBtn').addEventListener('click', () => setConversionMode('rtToMd'));
     document.getElementById('mdToRtBtn').addEventListener('click', () => setConversionMode('mdToRt'));
-    
+    document.getElementById('mdReaderBtn').addEventListener('click', () => setConversionMode('mdReader'));
+    document.getElementById('readerEditBtn').addEventListener('click', openReaderEditor);
+    document.getElementById('readerPasteBtn').addEventListener('click', pasteToReader);
+    document.getElementById('readerOpenBtn').addEventListener('click', openFileToReader);
+    document.getElementById('readerCloseBtn').addEventListener('click', closeReaderFile);
+
     // Rich text editor
     const richTextEditor = document.getElementById('richTextEditor');
     richTextEditor.addEventListener('input', handleRichTextInput);
@@ -616,6 +652,7 @@ function setupEventListeners() {
     const markdownInput = document.getElementById('markdownInput');
     markdownInput.addEventListener('input', handleMarkdownInput);
     markdownInput.addEventListener('paste', handlePaste);
+    markdownInput.addEventListener('keydown', handleMarkdownShortcuts);
     
     // Toolbar buttons
     setupToolbarListeners();
@@ -893,6 +930,79 @@ function setupSettingsListeners() {
         });
     });
     
+    // Content font (visual grid)
+    document.querySelectorAll('[data-font-value]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const fontValue = button.dataset.fontValue;
+            if (!fontValue) return;
+            AppState.settings.contentFont = fontValue;
+            document.getElementById('contentFontSelect').value = fontValue;
+            saveSettings();
+            applyTheme();
+            updateFontPickerSelection(fontValue);
+        });
+    });
+
+    // Keep hidden select in sync
+    document.getElementById('contentFontSelect').addEventListener('change', (e) => {
+        AppState.settings.contentFont = e.target.value;
+        saveSettings();
+        applyTheme();
+        updateFontPickerSelection(e.target.value);
+    });
+
+    // Font size
+    const fontSizeSlider = document.getElementById('contentFontSize');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+    fontSizeSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        fontSizeValue.textContent = `${value}px`;
+        AppState.settings.contentFontSize = value;
+        saveSettings();
+        applyTheme();
+    });
+
+    // Font weight
+    const WEIGHT_LABELS = { 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semi-Bold' };
+    const fontWeightSlider = document.getElementById('contentFontWeight');
+    const fontWeightValue = document.getElementById('fontWeightValue');
+    fontWeightSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        fontWeightValue.textContent = WEIGHT_LABELS[value] || value;
+        AppState.settings.contentFontWeight = value;
+        saveSettings();
+        applyTheme();
+    });
+
+    // Line height
+    const lineHeightSlider = document.getElementById('contentLineHeight');
+    const lineHeightValue = document.getElementById('lineHeightValue');
+    lineHeightSlider.addEventListener('input', (e) => {
+        const value = parseFloat(e.target.value);
+        lineHeightValue.textContent = value.toFixed(1);
+        AppState.settings.contentLineHeight = value;
+        saveSettings();
+        applyTheme();
+    });
+
+    // Content max width
+    const maxWidthSlider = document.getElementById('contentMaxWidth');
+    const maxWidthValue = document.getElementById('maxWidthValue');
+    maxWidthSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        maxWidthValue.textContent = value >= 1200 ? 'Full' : `${value}px`;
+        AppState.settings.contentMaxWidth = value;
+        saveSettings();
+        applyTheme();
+    });
+
+    // True dark mode
+    document.getElementById('trueDark').addEventListener('change', (e) => {
+        AppState.settings.trueDark = e.target.checked;
+        saveSettings();
+        applyTheme();
+    });
+
     // Auto-save
     document.getElementById('autoSave').addEventListener('change', (e) => {
         AppState.settings.autoSave = e.target.checked;
@@ -933,36 +1043,238 @@ function setConversionMode(mode) {
     const markdownInput = document.getElementById('markdownInput');
     const markdownOutput = document.getElementById('markdownOutput');
     const richTextPreview = document.getElementById('richTextPreview');
-    
+    const readerPanel = document.getElementById('readerPanel');
+    const inputPanel = document.querySelector('.editor-panel.input-panel');
+    const outputPanel = document.querySelector('.editor-panel.output-panel');
+
     if (mode === 'rtToMd') {
         // Rich Text to Markdown
         document.getElementById('inputLabel').textContent = 'Rich Text Input';
         document.getElementById('outputLabel').textContent = 'Markdown Output';
-        
+
         richTextToolbar.classList.remove('hidden');
         richTextEditor.classList.remove('hidden');
         markdownInput.classList.add('hidden');
         markdownOutput.classList.remove('hidden');
         richTextPreview.classList.add('hidden');
-        
+
+        inputPanel.style.display = '';
+        outputPanel.style.display = '';
+        readerPanel.style.display = 'none';
+
         // Convert current content
         convertRichTextToMarkdown();
-    } else {
+    } else if (mode === 'mdToRt') {
         // Markdown to Rich Text
         document.getElementById('inputLabel').textContent = 'Markdown Input';
         document.getElementById('outputLabel').textContent = 'Rich Text Preview';
-        
+
         richTextToolbar.classList.add('hidden');
         richTextEditor.classList.add('hidden');
         markdownInput.classList.remove('hidden');
         markdownOutput.classList.add('hidden');
         richTextPreview.classList.remove('hidden');
-        
+
+        inputPanel.style.display = '';
+        outputPanel.style.display = '';
+        readerPanel.style.display = 'none';
+
         // Convert current content
         convertMarkdownToRichText();
+    } else if (mode === 'mdReader') {
+        // Reader mode — full-width rendered view
+        document.getElementById('inputLabel').textContent = 'Markdown Reader';
+        document.getElementById('outputLabel').textContent = 'Reader';
+
+        richTextToolbar.classList.add('hidden');
+        richTextEditor.classList.add('hidden');
+        markdownInput.classList.add('hidden');
+        markdownOutput.classList.add('hidden');
+        richTextPreview.classList.add('hidden');
+
+        // Hide both editor panels, show reader panel
+        inputPanel.style.display = 'none';
+        outputPanel.style.display = 'none';
+        readerPanel.style.display = '';
+
+        // Render current markdown content
+        renderReaderContent();
     }
-    
+
     updateStats();
+}
+
+// ===========================
+// Markdown Reader Mode
+// ===========================
+
+function renderReaderContent() {
+    const readerContent = document.getElementById('readerContent');
+    const readerPanel = document.getElementById('readerPanel');
+    const markdownText = document.getElementById('markdownInput').value;
+    const hasContent = markdownText.trim().length > 0;
+
+    readerPanel.classList.toggle('has-content', hasContent);
+
+    if (!hasContent) {
+        readerContent.innerHTML = '';
+        updateReaderStats('');
+        return;
+    }
+    const html = marked.parse(markdownText);
+    readerContent.innerHTML = sanitizeHtml(html);
+
+    if (AppState.settings.syntaxHighlighting && typeof hljs !== 'undefined') {
+        readerContent.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    }
+    updateReaderStats(markdownText);
+}
+
+function updateReaderStats(text) {
+    const statsEl = document.getElementById('readerStats');
+    if (!statsEl) return;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    statsEl.textContent = `${words} words, ${chars} characters`;
+}
+
+function openReaderEditor() {
+    setConversionMode('mdToRt');
+    document.getElementById('markdownInput').focus();
+}
+
+function closeReaderFile() {
+    document.getElementById('markdownInput').value = '';
+    document.getElementById('readerContent').innerHTML = '';
+    document.getElementById('readerPanel').classList.remove('has-content');
+    updateReaderStats('');
+}
+
+async function pasteToReader() {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('markdownInput').value = text;
+        renderReaderContent();
+        showToast('Pasted from clipboard', 'success');
+    } catch {
+        showToast('Failed to paste from clipboard', 'error');
+    }
+}
+
+async function openFileToReader() {
+    if (window.desktopBridge?.openFile) {
+        const result = await window.desktopBridge.openFile();
+        if (!result || result.canceled) return;
+        document.getElementById('markdownInput').value = result.content;
+        if (AppState.conversionMode !== 'mdReader') {
+            setConversionMode('mdReader');
+        } else {
+            renderReaderContent();
+        }
+        showToast(`Opened ${result.name}`, 'success');
+    } else {
+        // Browser fallback: use file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.md,.markdown,.txt';
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (!file) return;
+            const text = await file.text();
+            document.getElementById('markdownInput').value = text;
+            if (AppState.conversionMode !== 'mdReader') {
+                setConversionMode('mdReader');
+            } else {
+                renderReaderContent();
+            }
+            showToast(`Opened ${file.name}`, 'success');
+        };
+        input.click();
+    }
+}
+
+function setupReaderDragDrop() {
+    const readerPanel = document.getElementById('readerPanel');
+    const dropOverlay = document.getElementById('readerDropOverlay');
+    let dragCounter = 0;
+
+    readerPanel.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragCounter++;
+        dropOverlay.classList.add('active');
+    });
+
+    readerPanel.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dragCounter--;
+        if (dragCounter <= 0) {
+            dragCounter = 0;
+            dropOverlay.classList.remove('active');
+        }
+    });
+
+    readerPanel.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    });
+
+    readerPanel.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        dropOverlay.classList.remove('active');
+
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['md', 'markdown', 'txt'].includes(ext)) {
+            showToast('Only markdown and text files are supported', 'error');
+            return;
+        }
+
+        const text = await file.text();
+        document.getElementById('markdownInput').value = text;
+        renderReaderContent();
+        showToast(`Opened ${file.name}`, 'success');
+    });
+}
+
+function setupGlobalFileDrop() {
+    const body = document.body;
+    let dragCounter = 0;
+
+    body.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragCounter++;
+    });
+
+    body.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dragCounter--;
+    });
+
+    body.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    });
+
+    body.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['md', 'markdown', 'txt'].includes(ext)) return;
+
+        const text = await file.text();
+        document.getElementById('markdownInput').value = text;
+        setConversionMode('mdReader');
+        showToast(`Opened ${file.name}`, 'success');
+    });
 }
 
 // ===========================
@@ -1125,6 +1437,46 @@ function handleKeyboardShortcuts(e) {
     }
 }
 
+function handleMarkdownShortcuts(e) {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const key = e.key.toLowerCase();
+    const wraps = { b: '**', i: '_', u: '++', k: null };
+    if (!(key in wraps)) return;
+
+    e.preventDefault();
+    const textarea = e.target;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selected = text.slice(start, end);
+
+    if (key === 'k') {
+        const linkText = selected || 'link text';
+        const replacement = `[${linkText}](url)`;
+        textarea.setRangeText(replacement, start, end, 'select');
+        if (!selected) {
+            textarea.selectionStart = start + 1;
+            textarea.selectionEnd = start + 1 + linkText.length;
+        }
+    } else {
+        const wrap = wraps[key];
+        const unwrapped = selected.startsWith(wrap) && selected.endsWith(wrap);
+        if (unwrapped) {
+            const inner = selected.slice(wrap.length, -wrap.length);
+            textarea.setRangeText(inner, start, end, 'select');
+            textarea.selectionStart = start;
+            textarea.selectionEnd = start + inner.length;
+        } else {
+            const replacement = `${wrap}${selected}${wrap}`;
+            textarea.setRangeText(replacement, start, end, 'select');
+            textarea.selectionStart = start + wrap.length;
+            textarea.selectionEnd = end + wrap.length;
+        }
+    }
+
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 // ===========================
 // Input Handlers
 // ===========================
@@ -1157,14 +1509,37 @@ function debounceConversion(callback) {
 }
 
 function handlePaste(e) {
-    // Allow default paste behavior
-    setTimeout(() => {
-        if (AppState.conversionMode === 'rtToMd') {
-            handleRichTextInput();
+    if (AppState.conversionMode === 'rtToMd') {
+        e.preventDefault();
+        const html = e.clipboardData.getData('text/html');
+        if (html) {
+            const container = document.createElement('div');
+            container.innerHTML = html;
+            const ALLOWED_STYLES = ['font-weight', 'font-style', 'text-decoration'];
+            container.querySelectorAll('*').forEach(el => {
+                if (el.style && el.style.length) {
+                    const kept = {};
+                    ALLOWED_STYLES.forEach(prop => {
+                        const val = el.style.getPropertyValue(prop);
+                        if (val) kept[prop] = val;
+                    });
+                    el.removeAttribute('style');
+                    Object.entries(kept).forEach(([prop, val]) => {
+                        el.style.setProperty(prop, val);
+                    });
+                }
+            });
+            document.execCommand('insertHTML', false, container.innerHTML);
         } else {
-            handleMarkdownInput();
+            const text = e.clipboardData.getData('text/plain');
+            document.execCommand('insertText', false, text);
         }
-    }, 10);
+        handleRichTextInput();
+    } else {
+        setTimeout(() => {
+            handleMarkdownInput();
+        }, 10);
+    }
 }
 
 // ===========================
@@ -1272,21 +1647,67 @@ ${bodyHtml}
 </html>`;
 }
 
+function deriveFilenameFromContent(mode) {
+    let title = '';
+
+    if (mode === 'rtToMd') {
+        const editor = document.getElementById('richTextEditor');
+        const heading = editor.querySelector('h1, h2, h3, h4, h5, h6');
+        if (heading && heading.textContent.trim()) {
+            title = heading.textContent.trim().slice(0, 60);
+        } else {
+            const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) {
+                const text = walker.currentNode.textContent.trim();
+                if (text) {
+                    title = text.slice(0, 60);
+                    break;
+                }
+            }
+        }
+    } else {
+        const input = document.getElementById('markdownInput').value;
+        const lines = input.split('\n');
+        const headingLine = lines.find(l => /^#{1,6}\s/.test(l.trim()));
+        if (headingLine) {
+            title = headingLine.trim().replace(/^#+\s*/, '').slice(0, 60);
+        } else {
+            const nonEmpty = lines.find(l => l.trim().length > 0);
+            if (nonEmpty) {
+                title = nonEmpty.trim().slice(0, 60);
+            }
+        }
+    }
+
+    let sanitized = title
+        .trim()
+        .replace(/[^a-zA-Z0-9 \-_]/g, '')
+        .replace(/ /g, '-')
+        .replace(/-{2,}/g, '-')
+        .toLowerCase()
+        .slice(0, 60);
+
+    if (!sanitized) {
+        sanitized = 'inkdown-output';
+    }
+
+    const ext = mode === 'rtToMd' ? '.md' : '.html';
+    return sanitized + ext;
+}
+
 function getOutputPayload() {
     let content;
-    let filename;
     let mimeType;
 
     if (AppState.conversionMode === 'rtToMd') {
         content = document.getElementById('markdownOutput').value;
-        filename = 'inkdown-output.md';
         mimeType = 'text/markdown';
     } else {
         content = buildStandaloneHtmlDocument(document.getElementById('richTextPreview').innerHTML);
-        filename = 'inkdown-output.html';
         mimeType = 'text/html';
     }
 
+    const filename = deriveFilenameFromContent(AppState.conversionMode);
     return { content, filename, mimeType };
 }
 
@@ -1453,6 +1874,14 @@ function setupDesktopIntegration() {
             await downloadOutput();
         }
     });
+
+    if (window.desktopBridge?.onOpenFile) {
+        window.desktopBridge.onOpenFile((fileData) => {
+            document.getElementById('markdownInput').value = fileData.content;
+            setConversionMode('mdReader');
+            showToast(`Opened ${fileData.name}`, 'success');
+        });
+    }
 }
 
 async function openDocumentFromDesktop() {
@@ -1490,8 +1919,14 @@ async function openDocumentFromDesktop() {
 // ===========================
 
 function updateStats() {
+    if (AppState.conversionMode === 'mdReader') {
+        const markdownText = document.getElementById('markdownInput').value;
+        updateReaderStats(markdownText);
+        return;
+    }
+
     let inputText, outputText;
-    
+
     if (AppState.conversionMode === 'rtToMd') {
         inputText = getRichTextEditorText();
         outputText = document.getElementById('markdownOutput').value;
@@ -1499,15 +1934,15 @@ function updateStats() {
         inputText = document.getElementById('markdownInput').value;
         outputText = document.getElementById('richTextPreview').innerText;
     }
-    
+
     const inputWords = inputText.trim() ? inputText.trim().split(/\s+/).length : 0;
     const inputChars = inputText.length;
     const outputWords = outputText.trim() ? outputText.trim().split(/\s+/).length : 0;
     const outputChars = outputText.length;
-    
-    document.getElementById('inputStats').textContent = 
+
+    document.getElementById('inputStats').textContent =
         `${inputWords} words, ${inputChars} characters`;
-    document.getElementById('outputStats').textContent = 
+    document.getElementById('outputStats').textContent =
         `${outputWords} words, ${outputChars} characters`;
 }
 
@@ -1643,6 +2078,38 @@ function applyTheme() {
     html.setAttribute('data-theme-palette', themeMeta.palette);
     html.setAttribute('data-theme-mode', themeMeta.mode);
     html.setAttribute('data-theme-source', themeMeta.requestedMode);
+
+    // Capture theme's native font before any override (for the font picker preview)
+    html.style.removeProperty('--font-display');
+    const themeNativeFont = getComputedStyle(html).getPropertyValue('--font-display').trim();
+    html.style.setProperty('--theme-native-font', themeNativeFont);
+
+    // Content font override
+    const selectedFont = AppState.settings.contentFont;
+    const fontStack = CONTENT_FONTS[selectedFont];
+    if (fontStack) {
+        html.style.setProperty('--font-display', fontStack);
+        html.style.setProperty('--content-font-override', fontStack);
+    } else {
+        html.style.removeProperty('--content-font-override');
+    }
+
+    // Font weight
+    const weight = AppState.settings.contentFontWeight;
+    html.style.setProperty('--content-font-weight', String(weight));
+    html.style.setProperty('--content-heading-weight', String(Math.min(weight + 200, 700)));
+
+    // True dark mode
+    html.toggleAttribute('data-true-dark', AppState.settings.trueDark && themeMeta.mode === 'dark');
+
+    // Typography settings
+    html.style.setProperty('--content-font-size', `${AppState.settings.contentFontSize}px`);
+    html.style.setProperty('--content-line-height', String(AppState.settings.contentLineHeight));
+    if (AppState.settings.contentMaxWidth >= 1200) {
+        html.style.removeProperty('--content-max-width');
+    } else {
+        html.style.setProperty('--content-max-width', `${AppState.settings.contentMaxWidth}px`);
+    }
 
     updateHighlightTheme(themeMeta.mode);
     updateThemeToggleState(themeMeta);
@@ -1844,6 +2311,19 @@ function loadSettings() {
         document.getElementById('themeModeSelect').value = AppState.settings.themeMode;
         document.getElementById('themePaletteSelect').value = AppState.settings.themePalette;
         document.getElementById('autoSave').checked = AppState.settings.autoSave;
+        document.getElementById('contentFontSelect').value = AppState.settings.contentFont || 'theme';
+        document.getElementById('trueDark').checked = AppState.settings.trueDark || false;
+        document.getElementById('contentFontSize').value = AppState.settings.contentFontSize || 15;
+        document.getElementById('fontSizeValue').textContent = `${AppState.settings.contentFontSize || 15}px`;
+        const wt = AppState.settings.contentFontWeight || 400;
+        document.getElementById('contentFontWeight').value = wt;
+        document.getElementById('fontWeightValue').textContent = { 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semi-Bold' }[wt] || wt;
+        document.getElementById('contentLineHeight').value = AppState.settings.contentLineHeight || 1.75;
+        document.getElementById('lineHeightValue').textContent = (AppState.settings.contentLineHeight || 1.75).toFixed(1);
+        document.getElementById('contentMaxWidth').value = AppState.settings.contentMaxWidth || 1200;
+        const mw = AppState.settings.contentMaxWidth || 1200;
+        document.getElementById('maxWidthValue').textContent = mw >= 1200 ? 'Full' : `${mw}px`;
+        updateFontPickerSelection(AppState.settings.contentFont || 'theme');
         updateThemeModeSelection(AppState.settings.themeMode);
         updateThemePaletteSelection(AppState.settings.themePalette);
     } catch (error) {
@@ -1974,6 +2454,12 @@ function updateThemeModeSelection(mode) {
         const isSelected = button.dataset.themeModeValue === mode;
         button.classList.toggle('is-selected', isSelected);
         button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    });
+}
+
+function updateFontPickerSelection(selectedFont) {
+    document.querySelectorAll('[data-font-value]').forEach((button) => {
+        button.classList.toggle('is-selected', button.dataset.fontValue === selectedFont);
     });
 }
 

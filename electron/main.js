@@ -4,6 +4,8 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, nativeImage, shell } = requir
 const pkg = require('../package.json');
 const isMac = process.platform === 'darwin';
 
+let deferredFilePath = null;
+
 function getPrimaryWindow() {
   return BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0] || null;
 }
@@ -65,6 +67,22 @@ function createMainWindow() {
   });
 
   mainWindow.loadFile(path.join(app.getAppPath(), 'index.html'));
+
+  mainWindow.webContents.on('did-finish-load', async () => {
+    if (deferredFilePath) {
+      try {
+        const content = await fs.readFile(deferredFilePath, 'utf8');
+        mainWindow.webContents.send('open-file', {
+          filePath: deferredFilePath,
+          name: path.basename(deferredFilePath),
+          content
+        });
+      } catch (err) {
+        console.error('Failed to read deferred file:', err);
+      }
+      deferredFilePath = null;
+    }
+  });
 }
 
 function buildMenu() {
@@ -213,6 +231,21 @@ function registerIpcHandlers() {
   });
 }
 
+app.on('open-file', async (event, filePath) => {
+  event.preventDefault();
+  const win = getPrimaryWindow();
+  if (win && !win.isDestroyed()) {
+    try {
+      const content = await fs.readFile(filePath, 'utf8');
+      win.webContents.send('open-file', { filePath, name: path.basename(filePath), content });
+    } catch (err) {
+      console.error('Failed to read file:', err);
+    }
+  } else {
+    deferredFilePath = filePath;
+  }
+});
+
 app.whenReady().then(() => {
   app.setAboutPanelOptions({
     applicationName: pkg.productName,
@@ -223,6 +256,15 @@ app.whenReady().then(() => {
 
   registerIpcHandlers();
   buildMenu();
+
+  // Check for file argument from CLI / Finder
+  const fileArg = process.argv.find(arg =>
+    !arg.startsWith('-') && /\.(md|markdown|txt|html|htm)$/i.test(arg)
+  );
+  if (fileArg) {
+    deferredFilePath = path.resolve(fileArg);
+  }
+
   createMainWindow();
 
   app.on('activate', () => {

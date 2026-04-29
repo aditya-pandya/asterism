@@ -41,6 +41,20 @@
         "dmg",
         "zip",
         "dir"
+      ],
+      "fileAssociations": [
+        {
+          "ext": ["md", "markdown"],
+          "name": "Markdown Document",
+          "role": "Viewer",
+          "mimeType": "text/markdown"
+        },
+        {
+          "ext": ["txt"],
+          "name": "Text Document",
+          "role": "Viewer",
+          "mimeType": "text/plain"
+        }
       ]
     }
   },

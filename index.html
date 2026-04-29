@@ -56,7 +56,7 @@
                 <button id="themeToggleBtn" class="btn-icon" title="Toggle theme" aria-label="Toggle theme">
                     <!-- Sun (shown in dark mode) -->
                     <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="5"/>
                         <line x1="12" y1="1"  x2="12" y2="3"/>
                         <line x1="12" y1="21" x2="12" y2="23"/>
@@ -69,11 +69,11 @@
                     </svg>
                     <!-- Moon (shown in light mode) -->
                     <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                     </svg>
                     <svg class="icon-system" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="4" width="18" height="12" rx="2"/>
                         <path d="M8 20h8"/>
                         <path d="M12 16v4"/>
@@ -82,8 +82,7 @@
 
                 <!-- Settings -->
                 <button id="settingsBtn" class="btn-icon" title="Settings" aria-label="Settings">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="3"/>
                         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                     </svg>
@@ -124,6 +123,15 @@
                 </svg>
                 <span class="btn-label">Markdown → Rich Text</span>
             </button>
+
+            <button id="mdReaderBtn" class="toggle-btn" data-direction="mdReader" aria-pressed="false">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                <span class="btn-label">Markdown Reader</span>
+            </button>
         </div>
 
         <!-- Editor Panels -->
@@ -134,29 +142,26 @@
                 <div class="panel-header">
                     <div class="panel-label">
                         <!-- Icon swaps depending on mode; handled by JS class -->
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                         </svg>
                         <span id="inputLabel">Rich Text Input</span>
                     </div>
                     <div class="panel-actions">
                         <button id="clearInputBtn" class="btn-ghost btn-sm" title="Clear editor">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"/>
-                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                                <path d="M10 11v6M14 11v6"/>
-                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+                                <path d="M19 6l-.7 12.1a2 2 0 0 1-2 1.9H7.7a2 2 0 0 1-2-1.9L5 6"/>
                             </svg>
                             Clear
                         </button>
                         <button id="pasteBtn" class="btn-ghost btn-sm" title="Paste from clipboard">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/>
+                                <path d="M17 4h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1"/>
+                                <rect x="8" y="2" width="8" height="3" rx="1"/>
                             </svg>
                             Paste
                         </button>
@@ -317,8 +322,8 @@
             <div class="editor-panel output-panel">
                 <div class="panel-header">
                     <div class="panel-label">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                         </svg>
                         <span id="outputLabel">Markdown Output</span>
@@ -327,9 +332,8 @@
                     <div class="panel-actions">
                         <button id="copyBtn" class="btn-primary btn-sm" title="Copy to clipboard">
                             <!-- Default icon -->
-                            <svg class="icon-copy" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-copy">
+                                <rect x="9" y="9" width="13" height="13" rx="2"/>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                             </svg>
                             <!-- Success icon (hidden by default) -->
@@ -341,11 +345,8 @@
                             <span class="copy-label">Copy</span>
                         </button>
                         <button id="downloadBtn" class="btn-secondary btn-sm" title="Download file">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7 10 12 15 17 10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
                             </svg>
                             Download
                         </button>
@@ -364,6 +365,64 @@
 
                 <div class="panel-footer">
                     <span id="outputStats" class="stats"></span>
+                </div>
+            </div>
+
+            <!-- Reader Panel (full width, shown only in mdReader mode) -->
+            <div class="editor-panel reader-panel" id="readerPanel" style="display: none;">
+                <div class="reader-actions" id="readerActions">
+                    <button id="readerOpenBtn" class="btn-ghost btn-sm" title="Open a markdown file">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/>
+                        </svg>
+                        Open
+                    </button>
+                    <button id="readerPasteBtn" class="btn-ghost btn-sm" title="Paste markdown from clipboard">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/>
+                            <path d="M17 4h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1"/>
+                            <rect x="8" y="2" width="8" height="3" rx="1"/>
+                        </svg>
+                        Paste
+                    </button>
+                    <span class="reader-actions-sep"></span>
+                    <button id="readerEditBtn" class="btn-ghost btn-sm" title="Edit markdown source">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                        Edit
+                    </button>
+                    <button id="readerCloseBtn" class="btn-ghost btn-sm" title="Close file">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Close
+                    </button>
+                </div>
+                <div id="readerEmptyState" class="reader-empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    <span class="reader-empty-title">No document open</span>
+                    <span class="reader-empty-hint">Open a file, paste markdown, or drag and drop</span>
+                </div>
+                <div id="readerContent" class="rich-text-preview reader-content" data-placeholder=""></div>
+                <div id="readerDropOverlay" class="reader-drop-overlay">
+                    <div class="reader-drop-message">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span>Drop markdown file to read</span>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <span class="stats" id="readerStats"></span>
                 </div>
             </div>
 
@@ -461,69 +520,159 @@
                             </div>
                             <span class="theme-section-label">Palette</span>
                             <select id="themePaletteSelect" class="setting-select visually-hidden" aria-hidden="true" tabindex="-1">
-                                <option value="pure-black">Pure Black / White</option>
-                                <option value="black-ledger">Black Ledger</option>
-                                <option value="copper-press">Copper Press</option>
-                                <option value="graphite-modern">Graphite Modern</option>
-                                <option value="ember-manuscript">Ember Manuscript</option>
-                                <option value="ultramarine-margin">Ultramarine Margin</option>
-                                <option value="verdant-notes">Verdant Notes</option>
+                                <option value="obsidian">Obsidian</option>
+                                <option value="warm-clay">Warm Clay</option>
+                                <option value="arctic">Arctic</option>
+                                <option value="ink-wash">Ink Wash</option>
+                                <option value="navy-orange">Navy & Orange</option>
+                                <option value="teal-rose">Teal & Rose</option>
+                                <option value="indigo-gold">Indigo & Gold</option>
+                                <option value="sunset-dusk">Sunset Dusk</option>
+                                <option value="midnight-sun">Midnight Sun</option>
                             </select>
                             <div class="theme-palette-grid" aria-label="Theme palette">
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="pure-black" style="--preview-dark-bg:#000000;--preview-dark-surface:#050505;--preview-light-bg:#faf9f7;--preview-light-surface:#f0efec;--preview-accent:#7c7c7c;--preview-accent-light:#111111;">
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="obsidian" style="--preview-dark-bg:#000000;--preview-dark-surface:#0a0a0a;--preview-light-bg:#fafafa;--preview-light-surface:#eeeeee;--preview-accent:#909090;--preview-accent-light:#1a1a1a;">
                                     <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
                                     </span>
-                                    <span class="theme-palette-copy"><strong>Pure Black / White</strong><small>Neutral, stark, minimal</small></span>
+                                    <span class="theme-palette-copy"><strong>Obsidian</strong><small>Pure neutral monochrome</small></span>
                                 </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="black-ledger" style="--preview-dark-bg:#000000;--preview-dark-surface:#090909;--preview-light-bg:#fbf5eb;--preview-light-surface:#f2e7d6;--preview-accent:#e2bc74;--preview-accent-light:#b88943;">
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="warm-clay" style="--preview-dark-bg:#0a0604;--preview-dark-surface:#16100c;--preview-light-bg:#faf4ec;--preview-light-surface:#f0e2d2;--preview-accent:#c8875a;--preview-accent-light:#b06c40;">
                                     <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
                                     </span>
-                                    <span class="theme-palette-copy"><strong>Black Ledger</strong><small>Warm editorial gold</small></span>
+                                    <span class="theme-palette-copy"><strong>Warm Clay</strong><small>Terracotta and cream</small></span>
                                 </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="copper-press" style="--preview-dark-bg:#000000;--preview-dark-surface:#0d0806;--preview-light-bg:#fbf4eb;--preview-light-surface:#f2e0ca;--preview-accent:#c48a64;--preview-accent-light:#b97752;">
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="arctic" style="--preview-dark-bg:#040810;--preview-dark-surface:#0c1420;--preview-light-bg:#f4f7fb;--preview-light-surface:#e4eaf2;--preview-accent:#7090b8;--preview-accent-light:#506c8c;">
                                     <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
                                     </span>
-                                    <span class="theme-palette-copy"><strong>Copper Press</strong><small>Crafted, print-inspired</small></span>
+                                    <span class="theme-palette-copy"><strong>Arctic</strong><small>Steel blue and ice</small></span>
                                 </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="graphite-modern" style="--preview-dark-bg:#000000;--preview-dark-surface:#091018;--preview-light-bg:#f8fafc;--preview-light-surface:#edf2f7;--preview-accent:#8a9bae;--preview-accent-light:#63788f;">
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="ink-wash" style="--preview-dark-bg:#080706;--preview-dark-surface:#141210;--preview-light-bg:#f8f5f0;--preview-light-surface:#ece6de;--preview-accent:#a09080;--preview-accent-light:#706050;">
                                     <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
                                     </span>
-                                    <span class="theme-palette-copy"><strong>Graphite Modern</strong><small>Cool, product-forward</small></span>
+                                    <span class="theme-palette-copy"><strong>Ink Wash</strong><small>Sepia, aged paper</small></span>
                                 </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="ember-manuscript" style="--preview-dark-bg:#000000;--preview-dark-surface:#0d0605;--preview-light-bg:#fff8f4;--preview-light-surface:#fae8df;--preview-accent:#e96c3e;--preview-accent-light:#d65d31;">
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="navy-orange" style="--preview-dark-bg:#0a0e14;--preview-dark-surface:#151c24;--preview-light-bg:#f4f6fa;--preview-light-surface:#e4e8f0;--preview-accent:#f96d00;--preview-accent-light:#d85a00;--preview-accent-2:#3c5878;--preview-accent-2-light:#2c4460;">
                                     <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
                                     </span>
-                                    <span class="theme-palette-copy"><strong>Ember Manuscript</strong><small>Expressive serif warmth</small></span>
+                                    <span class="theme-palette-copy"><strong>Navy & Orange</strong><small>Cold base, warm fire</small></span>
                                 </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="ultramarine-margin" style="--preview-dark-bg:#000000;--preview-dark-surface:#061019;--preview-light-bg:#f9fbff;--preview-light-surface:#edf3ff;--preview-accent:#74a6ff;--preview-accent-light:#5f8fe7;">
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="teal-rose" style="--preview-dark-bg:#040a0c;--preview-dark-surface:#0c181c;--preview-light-bg:#f0f8f8;--preview-light-surface:#e0ecec;--preview-accent:#00adb5;--preview-accent-light:#008c94;--preview-accent-2:#e94560;--preview-accent-2-light:#c03050;">
                                     <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
                                     </span>
-                                    <span class="theme-palette-copy"><strong>Ultramarine Margin</strong><small>Electric blue contrast</small></span>
+                                    <span class="theme-palette-copy"><strong>Teal & Rose</strong><small>Cool water, warm coral</small></span>
                                 </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="verdant-notes" style="--preview-dark-bg:#010403;--preview-dark-surface:#08100b;--preview-light-bg:#f8fbf7;--preview-light-surface:#ecf1ea;--preview-accent:#78a97f;--preview-accent-light:#5d8b66;">
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="indigo-gold" style="--preview-dark-bg:#060810;--preview-dark-surface:#101820;--preview-light-bg:#f6f4ee;--preview-light-surface:#eae6de;--preview-accent:#c8960e;--preview-accent-light:#9a7808;--preview-accent-2:#2e4a80;--preview-accent-2-light:#1e3868;">
                                     <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
                                     </span>
-                                    <span class="theme-palette-copy"><strong>Verdant Notes</strong><small>Calm editorial green</small></span>
+                                    <span class="theme-palette-copy"><strong>Indigo & Gold</strong><small>Deep night, warm luxury</small></span>
+                                </button>
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="sunset-dusk" style="--preview-dark-bg:#0a060c;--preview-dark-surface:#161018;--preview-light-bg:#faf2f4;--preview-light-surface:#f0e4ea;--preview-accent:#e86880;--preview-accent-light:#b83b5e;--preview-accent-2:#f08a5d;--preview-accent-2-light:#d07848;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Sunset Dusk</strong><small>Purple, peach, rose</small></span>
+                                </button>
+                                <button type="button" class="theme-palette-option" data-theme-palette-value="midnight-sun" style="--preview-dark-bg:#000000;--preview-dark-surface:#0c0c10;--preview-light-bg:#f8f9fc;--preview-light-surface:#eef0f6;--preview-accent:#4a90e2;--preview-accent-light:#2b6cb0;--preview-accent-2:#e8b830;--preview-accent-2-light:#c09810;">
+                                    <span class="theme-palette-frame">
+                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
+                                    </span>
+                                    <span class="theme-palette-copy"><strong>Midnight Sun</strong><small>Blue glow, golden light</small></span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
+                    <!-- True dark mode -->
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-name">True dark</span>
+                            <span class="setting-desc">Force pure black backgrounds in dark mode</span>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch" title="Toggle true dark mode">
+                                <input type="checkbox" id="trueDark">
+                                <span class="switch-track">
+                                    <span class="switch-thumb"></span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="setting-divider"></div>
+
+                    <!-- Typography -->
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <span class="setting-name">Typography</span>
+                            <span class="setting-desc">Customize how content appears in the editor, preview, and reader</span>
+                            <select id="contentFontSelect" class="setting-select visually-hidden" aria-hidden="true" tabindex="-1">
+                                <option value="theme">Theme default</option>
+                                <option value="manrope">Manrope</option>
+                                <option value="cormorant">Cormorant Garamond</option>
+                                <option value="lora">Lora</option>
+                                <option value="roboto-slab">Roboto Slab</option>
+                            </select>
+                            <span class="theme-section-label">Font</span>
+                            <div class="font-picker-grid" aria-label="Content font">
+                                <button type="button" class="font-picker-option" data-font-value="theme">
+                                    <span class="font-preview font-preview-theme">Aa</span>
+                                    <span class="font-picker-label">Theme default</span>
+                                </button>
+                                <button type="button" class="font-picker-option" data-font-value="manrope">
+                                    <span class="font-preview" style="font-family:'Manrope',sans-serif;font-weight:400">Aa</span>
+                                    <span class="font-picker-label">Manrope</span>
+                                </button>
+                                <button type="button" class="font-picker-option" data-font-value="cormorant">
+                                    <span class="font-preview" style="font-family:'Cormorant Garamond',serif;font-weight:400">Aa</span>
+                                    <span class="font-picker-label">Cormorant</span>
+                                </button>
+                                <button type="button" class="font-picker-option" data-font-value="lora">
+                                    <span class="font-preview" style="font-family:'Lora',serif;font-weight:400">Aa</span>
+                                    <span class="font-picker-label">Lora</span>
+                                </button>
+                                <button type="button" class="font-picker-option" data-font-value="roboto-slab">
+                                    <span class="font-preview" style="font-family:'Roboto Slab',serif;font-weight:300">Aa</span>
+                                    <span class="font-picker-label">Roboto Slab</span>
+                                </button>
+                            </div>
+                            <span class="theme-section-label">Size</span>
+                            <div class="range-wrap">
+                                <input type="range" id="contentFontSize" min="13" max="22" step="1" value="15">
+                                <span id="fontSizeValue" class="range-value">15px</span>
+                            </div>
+                            <span class="theme-section-label">Weight</span>
+                            <div class="range-wrap">
+                                <input type="range" id="contentFontWeight" min="300" max="600" step="100" value="400">
+                                <span id="fontWeightValue" class="range-value">Regular</span>
+                            </div>
+                            <span class="theme-section-label">Line height</span>
+                            <div class="range-wrap">
+                                <input type="range" id="contentLineHeight" min="1.3" max="2.2" step="0.1" value="1.75">
+                                <span id="lineHeightValue" class="range-value">1.75</span>
+                            </div>
+                            <span class="theme-section-label">Content width</span>
+                            <div class="range-wrap">
+                                <input type="range" id="contentMaxWidth" min="560" max="1200" step="40" value="1200">
+                                <span id="maxWidthValue" class="range-value">Full</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Syntax highlighting -->
                     <div class="setting-row">
