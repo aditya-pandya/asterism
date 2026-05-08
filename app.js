@@ -86,10 +86,10 @@ const THEME_MODE_LABELS = {
 
 const CONTENT_FONTS = {
     'theme': null,
-    'manrope': "'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    'cormorant': "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
-    'lora': "'Lora', Georgia, 'Times New Roman', serif",
-    'roboto-slab': "'Roboto Slab', 'Rockwell', 'Courier New', serif"
+    'manrope': "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    'cormorant': "Georgia, 'Times New Roman', serif",
+    'lora': "'Iowan Old Style', Georgia, 'Times New Roman', serif",
+    'roboto-slab': "Rockwell, Georgia, 'Times New Roman', serif"
 };
 
 const LEGACY_THEME_MAP = {

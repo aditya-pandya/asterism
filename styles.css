@@ -1,16 +1,10 @@
 /* ===========================
-   Fonts
-   =========================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Serif+Display:ital@0;1&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Manrope:wght@400;500;600;700&family=Roboto+Slab:wght@300;400;500;600;700&display=swap');
-
-/* ===========================
    Design Tokens
    =========================== */
 
 :root {
-    --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
 
     --radius-xs: 4px;
@@ -78,7 +72,7 @@
    =========================== */
 
 :root[data-theme="obsidian-dark"] {
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: var(--font-sans);
     --bg-app: #000000; --bg-primary: #000000; --bg-secondary: #0a0a0a; --bg-tertiary: #141414;
     --text-primary: #e8e8e8; --text-secondary: #a0a0a0; --text-tertiary: #7a7a7a;
     --border-color: #1e1e1e; --border-subtle: #141414;
@@ -94,7 +88,7 @@
 
 :root,
 :root[data-theme="obsidian-light"] {
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: var(--font-sans);
     --bg-app: #f0f0f0; --bg-primary: #fafafa; --bg-secondary: #eeeeee; --bg-tertiary: #e2e2e2;
     --text-primary: #1a1a1a; --text-secondary: #5a5a5a; --text-tertiary: #8a8a8a;
     --border-color: #d8d8d8; --border-subtle: #e6e6e6;
@@ -113,7 +107,7 @@
    =========================== */
 
 :root[data-theme="warm-clay-dark"] {
-    --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #0a0604; --bg-primary: #0e0906; --bg-secondary: #16100c; --bg-tertiary: #201812;
     --text-primary: #f0dcc8; --text-secondary: #b89878; --text-tertiary: #987060;
     --border-color: #281c14; --border-subtle: #1c1410;
@@ -130,7 +124,7 @@
 }
 
 :root[data-theme="warm-clay-light"] {
-    --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #f2e6d8; --bg-primary: #faf4ec; --bg-secondary: #f0e2d2; --bg-tertiary: #e6d4c0;
     --text-primary: #261810; --text-secondary: #6e5040; --text-tertiary: #9a7868;
     --border-color: #dcc8b4; --border-subtle: #eadcce;
@@ -151,7 +145,7 @@
    =========================== */
 
 :root[data-theme="arctic-dark"] {
-    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #040810; --bg-primary: #060c14; --bg-secondary: #0c1420; --bg-tertiary: #141e2e;
     --text-primary: #e0e8f4; --text-secondary: #90a0b8; --text-tertiary: #788898;
     --border-color: #182030; --border-subtle: #101820;
@@ -168,7 +162,7 @@
 }
 
 :root[data-theme="arctic-light"] {
-    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #e4eaf2; --bg-primary: #f4f7fb; --bg-secondary: #e4eaf2; --bg-tertiary: #d4dce8;
     --text-primary: #182030; --text-secondary: #4c5c70; --text-tertiary: #7888a0;
     --border-color: #c8d4e0; --border-subtle: #dce4ee;
@@ -189,7 +183,7 @@
    =========================== */
 
 :root[data-theme="ink-wash-dark"] {
-    --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #080706; --bg-primary: #0c0b09; --bg-secondary: #141210; --bg-tertiary: #1e1c18;
     --text-primary: #e4ddd0; --text-secondary: #a89e90; --text-tertiary: #888078;
     --border-color: #242018; --border-subtle: #1a1814;
@@ -206,7 +200,7 @@
 }
 
 :root[data-theme="ink-wash-light"] {
-    --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #ece8e0; --bg-primary: #f8f5f0; --bg-secondary: #ece6de; --bg-tertiary: #e0d8ce;
     --text-primary: #201c16; --text-secondary: #605848; --text-tertiary: #908070;
     --border-color: #d4ccc0; --border-subtle: #e4dcd4;
@@ -228,7 +222,7 @@
    =========================== */
 
 :root[data-theme="navy-orange-dark"] {
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: var(--font-sans);
     --bg-app: #0a0e14; --bg-primary: #0e1218; --bg-secondary: #151c24; --bg-tertiary: #1e2830;
     --text-primary: #e8ecf0; --text-secondary: #94a0b0; --text-tertiary: #788898;
     --border-color: #1c2430; --border-subtle: #141c26;
@@ -246,7 +240,7 @@
 }
 
 :root[data-theme="navy-orange-light"] {
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: var(--font-sans);
     --bg-app: #e8ecf2; --bg-primary: #f4f6fa; --bg-secondary: #e4e8f0; --bg-tertiary: #d6dce6;
     --text-primary: #1a2030; --text-secondary: #4c5868; --text-tertiary: #788898;
     --border-color: #c8d0dc; --border-subtle: #dce2ea;
@@ -268,7 +262,7 @@
    =========================== */
 
 :root[data-theme="teal-rose-dark"] {
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: var(--font-sans);
     --bg-app: #040a0c; --bg-primary: #060e10; --bg-secondary: #0c181c; --bg-tertiary: #142428;
     --text-primary: #e4f0f0; --text-secondary: #88b0b4; --text-tertiary: #68989c;
     --border-color: #142428; --border-subtle: #0c1c20;
@@ -286,7 +280,7 @@
 }
 
 :root[data-theme="teal-rose-light"] {
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: var(--font-sans);
     --bg-app: #e2f0f0; --bg-primary: #f0f8f8; --bg-secondary: #e0ecec; --bg-tertiary: #d0e0e0;
     --text-primary: #142428; --text-secondary: #3c5c60; --text-tertiary: #648888;
     --border-color: #c0d4d6; --border-subtle: #d4e6e6;
@@ -308,7 +302,7 @@
    =========================== */
 
 :root[data-theme="indigo-gold-dark"] {
-    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #060810; --bg-primary: #080c16; --bg-secondary: #101820; --bg-tertiary: #18222e;
     --text-primary: #e8e4d8; --text-secondary: #a8a090; --text-tertiary: #888880;
     --border-color: #1a2230; --border-subtle: #121a24;
@@ -326,7 +320,7 @@
 }
 
 :root[data-theme="indigo-gold-light"] {
-    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #eae8e0; --bg-primary: #f6f4ee; --bg-secondary: #eae6de; --bg-tertiary: #dcd8cc;
     --text-primary: #1a1c24; --text-secondary: #50505c; --text-tertiary: #808088;
     --border-color: #ccc8bc; --border-subtle: #e0dcd4;
@@ -348,7 +342,7 @@
    =========================== */
 
 :root[data-theme="sunset-dusk-dark"] {
-    --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #0a060c; --bg-primary: #0e0a12; --bg-secondary: #161018; --bg-tertiary: #201822;
     --text-primary: #f0e4e8; --text-secondary: #b898a8; --text-tertiary: #988090;
     --border-color: #281c28; --border-subtle: #1c121c;
@@ -366,7 +360,7 @@
 }
 
 :root[data-theme="sunset-dusk-light"] {
-    --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-display: Georgia, 'Times New Roman', serif;
     --bg-app: #f2e6ea; --bg-primary: #faf2f4; --bg-secondary: #f0e4ea; --bg-tertiary: #e4d4dc;
     --text-primary: #281820; --text-secondary: #6c4c60; --text-tertiary: #987888;
     --border-color: #dcc4d0; --border-subtle: #ecdce4;
@@ -383,7 +377,7 @@
 }
 
 :root[data-theme="midnight-sun-dark"] {
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: var(--font-sans);
     --bg-app: #000000; --bg-primary: #060608; --bg-secondary: #0c0c10; --bg-tertiary: #161618;
     --text-primary: #e8eaf0; --text-secondary: #9098b0; --text-tertiary: #708090;
     --border-color: #1c1e28; --border-subtle: #121418;
@@ -401,7 +395,7 @@
 }
 
 :root[data-theme="midnight-sun-light"] {
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: var(--font-sans);
     --bg-app: #f0f2f8; --bg-primary: #f8f9fc; --bg-secondary: #eef0f6; --bg-tertiary: #e0e4ee;
     --text-primary: #141828; --text-secondary: #404c68; --text-tertiary: #6878a0;
     --border-color: #ccd2e0; --border-subtle: #dce0ea;

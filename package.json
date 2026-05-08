@@ -23,6 +23,7 @@
     "appId": "com.apandya.inkdown",
     "productName": "Inkdown",
     "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "afterPack": "scripts/after-pack.js",
     "files": [
       "electron/**/*",
       "assets/**/*",
@@ -59,7 +60,7 @@
     }
   },
   "devDependencies": {
-    "electron": "37.10.3",
+    "electron": "42.0.0",
     "electron-builder": "26.8.1"
   }
 }

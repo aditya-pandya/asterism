@@ -3,6 +3,8 @@ const fs = require('node:fs/promises');
 const { app, BrowserWindow, Menu, dialog, ipcMain, nativeImage, shell } = require('electron');
 const pkg = require('../package.json');
 const isMac = process.platform === 'darwin';
+const ALLOWED_EXTERNAL_PROTOCOLS = new Set(['https:', 'mailto:']);
+const ALLOWED_RENDERER_PERMISSIONS = new Set(['clipboard-read']);
 
 let deferredFilePath = null;
 
@@ -14,6 +16,51 @@ function sendMenuAction(action) {
   const targetWindow = getPrimaryWindow();
   if (!targetWindow || targetWindow.isDestroyed()) return;
   targetWindow.webContents.send('menu:action', action);
+}
+
+function isAppUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== 'file:') return false;
+
+    const appRoot = path.normalize(app.getAppPath());
+    const targetPath = path.normalize(decodeURIComponent(parsedUrl.pathname));
+    return targetPath === appRoot || targetPath.startsWith(`${appRoot}${path.sep}`);
+  } catch {
+    return false;
+  }
+}
+
+function openExternalUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+    if (!ALLOWED_EXTERNAL_PROTOCOLS.has(parsedUrl.protocol)) return;
+    shell.openExternal(parsedUrl.toString()).catch(err => {
+      console.error('Failed to open external URL:', err);
+    });
+  } catch {
+    // Ignore malformed URLs from renderer content.
+  }
+}
+
+function lockDownRendererSession(mainWindow) {
+  const rendererSession = mainWindow.webContents.session;
+  const allowPermission = webContents =>
+    Boolean(webContents && isAppUrl(webContents.getURL()));
+
+  rendererSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    callback(allowPermission(webContents) && ALLOWED_RENDERER_PERMISSIONS.has(permission));
+  });
+
+  if (typeof rendererSession.setPermissionCheckHandler === 'function') {
+    rendererSession.setPermissionCheckHandler((webContents, permission) =>
+      allowPermission(webContents) && ALLOWED_RENDERER_PERMISSIONS.has(permission)
+    );
+  }
+
+  if (typeof rendererSession.setDevicePermissionHandler === 'function') {
+    rendererSession.setDevicePermissionHandler(() => false);
+  }
 }
 
 function inferDocumentKind(filePath, content) {
@@ -49,12 +96,14 @@ function createMainWindow() {
     }
   });
 
+  lockDownRendererSession(mainWindow);
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    openExternalUrl(url);
     return { action: 'deny' };
   });
 
@@ -62,7 +111,7 @@ function createMainWindow() {
     const currentUrl = mainWindow.webContents.getURL();
     if (currentUrl && url !== currentUrl) {
       event.preventDefault();
-      shell.openExternal(url);
+      openExternalUrl(url);
     }
   });
 

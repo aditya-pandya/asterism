@@ -3,39 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
     <title>Inkdown</title>
     <link id="appFavicon" rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles.css">
 
-    <!-- Highlight.js themes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"      id="highlight-light">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="highlight-dark" disabled>
-
-    <!-- CDN Libraries with local fallbacks -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"                              onerror="this.onerror=null;this.src='vendor/marked.min.js';"></script>
-    <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.js"                          onerror="this.onerror=null;this.src='vendor/turndown.js';"></script>
-    <script src="https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.js"   onerror="this.onerror=null;this.src='vendor/turndown-plugin-gfm.js';"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"           onerror="this.onerror=null;this.src='vendor/highlight.min.js';"></script>
-
-    <script>
-        /* Highlight.js stylesheet fallbacks */
-        (function() {
-            function isLoaded(link) {
-                if (!link || !link.sheet) return false;
-                try { return !!link.sheet.cssRules; } catch(e) { return true; }
-            }
-            function addFallback(id, href) {
-                var link = document.getElementById(id);
-                if (!link) return;
-                link.addEventListener('error', function() { link.href = href; });
-                window.addEventListener('load', function() {
-                    if (!isLoaded(link)) link.href = href;
-                });
-            }
-            addFallback('highlight-light', 'vendor/highlight/github.min.css');
-            addFallback('highlight-dark',  'vendor/highlight/github-dark.min.css');
-        })();
-    </script>
+    <!-- Bundled libraries for offline desktop builds -->
+    <link rel="stylesheet" href="vendor/highlight/github.min.css"      id="highlight-light">
+    <link rel="stylesheet" href="vendor/highlight/github-dark.min.css" id="highlight-dark" disabled>
+    <script src="vendor/marked.min.js"></script>
+    <script src="vendor/turndown.js"></script>
+    <script src="vendor/turndown-plugin-gfm.js"></script>
+    <script src="vendor/highlight.min.js"></script>
 </head>
 <body>
 <div class="app-container">
@@ -623,10 +602,10 @@
                             <span class="setting-desc">Customize how content appears in the editor, preview, and reader</span>
                             <select id="contentFontSelect" class="setting-select visually-hidden" aria-hidden="true" tabindex="-1">
                                 <option value="theme">Theme default</option>
-                                <option value="manrope">Manrope</option>
-                                <option value="cormorant">Cormorant Garamond</option>
-                                <option value="lora">Lora</option>
-                                <option value="roboto-slab">Roboto Slab</option>
+                                <option value="manrope">System Sans</option>
+                                <option value="cormorant">Classic Serif</option>
+                                <option value="lora">Reading Serif</option>
+                                <option value="roboto-slab">Slab Serif</option>
                             </select>
                             <span class="theme-section-label">Font</span>
                             <div class="font-picker-grid" aria-label="Content font">
@@ -635,20 +614,20 @@
                                     <span class="font-picker-label">Theme default</span>
                                 </button>
                                 <button type="button" class="font-picker-option" data-font-value="manrope">
-                                    <span class="font-preview" style="font-family:'Manrope',sans-serif;font-weight:400">Aa</span>
-                                    <span class="font-picker-label">Manrope</span>
+                                    <span class="font-preview" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:400">Aa</span>
+                                    <span class="font-picker-label">System Sans</span>
                                 </button>
                                 <button type="button" class="font-picker-option" data-font-value="cormorant">
-                                    <span class="font-preview" style="font-family:'Cormorant Garamond',serif;font-weight:400">Aa</span>
-                                    <span class="font-picker-label">Cormorant</span>
+                                    <span class="font-preview" style="font-family:Georgia,'Times New Roman',serif;font-weight:400">Aa</span>
+                                    <span class="font-picker-label">Classic Serif</span>
                                 </button>
                                 <button type="button" class="font-picker-option" data-font-value="lora">
-                                    <span class="font-preview" style="font-family:'Lora',serif;font-weight:400">Aa</span>
-                                    <span class="font-picker-label">Lora</span>
+                                    <span class="font-preview" style="font-family:'Iowan Old Style',Georgia,serif;font-weight:400">Aa</span>
+                                    <span class="font-picker-label">Reading Serif</span>
                                 </button>
                                 <button type="button" class="font-picker-option" data-font-value="roboto-slab">
-                                    <span class="font-preview" style="font-family:'Roboto Slab',serif;font-weight:300">Aa</span>
-                                    <span class="font-picker-label">Roboto Slab</span>
+                                    <span class="font-preview" style="font-family:Rockwell,Georgia,serif;font-weight:300">Aa</span>
+                                    <span class="font-picker-label">Slab Serif</span>
                                 </button>
                             </div>
                             <span class="theme-section-label">Size</span>
