@@ -15,7 +15,7 @@ use tauri::{
 use tauri_plugin_deep_link::DeepLinkExt;
 
 const BRIDGE_SCRIPT: &str = include_str!("../tauri-bridge.js");
-const SUPPORTED_EXTENSIONS: &[&str] = &["md", "markdown", "txt"];
+const SUPPORTED_EXTENSIONS: &[&str] = &["md", "markdown", "txt", "html", "htm"];
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -218,6 +218,7 @@ pub fn run() {
                 .inner_size(1440.0, 960.0)
                 .min_inner_size(1100.0, 760.0)
                 .title_bar_style(tauri::TitleBarStyle::Overlay)
+                .transparent(true)
                 .traffic_light_position(tauri::LogicalPosition::new(18.0, 20.0))
                 .initialization_script(BRIDGE_SCRIPT)
                 .build()?;

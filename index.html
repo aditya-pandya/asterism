@@ -3,772 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+    <meta name="color-scheme" content="light dark">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
     <title>Inkdown</title>
-    <link id="appFavicon" rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles.css">
-
-    <!-- Bundled libraries for offline desktop builds -->
-    <link rel="stylesheet" href="vendor/highlight/github.min.css"      id="highlight-light">
-    <link rel="stylesheet" href="vendor/highlight/github-dark.min.css" id="highlight-dark" disabled>
     <script src="vendor/marked.min.js"></script>
     <script src="vendor/turndown.js"></script>
     <script src="vendor/turndown-plugin-gfm.js"></script>
-    <script src="vendor/highlight.min.js"></script>
 </head>
 <body>
-<div class="app-container">
+    <div class="inkdown" id="app" data-mode="light">
+        <header class="wordmark-strip" id="wordmarkStrip" aria-label="Inkdown window title">
+            <span>INKDOWN</span>
+        </header>
 
-    <!-- ==================== HEADER ==================== -->
-    <header class="app-header">
-        <div class="header-content">
-            <div class="header-brand">
-                <img id="logoBadge" class="logo-badge" src="assets/inkdown-mark.svg" alt="Inkdown logo" width="40" height="40">
-                <div class="brand-lockup">
-                    <span class="brand-kicker">Rich Text <span>⇄</span> Markdown</span>
-                    <span class="header-title">Inkdown</span>
-                </div>
-            </div>
-
-            <div class="header-actions">
-                <!-- Theme Toggle -->
-                <button id="themeToggleBtn" class="btn-icon" title="Toggle theme" aria-label="Toggle theme">
-                    <!-- Sun (shown in dark mode) -->
-                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"/>
-                        <line x1="12" y1="1"  x2="12" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="23"/>
-                        <line x1="4.22"  y1="4.22"  x2="5.64"  y2="5.64"/>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                        <line x1="1"  y1="12" x2="3"  y2="12"/>
-                        <line x1="21" y1="12" x2="23" y2="12"/>
-                        <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
-                        <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
-                    </svg>
-                    <!-- Moon (shown in light mode) -->
-                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                    </svg>
-                    <svg class="icon-system" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="12" rx="2"/>
-                        <path d="M8 20h8"/>
-                        <path d="M12 16v4"/>
-                    </svg>
-                </button>
-
-                <!-- Settings -->
-                <button id="settingsBtn" class="btn-icon" title="Settings" aria-label="Settings">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
-                </button>
-
-            </div>
-        </div>
-    </header>
-
-    <!-- ==================== MAIN ==================== -->
-    <main class="main-content">
-
-        <!-- Segmented Control Toggle -->
-        <div class="conversion-toggle" id="conversionToggle" data-active="rtToMd">
-            <button id="rtToMdBtn" class="toggle-btn active" data-direction="rtToMd" aria-pressed="true">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 7h7"/>
-                    <path d="M4 12h9"/>
-                    <path d="M4 17h7"/>
-                    <path d="M14 8l4 4-4 4"/>
-                    <path d="M18 12h-4"/>
-                </svg>
-                <span class="btn-label">Rich Text → Markdown</span>
-            </button>
-
-            <!-- Animated sliding pill -->
-            <div class="toggle-indicator" aria-hidden="true"></div>
-
-            <button id="mdToRtBtn" class="toggle-btn" data-direction="mdToRt" aria-pressed="false">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M7 8l-3 4 3 4"/>
-                    <path d="M10 19l4-14"/>
-                    <path d="M17 8l3 4-3 4"/>
-                    <path d="M11 7h9"/>
-                    <path d="M13 17h7"/>
-                </svg>
-                <span class="btn-label">Markdown → Rich Text</span>
-            </button>
-
-            <button id="mdReaderBtn" class="toggle-btn" data-direction="mdReader" aria-pressed="false">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-                </svg>
-                <span class="btn-label">Markdown Reader</span>
-            </button>
-        </div>
-
-        <!-- Editor Panels -->
-        <div class="editor-container">
-
-            <!-- INPUT PANEL -->
-            <div class="editor-panel input-panel">
-                <div class="panel-header">
-                    <div class="panel-label">
-                        <!-- Icon swaps depending on mode; handled by JS class -->
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 20h9"/>
-                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                        </svg>
-                        <span id="inputLabel">Rich Text Input</span>
-                    </div>
-                    <div class="panel-actions">
-                        <button id="clearInputBtn" class="btn-ghost btn-sm" title="Clear editor">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
-                                <path d="M19 6l-.7 12.1a2 2 0 0 1-2 1.9H7.7a2 2 0 0 1-2-1.9L5 6"/>
-                            </svg>
-                            Clear
-                        </button>
-                        <button id="pasteBtn" class="btn-ghost btn-sm" title="Paste from clipboard">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/>
-                                <path d="M17 4h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1"/>
-                                <rect x="8" y="2" width="8" height="3" rx="1"/>
-                            </svg>
-                            Paste
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Formatting Toolbar (Rich Text mode only) -->
-                <div id="richTextToolbar" class="toolbar" role="toolbar" aria-label="Text formatting">
-                    <div class="toolbar-group" role="group" aria-label="Inline formatting">
-                        <button class="toolbar-btn" data-command="bold" title="Bold (Ctrl+B)" aria-label="Bold">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
-                                <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="italic" title="Italic (Ctrl+I)" aria-label="Italic">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="19" y1="4"  x2="10" y2="4"/>
-                                <line x1="14" y1="20" x2="5"  y2="20"/>
-                                <line x1="15" y1="4"  x2="9"  y2="20"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="underline" title="Underline (Ctrl+U)" aria-label="Underline">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 3v7a6 6 0 0 0 12 0V3"/>
-                                <line x1="4" y1="21" x2="20" y2="21"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="strikeThrough" title="Strikethrough" aria-label="Strikethrough">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="4" y1="12" x2="20" y2="12"/>
-                                <path d="M17.5 6.5C17 5 15.5 4 13.5 4c-2.5 0-4 1.5-4 3.5 0 1.2.5 2.1 1.4 2.7"/>
-                                <path d="M6.5 17.5C7.1 19.2 8.8 21 12 21c2.7 0 4.5-1.6 4.5-3.5 0-.9-.3-1.7-.8-2.3"/>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="toolbar-divider" aria-hidden="true"></div>
-
-                    <div class="toolbar-group">
-                        <div class="toolbar-select-wrap">
-                            <div id="formatPicker" class="toolbar-format-picker">
-                                <button id="formatPickerBtn" class="toolbar-format-btn" type="button"
-                                        title="Text style" aria-label="Text style" aria-haspopup="listbox"
-                                        aria-expanded="false" aria-controls="formatPickerDropdown">
-                                    <span id="formatPickerLabel" class="format-picker-label">Normal</span>
-                                    <svg class="format-picker-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                         aria-hidden="true">
-                                        <polyline points="6 9 12 15 18 9"/>
-                                    </svg>
-                                </button>
-
-                                <ul id="formatPickerDropdown" class="format-picker-dropdown" role="listbox"
-                                    tabindex="-1" aria-label="Text style">
-                                    <li id="formatOptionNormal" role="option" tabindex="-1" data-format-value="p" aria-selected="true">Normal</li>
-                                    <li id="formatOptionH1" role="option" tabindex="-1" data-format-value="h1" aria-selected="false">Heading 1</li>
-                                    <li id="formatOptionH2" role="option" tabindex="-1" data-format-value="h2" aria-selected="false">Heading 2</li>
-                                    <li id="formatOptionH3" role="option" tabindex="-1" data-format-value="h3" aria-selected="false">Heading 3</li>
-                                    <li id="formatOptionH4" role="option" tabindex="-1" data-format-value="h4" aria-selected="false">Heading 4</li>
-                                    <li id="formatOptionH5" role="option" tabindex="-1" data-format-value="h5" aria-selected="false">Heading 5</li>
-                                    <li id="formatOptionH6" role="option" tabindex="-1" data-format-value="h6" aria-selected="false">Heading 6</li>
-                                </ul>
-                            </div>
+        <main class="workspace" id="editView">
+            <section class="pane rich-pane" id="richPane" aria-labelledby="richLabel">
+                <div class="pane-header">
+                    <span class="pane-label" id="richLabel">RICH TEXT</span>
+                    <div class="rich-actions">
+                        <div class="format-toolbar" role="toolbar" aria-label="Rich text formatting">
+                            <button class="format-tool tool-bold" data-command="bold" title="Bold ⌘B" aria-label="Bold">B</button>
+                            <button class="format-tool tool-italic" data-command="italic" title="Italic ⌘I" aria-label="Italic">I</button>
+                            <button class="format-tool tool-underline" data-command="underline" title="Underline ⌘U" aria-label="Underline">U</button>
+                            <button class="format-tool tool-strike" data-command="strikeThrough" title="Strikethrough" aria-label="Strikethrough">S</button>
+                            <button class="format-tool tool-code" data-command="code" title="Inline code" aria-label="Inline code">`</button>
+                            <button class="format-tool" data-command="quote" title="Blockquote" aria-label="Blockquote">❝</button>
+                            <button class="format-tool" data-command="insertUnorderedList" title="Bulleted list" aria-label="Bulleted list">•</button>
+                            <button class="format-tool" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">1.</button>
+                            <button class="format-tool" data-command="insertHorizontalRule" title="Divider" aria-label="Divider">—</button>
                         </div>
-                    </div>
-
-                    <div class="toolbar-divider" aria-hidden="true"></div>
-
-                    <div class="toolbar-group" role="group" aria-label="Lists and blocks">
-                        <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet list" aria-label="Bullet list">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="9" y1="6"  x2="20" y2="6"/>
-                                <line x1="9" y1="12" x2="20" y2="12"/>
-                                <line x1="9" y1="18" x2="20" y2="18"/>
-                                <circle cx="4" cy="6"  r="1.5" fill="currentColor" stroke="none"/>
-                                <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-                                <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="10" y1="6"  x2="21" y2="6"/>
-                                <line x1="10" y1="12" x2="21" y2="12"/>
-                                <line x1="10" y1="18" x2="21" y2="18"/>
-                                <path d="M4 6h1v4" stroke-width="2"/>
-                                <path d="M4 10h2"  stroke-width="2"/>
-                                <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" stroke-width="2"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="blockquote" title="Blockquote" aria-label="Blockquote">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
-                                <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="toolbar-divider" aria-hidden="true"></div>
-
-                    <div class="toolbar-group" role="group" aria-label="Insert elements">
-                        <button class="toolbar-btn" data-command="createLink" title="Insert link (Ctrl+K)" aria-label="Insert link">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="insertImage" title="Insert image" aria-label="Insert image">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                <polyline points="21 15 16 10 5 21"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="insertCode" title="Inline code" aria-label="Inline code">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="16 18 22 12 16 6"/>
-                                <polyline points="8 6 2 12 8 18"/>
-                            </svg>
-                        </button>
-                        <button class="toolbar-btn" data-command="insertHR" title="Horizontal rule" aria-label="Horizontal rule">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                                <line x1="5"  y1="12" x2="19" y2="12" stroke-width="2.5"/>
-                                <line x1="3"  y1="6"  x2="21" y2="6"  stroke-width="1.5" stroke-opacity="0.35"/>
-                                <line x1="3"  y1="18" x2="21" y2="18" stroke-width="1.5" stroke-opacity="0.35"/>
-                            </svg>
-                        </button>
+                        <button class="text-action paste-action" id="pasteButton" title="Paste from clipboard">Paste&nbsp;&nbsp;⌘V</button>
                     </div>
                 </div>
+                <div class="rich-editor prose" id="richEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Paste anything — ⌘V"></div>
+            </section>
 
-                <!-- Rich Text Editor (RT→MD mode) -->
-                <div id="richTextEditor" class="rich-text-editor"
-                     contenteditable="true" spellcheck="true"
-                     role="textbox" aria-multiline="true" aria-label="Rich text input"
-                     data-placeholder="Start typing or paste your rich text here…"></div>
+            <div class="pane-divider" aria-hidden="true"></div>
 
-                <!-- Markdown Editor (MD→RT mode) -->
-                <textarea id="markdownInput" class="markdown-editor" spellcheck="false"
-                          placeholder="Enter markdown here…" aria-label="Markdown input"></textarea>
-
-                <div class="panel-footer">
-                    <span id="inputStats" class="stats"></span>
-                </div>
-            </div>
-
-            <!-- OUTPUT PANEL -->
-            <div class="editor-panel output-panel">
-                <div class="panel-header">
-                    <div class="panel-label">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                        <span id="outputLabel">Markdown Output</span>
-                        <span class="activity-dot" aria-hidden="true"></span>
-                    </div>
-                    <div class="panel-actions">
-                        <button id="copyBtn" class="btn-primary btn-sm" title="Copy to clipboard">
-                            <!-- Default icon -->
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-copy">
-                                <rect x="9" y="9" width="13" height="13" rx="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                            <!-- Success icon (hidden by default) -->
-                            <svg class="icon-check" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-                                 style="display:none;">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span class="copy-label">Copy</span>
-                        </button>
-                        <button id="downloadBtn" class="btn-secondary btn-sm" title="Download file">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
-                            </svg>
-                            Download
-                        </button>
+            <section class="pane markdown-pane" id="markdownPane" aria-labelledby="markdownLabel">
+                <div class="pane-header">
+                    <span class="pane-label" id="markdownLabel">MARKDOWN</span>
+                    <div class="markdown-actions">
+                        <button class="text-action" id="downloadButton" title="Download .md file">↓&nbsp; .md</button>
+                        <button class="text-action copy-action" id="copyButton">Copy&nbsp;&nbsp;⌘⇧C</button>
                     </div>
                 </div>
-
-                <!-- Markdown Output (RT→MD mode) -->
-                <textarea id="markdownOutput" class="markdown-editor" readonly spellcheck="false"
-                          aria-label="Markdown output" aria-readonly="true"
-                          placeholder="Your markdown will appear here..."></textarea>
-
-                <!-- Rich Text Preview (MD→RT mode) -->
-                <div id="richTextPreview" class="rich-text-preview"
-                     role="region" aria-label="Rich text preview" aria-live="polite"
-                     data-placeholder="Your rendered content will appear here..."></div>
-
-                <div class="panel-footer">
-                    <span id="outputStats" class="stats"></span>
+                <div class="markdown-stack">
+                    <div class="markdown-highlight" id="markdownHighlight" aria-hidden="true"></div>
+                    <div class="markdown-editor" id="markdownEditor" contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-label="Markdown editor" spellcheck="false" data-placeholder="Markdown appears here, instantly"></div>
                 </div>
-            </div>
+            </section>
+        </main>
 
-            <!-- Reader Panel (full width, shown only in mdReader mode) -->
-            <div class="editor-panel reader-panel" id="readerPanel" style="display: none;">
-                <div class="reader-actions" id="readerActions">
-                    <button id="readerOpenBtn" class="btn-ghost btn-sm" title="Open a markdown file">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/>
-                        </svg>
-                        Open
-                    </button>
-                    <button id="readerPasteBtn" class="btn-ghost btn-sm" title="Paste markdown from clipboard">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/>
-                            <path d="M17 4h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1"/>
-                            <rect x="8" y="2" width="8" height="3" rx="1"/>
-                        </svg>
-                        Paste
-                    </button>
-                    <span class="reader-actions-sep"></span>
-                    <button id="readerEditBtn" class="btn-ghost btn-sm" title="Edit markdown source">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 20h9"/>
-                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                        </svg>
-                        Edit
-                    </button>
-                    <button id="readerCloseBtn" class="btn-ghost btn-sm" title="Close file">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                        Close
-                    </button>
-                </div>
-                <div id="readerEmptyState" class="reader-empty-state">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-                    </svg>
-                    <span class="reader-empty-title">No document open</span>
-                    <span class="reader-empty-hint">Open a file, paste markdown, or drag and drop</span>
-                </div>
-                <div id="readerContent" class="rich-text-preview reader-content" data-placeholder=""></div>
-                <div id="readerDropOverlay" class="reader-drop-overlay">
-                    <div class="reader-drop-message">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                        </svg>
-                        <span>Drop markdown file to read</span>
-                    </div>
-                </div>
-                <div class="panel-footer">
-                    <span class="stats" id="readerStats"></span>
-                </div>
-            </div>
+        <section class="reader-view" id="readerView" aria-label="Reader view" hidden>
+            <article class="reader prose" id="readerContent"></article>
+        </section>
 
-        </div><!-- /editor-container -->
-    </main>
+        <footer class="command-bar" aria-label="Document commands">
+            <span class="document-stats" id="documentStats">0 words, 0 characters</span>
+            <span class="separator" aria-hidden="true">·</span>
+            <button class="footer-action" id="clearButton">Clear</button>
+            <span class="separator" aria-hidden="true">·</span>
+            <button class="footer-action" id="openButton">Open&nbsp;⌘O</button>
+            <span class="hint-group"><span class="separator" aria-hidden="true">·</span><span id="hintText">converted as you type</span></span>
+            <span class="separator" aria-hidden="true">·</span>
+            <button class="footer-action" id="readerButton">Reader&nbsp;⌘E</button>
+            <span class="separator" aria-hidden="true">·</span>
+            <button class="footer-action" id="settingsButton">Settings&nbsp;⌘,</button>
+            <span class="separator" aria-hidden="true">·</span>
+            <button class="footer-action" id="themeButton" title="Cycle appearance">◐&nbsp; Light</button>
+        </footer>
 
-    <!-- ==================== SETTINGS MODAL ==================== -->
-    <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-header-left">
-                    <div class="modal-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
-                    </div>
-                    <h2 id="settingsTitle">Settings</h2>
-                </div>
-                <button class="modal-close close-btn" aria-label="Close settings">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6"  y1="6" x2="18" y2="18"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-tabs" role="tablist" aria-label="Settings sections">
-                    <button class="modal-tab active" id="settingsTabBtn" data-settings-tab-trigger="settings" role="tab" aria-selected="true" aria-controls="settingsTabPanel">Settings</button>
-                    <button class="modal-tab" id="referenceTabBtn" data-settings-tab-trigger="reference" role="tab" aria-selected="false" aria-controls="referenceTabPanel">Help &amp; Reference</button>
-                </div>
+        <input id="fileInput" type="file" accept=".md,.markdown,.txt,.html,.htm" hidden>
 
-                <section class="modal-tab-panel active" id="settingsTabPanel" data-settings-tab-panel="settings" role="tabpanel" aria-labelledby="settingsTabBtn">
-                <div class="settings-list">
-
-                    <!-- Real-time conversion -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">Real-time conversion</span>
-                            <span class="setting-desc">Convert automatically as you type</span>
-                        </div>
-                        <div class="setting-control">
-                            <label class="toggle-switch" title="Toggle real-time conversion">
-                                <input type="checkbox" id="realtimeConversion" checked>
-                                <span class="switch-track">
-                                    <span class="switch-thumb"></span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Debounce delay -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">Conversion delay</span>
-                            <span class="setting-desc">Pause before converting (reduces lag on large documents)</span>
-                            <div class="range-wrap">
-                                <input type="range" id="debounceDelay" min="100" max="2000" step="100" value="300">
-                                <span id="debounceValue" class="range-value">300ms</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="setting-divider"></div>
-
-                    <!-- Markdown flavor -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">Markdown flavor</span>
-                            <span class="setting-desc">Syntax standard to use for conversion</span>
-                            <select id="markdownFlavor" class="setting-select">
-                                <option value="gfm">GitHub Flavored Markdown (GFM)</option>
-                                <option value="commonmark">CommonMark</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Theme -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">Theme</span>
-                            <span class="setting-desc">Choose a presentation mode first, then a palette family.</span>
-                            <span class="theme-section-label">Mode</span>
-                            <select id="themeModeSelect" class="setting-select visually-hidden" aria-hidden="true" tabindex="-1">
-                                <option value="light">Light</option>
-                                <option value="dark">Dark</option>
-                                <option value="system">System</option>
-                            </select>
-                            <div class="theme-mode-group" role="group" aria-label="Theme mode">
-                                <button type="button" class="theme-mode-option" data-theme-mode-value="light">Light</button>
-                                <button type="button" class="theme-mode-option" data-theme-mode-value="dark">Dark</button>
-                                <button type="button" class="theme-mode-option" data-theme-mode-value="system">System</button>
-                            </div>
-                            <span class="theme-section-label">Palette</span>
-                            <select id="themePaletteSelect" class="setting-select visually-hidden" aria-hidden="true" tabindex="-1">
-                                <option value="obsidian">Obsidian</option>
-                                <option value="warm-clay">Warm Clay</option>
-                                <option value="arctic">Arctic</option>
-                                <option value="ink-wash">Ink Wash</option>
-                                <option value="navy-orange">Navy & Orange</option>
-                                <option value="teal-rose">Teal & Rose</option>
-                                <option value="indigo-gold">Indigo & Gold</option>
-                                <option value="sunset-dusk">Sunset Dusk</option>
-                                <option value="midnight-sun">Midnight Sun</option>
-                            </select>
-                            <div class="theme-palette-grid" aria-label="Theme palette">
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="obsidian" style="--preview-dark-bg:#000000;--preview-dark-surface:#0a0a0a;--preview-light-bg:#fafafa;--preview-light-surface:#eeeeee;--preview-accent:#909090;--preview-accent-light:#1a1a1a;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Obsidian</strong><small>Pure neutral monochrome</small></span>
-                                </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="warm-clay" style="--preview-dark-bg:#0a0604;--preview-dark-surface:#16100c;--preview-light-bg:#faf4ec;--preview-light-surface:#f0e2d2;--preview-accent:#c8875a;--preview-accent-light:#b06c40;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Warm Clay</strong><small>Terracotta and cream</small></span>
-                                </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="arctic" style="--preview-dark-bg:#040810;--preview-dark-surface:#0c1420;--preview-light-bg:#f4f7fb;--preview-light-surface:#e4eaf2;--preview-accent:#7090b8;--preview-accent-light:#506c8c;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Arctic</strong><small>Steel blue and ice</small></span>
-                                </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="ink-wash" style="--preview-dark-bg:#080706;--preview-dark-surface:#141210;--preview-light-bg:#f8f5f0;--preview-light-surface:#ece6de;--preview-accent:#a09080;--preview-accent-light:#706050;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Ink Wash</strong><small>Sepia, aged paper</small></span>
-                                </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="navy-orange" style="--preview-dark-bg:#0a0e14;--preview-dark-surface:#151c24;--preview-light-bg:#f4f6fa;--preview-light-surface:#e4e8f0;--preview-accent:#f96d00;--preview-accent-light:#d85a00;--preview-accent-2:#3c5878;--preview-accent-2-light:#2c4460;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Navy & Orange</strong><small>Cold base, warm fire</small></span>
-                                </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="teal-rose" style="--preview-dark-bg:#040a0c;--preview-dark-surface:#0c181c;--preview-light-bg:#f0f8f8;--preview-light-surface:#e0ecec;--preview-accent:#00adb5;--preview-accent-light:#008c94;--preview-accent-2:#e94560;--preview-accent-2-light:#c03050;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Teal & Rose</strong><small>Cool water, warm coral</small></span>
-                                </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="indigo-gold" style="--preview-dark-bg:#060810;--preview-dark-surface:#101820;--preview-light-bg:#f6f4ee;--preview-light-surface:#eae6de;--preview-accent:#c8960e;--preview-accent-light:#9a7808;--preview-accent-2:#2e4a80;--preview-accent-2-light:#1e3868;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Indigo & Gold</strong><small>Deep night, warm luxury</small></span>
-                                </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="sunset-dusk" style="--preview-dark-bg:#0a060c;--preview-dark-surface:#161018;--preview-light-bg:#faf2f4;--preview-light-surface:#f0e4ea;--preview-accent:#e86880;--preview-accent-light:#b83b5e;--preview-accent-2:#f08a5d;--preview-accent-2-light:#d07848;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Sunset Dusk</strong><small>Purple, peach, rose</small></span>
-                                </button>
-                                <button type="button" class="theme-palette-option" data-theme-palette-value="midnight-sun" style="--preview-dark-bg:#000000;--preview-dark-surface:#0c0c10;--preview-light-bg:#f8f9fc;--preview-light-surface:#eef0f6;--preview-accent:#4a90e2;--preview-accent-light:#2b6cb0;--preview-accent-2:#e8b830;--preview-accent-2-light:#c09810;">
-                                    <span class="theme-palette-frame">
-                                        <span class="theme-swatch-stack theme-swatch-stack-dark"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                        <span class="theme-swatch-stack theme-swatch-stack-light"><span class="theme-swatch theme-swatch-base"></span><span class="theme-swatch theme-swatch-surface"></span><span class="theme-swatch theme-swatch-accent"></span><span class="theme-swatch theme-swatch-accent-2"></span></span>
-                                    </span>
-                                    <span class="theme-palette-copy"><strong>Midnight Sun</strong><small>Blue glow, golden light</small></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- True dark mode -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">True dark</span>
-                            <span class="setting-desc">Force pure black backgrounds in dark mode</span>
-                        </div>
-                        <div class="setting-control">
-                            <label class="toggle-switch" title="Toggle true dark mode">
-                                <input type="checkbox" id="trueDark">
-                                <span class="switch-track">
-                                    <span class="switch-thumb"></span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="setting-divider"></div>
-
-                    <!-- Typography -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">Typography</span>
-                            <span class="setting-desc">Customize how content appears in the editor, preview, and reader</span>
-                            <select id="contentFontSelect" class="setting-select visually-hidden" aria-hidden="true" tabindex="-1">
-                                <option value="theme">Theme default</option>
-                                <option value="manrope">System Sans</option>
-                                <option value="cormorant">Classic Serif</option>
-                                <option value="lora">Reading Serif</option>
-                                <option value="roboto-slab">Slab Serif</option>
-                            </select>
-                            <span class="theme-section-label">Font</span>
-                            <div class="font-picker-grid" aria-label="Content font">
-                                <button type="button" class="font-picker-option" data-font-value="theme">
-                                    <span class="font-preview font-preview-theme">Aa</span>
-                                    <span class="font-picker-label">Theme default</span>
-                                </button>
-                                <button type="button" class="font-picker-option" data-font-value="manrope">
-                                    <span class="font-preview" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:400">Aa</span>
-                                    <span class="font-picker-label">System Sans</span>
-                                </button>
-                                <button type="button" class="font-picker-option" data-font-value="cormorant">
-                                    <span class="font-preview" style="font-family:Georgia,'Times New Roman',serif;font-weight:400">Aa</span>
-                                    <span class="font-picker-label">Classic Serif</span>
-                                </button>
-                                <button type="button" class="font-picker-option" data-font-value="lora">
-                                    <span class="font-preview" style="font-family:'Iowan Old Style',Georgia,serif;font-weight:400">Aa</span>
-                                    <span class="font-picker-label">Reading Serif</span>
-                                </button>
-                                <button type="button" class="font-picker-option" data-font-value="roboto-slab">
-                                    <span class="font-preview" style="font-family:Rockwell,Georgia,serif;font-weight:300">Aa</span>
-                                    <span class="font-picker-label">Slab Serif</span>
-                                </button>
-                            </div>
-                            <span class="theme-section-label">Size</span>
-                            <div class="range-wrap">
-                                <input type="range" id="contentFontSize" min="13" max="22" step="1" value="15">
-                                <span id="fontSizeValue" class="range-value">15px</span>
-                            </div>
-                            <span class="theme-section-label">Weight</span>
-                            <div class="range-wrap">
-                                <input type="range" id="contentFontWeight" min="300" max="600" step="100" value="400">
-                                <span id="fontWeightValue" class="range-value">Regular</span>
-                            </div>
-                            <span class="theme-section-label">Line height</span>
-                            <div class="range-wrap">
-                                <input type="range" id="contentLineHeight" min="1.3" max="2.2" step="0.1" value="1.75">
-                                <span id="lineHeightValue" class="range-value">1.75</span>
-                            </div>
-                            <span class="theme-section-label">Content width</span>
-                            <div class="range-wrap">
-                                <input type="range" id="contentMaxWidth" min="560" max="1200" step="40" value="1200">
-                                <span id="maxWidthValue" class="range-value">Full</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Syntax highlighting -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">Syntax highlighting</span>
-                            <span class="setting-desc">Highlight code blocks in the preview</span>
-                        </div>
-                        <div class="setting-control">
-                            <label class="toggle-switch" title="Toggle syntax highlighting">
-                                <input type="checkbox" id="syntaxHighlighting" checked>
-                                <span class="switch-track">
-                                    <span class="switch-thumb"></span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Auto-save -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">Auto-save content</span>
-                            <span class="setting-desc">Persist your work in browser storage</span>
-                        </div>
-                        <div class="setting-control">
-                            <label class="toggle-switch" title="Toggle auto-save">
-                                <input type="checkbox" id="autoSave" checked>
-                                <span class="switch-track">
-                                    <span class="switch-thumb"></span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="setting-divider"></div>
-
-                    <!-- Clear storage -->
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <span class="setting-name">Clear saved data</span>
-                            <span class="setting-desc">Remove all locally stored content and settings</span>
-                        </div>
-                        <div class="setting-control">
-                            <button id="clearStorageBtn" class="btn-ghost btn-sm" style="color:var(--danger)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                                </svg>
-                                Clear
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-                </section>
-
-                <section class="modal-tab-panel" id="referenceTabPanel" data-settings-tab-panel="reference" role="tabpanel" aria-labelledby="referenceTabBtn">
-                <div class="help-section">
-                    <h3>How to use</h3>
-                    <ol class="steps-list">
-                        <li>Choose a conversion direction using the toggle at the top</li>
-                        <li>Type or paste content into the left panel</li>
-                        <li>The right panel updates in real time with the converted output</li>
-                        <li>Use <strong>Copy</strong> or <strong>Download</strong> to export the result</li>
-                    </ol>
-                </div>
-
-                <div class="help-section">
-                    <h3>Keyboard shortcuts</h3>
-                    <div class="shortcuts-grid">
-                        <div class="shortcut-item"><span>Bold</span><kbd>Ctrl+B</kbd></div>
-                        <div class="shortcut-item"><span>Italic</span><kbd>Ctrl+I</kbd></div>
-                        <div class="shortcut-item"><span>Underline</span><kbd>Ctrl+U</kbd></div>
-                        <div class="shortcut-item"><span>Insert link</span><kbd>Ctrl+K</kbd></div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <h3>Markdown syntax reference</h3>
-                    <table class="markdown-reference">
-                        <thead>
-                            <tr><th>Element</th><th>Syntax</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Heading 1</td>        <td><code># Heading</code></td></tr>
-                            <tr><td>Heading 2</td>        <td><code>## Heading</code></td></tr>
-                            <tr><td>Heading 3</td>        <td><code>### Heading</code></td></tr>
-                            <tr><td>Bold</td>             <td><code>**bold text**</code></td></tr>
-                            <tr><td>Italic</td>           <td><code>*italic text*</code></td></tr>
-                            <tr><td>Strikethrough</td>    <td><code>~~strikethrough~~</code></td></tr>
-                            <tr><td>Link</td>             <td><code>[text](url)</code></td></tr>
-                            <tr><td>Image</td>            <td><code>![alt](url)</code></td></tr>
-                            <tr><td>Unordered list</td>   <td><code>- item</code></td></tr>
-                            <tr><td>Ordered list</td>     <td><code>1. item</code></td></tr>
-                            <tr><td>Blockquote</td>       <td><code>&gt; quote</code></td></tr>
-                            <tr><td>Inline code</td>      <td><code>`code`</code></td></tr>
-                            <tr><td>Code block</td>       <td><code>```lang … ```</code></td></tr>
-                            <tr><td>Horizontal rule</td>  <td><code>---</code></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="help-section">
-                    <h3>About</h3>
-                    <p>Inkdown is a standalone, privacy-focused converter that runs entirely in your browser. No data is sent to any external server, and it works offline after the initial page load.</p>
-                    <p>Made with ❤️ by <a href="https://aditya.pandya.co/" target="_blank" rel="noopener noreferrer">Aditya Pandya</a>.</p>
-                </div>
-                </section>
+        <div class="drag-overlay" id="dragOverlay" aria-hidden="true" hidden>
+            <div>
+                <p>Drop to open</p>
+                <span>.md, .txt or .html</span>
             </div>
         </div>
+
+        <div class="settings-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+            <button class="settings-backdrop" id="settingsBackdrop" aria-label="Close settings"></button>
+            <section class="settings-panel">
+                <h2 id="settingsTitle">SETTINGS</h2>
+                <div id="settingsRows"></div>
+                <div class="setting-row saved-data-row">
+                    <span>Saved data</span>
+                    <button class="setting-option" id="clearSavedButton">Clear all</button>
+                </div>
+                <div class="settings-meta">
+                    <p>Everything stays on this device — offline, no account.</p>
+                    <p>Inkdown 2.0 · © 2026 Aditya Pandya · <a href="mailto:feedback@inkdown.app">Send feedback</a></p>
+                    <p class="escape-hint">esc to close</p>
+                </div>
+            </section>
+        </div>
+
+        <div class="sr-status" id="statusMessage" role="status" aria-live="polite"></div>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container" role="region" aria-live="polite" aria-label="Notifications"></div>
-
-</div><!-- /app-container -->
-<script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

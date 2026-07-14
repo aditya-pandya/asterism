@@ -77,6 +77,7 @@
       await fs.writeTextFile(filePath, options.content || '');
       return { canceled: false, filePath };
     },
+    startDragging: () => tauri().window.getCurrentWindow().startDragging(),
     setAppIconTheme: () => {},
     onMenuAction: (callback) => subscribe('menu-action', callback),
     onOpenFile: (callback) => {
