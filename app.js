@@ -41,6 +41,7 @@ const state = {
     copied: false,
     currentFileName: '',
     undoMarkdown: null,
+    undoFileName: '',
     dragDepth: 0,
     lastFocusedElement: null
 };
@@ -60,10 +61,17 @@ const elements = {
     hintText: document.getElementById('hintText'),
     clearButton: document.getElementById('clearButton'),
     openButton: document.getElementById('openButton'),
-    readerButton: document.getElementById('readerButton'),
+    viewEditButton: document.getElementById('viewEditButton'),
+    viewReadButton: document.getElementById('viewReadButton'),
     settingsButton: document.getElementById('settingsButton'),
+    settingsClose: document.getElementById('settingsClose'),
     themeButton: document.getElementById('themeButton'),
     pasteButton: document.getElementById('pasteButton'),
+    emptyState: document.getElementById('emptyState'),
+    emptyPasteButton: document.getElementById('emptyPasteButton'),
+    emptyOpenButton: document.getElementById('emptyOpenButton'),
+    docName: document.getElementById('docName'),
+    toast: document.getElementById('toast'),
     copyButton: document.getElementById('copyButton'),
     downloadButton: document.getElementById('downloadButton'),
     fileInput: document.getElementById('fileInput'),
@@ -81,6 +89,31 @@ let clearArmTimer = null;
 let undoTimer = null;
 let copiedTimer = null;
 let savedDataTimer = null;
+let toastTimer = null;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const MOTION_EASE = 'cubic-bezier(.4,0,.2,1)';
+
+function softEnter(element, { duration = 180, rise = 4 } = {}) {
+    if (reducedMotion.matches || !element?.animate) return;
+    element.animate([
+        { opacity: 0, transform: `translateY(${rise}px)` },
+        { opacity: 1, transform: 'translateY(0)' }
+    ], { duration, easing: MOTION_EASE });
+}
+
+let lastSyncPulse = 0;
+
+function pulseSyncMark() {
+    if (reducedMotion.matches) return;
+    const now = performance.now();
+    if (now - lastSyncPulse < 900) return;
+    lastSyncPulse = now;
+    const mark = document.querySelector('.sync-mark svg');
+    mark?.animate?.([
+        { opacity: 0.35, transform: 'rotate(-90deg)' },
+        { opacity: 1, transform: 'rotate(0)' }
+    ], { duration: 220, easing: MOTION_EASE });
+}
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
 
 function escapeHtml(value) {
@@ -346,7 +379,29 @@ function updateStats() {
     const text = elements.richEditor.innerText || '';
     const words = (text.trim().match(/\S+/g) || []).length;
     const characters = text.replace(/\n/g, '').length;
-    elements.documentStats.textContent = `${words} words, ${characters} characters`;
+    elements.documentStats.textContent = `${words.toLocaleString()} ${words === 1 ? 'word' : 'words'} · ${characters.toLocaleString()} ${characters === 1 ? 'character' : 'characters'}`;
+    elements.copyButton.disabled = !state.markdown;
+    elements.downloadButton.disabled = !state.markdown;
+    renderEmptyState();
+    renderClearState();
+}
+
+function renderEmptyState() {
+    const isEmpty = !state.markdown && !elements.richEditor.innerText.trim();
+    elements.emptyState.hidden = !isEmpty || elements.richPane.classList.contains('is-focused');
+}
+
+function renderDocName() {
+    elements.docName.textContent = state.currentFileName;
+    elements.docName.hidden = !state.currentFileName;
+    document.title = state.currentFileName ? `${state.currentFileName} · Asterism` : 'Asterism';
+}
+
+function renderStatusHint() {
+    if (state.copied) return;
+    elements.hintText.textContent = state.preferences.autoSave
+        ? 'Converts as you type · saved on this device'
+        : 'Converts as you type · auto-save off';
 }
 
 function persistDocument() {
@@ -376,6 +431,7 @@ function syncFromRich({ flash = false } = {}) {
     renderMarkdownHighlight();
     updateStats();
     persistDocument();
+    pulseSyncMark();
     if (flash) {
         elements.markdownHighlight.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'cubic-bezier(.4,0,.2,1)' });
     }
@@ -387,6 +443,7 @@ function syncFromMarkdown() {
     if (!state.markdown) elements.markdownEditor.textContent = '';
     renderMarkdownHighlight();
     renderRichFromMarkdown();
+    pulseSyncMark();
     updateStats();
     persistDocument();
 }
@@ -515,7 +572,10 @@ function applyTheme() {
     const mode = resolvedTheme();
     document.documentElement.dataset.mode = mode;
     elements.app.dataset.mode = mode;
-    elements.themeButton.textContent = `◐  ${state.preferences.appearance === 'auto' ? 'Auto' : (mode === 'dark' ? 'Dark' : 'Light')}`;
+    const label = { light: 'Light', dark: 'Dark', auto: 'Auto (match system)' }[state.preferences.appearance];
+    elements.themeButton.dataset.appearance = state.preferences.appearance;
+    elements.themeButton.title = `Appearance: ${label}. Click to change`;
+    elements.themeButton.setAttribute('aria-label', `Appearance: ${label}`);
     applyHighlightTheme();
 }
 
@@ -533,7 +593,10 @@ function setPreference(key, value) {
         renderRichFromMarkdown();
         updateStats();
     }
-    if (key === 'autoSave' && value) persistDocument();
+    if (key === 'autoSave') {
+        if (value) persistDocument();
+        renderStatusHint();
+    }
     if (state.view === 'reader' && ['readerWidth', 'smartQuotes', 'flavor'].includes(key)) renderReader();
     renderSettingsRows();
 }
@@ -547,6 +610,8 @@ function renderSettingsRows() {
         name.textContent = definition.name;
         const options = document.createElement('span');
         options.className = 'setting-options';
+        options.setAttribute('role', 'group');
+        options.setAttribute('aria-label', definition.name);
 
         definition.values.forEach((value, index) => {
             const option = document.createElement('button');
@@ -567,6 +632,7 @@ function openSettings() {
     state.settingsOpen = true;
     state.lastFocusedElement = document.activeElement;
     renderSettingsRows();
+    elements.settingsOverlay.getAnimations?.().forEach((animation) => animation.cancel());
     elements.settingsOverlay.hidden = false;
     requestAnimationFrame(() => elements.settingsRows.querySelector('.setting-option.is-active')?.focus());
 }
@@ -574,7 +640,22 @@ function openSettings() {
 function closeSettings() {
     if (!state.settingsOpen) return;
     state.settingsOpen = false;
-    elements.settingsOverlay.hidden = true;
+    const overlay = elements.settingsOverlay;
+    const panel = overlay.querySelector('.settings-panel');
+    if (reducedMotion.matches || !overlay.animate) {
+        overlay.hidden = true;
+    } else {
+        panel?.animate([
+            { transform: 'translateY(0)' },
+            { transform: 'translateY(4px)' }
+        ], { duration: 140, easing: MOTION_EASE });
+        overlay.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: MOTION_EASE, fill: 'forwards' });
+        setTimeout(() => {
+            if (state.settingsOpen) return;
+            overlay.hidden = true;
+            overlay.getAnimations().forEach((animation) => animation.cancel());
+        }, 140);
+    }
     state.lastFocusedElement?.focus?.();
 }
 
@@ -620,7 +701,17 @@ function openReader() {
     renderReader();
     elements.editView.hidden = true;
     elements.readerView.hidden = false;
-    elements.readerButton.textContent = 'Close Reader  esc';
+    softEnter(elements.readerView);
+    renderViewSwitch();
+}
+
+function renderViewSwitch() {
+    const reading = state.view === 'reader';
+    elements.viewEditButton.classList.toggle('is-active', !reading);
+    elements.viewReadButton.classList.toggle('is-active', reading);
+    elements.viewEditButton.setAttribute('aria-pressed', String(!reading));
+    elements.viewReadButton.setAttribute('aria-pressed', String(reading));
+    elements.viewEditButton.parentElement?.classList.toggle('is-reading', reading);
 }
 
 function closeReader() {
@@ -628,7 +719,8 @@ function closeReader() {
     state.view = 'edit';
     elements.readerView.hidden = true;
     elements.editView.hidden = false;
-    elements.readerButton.textContent = 'Reader  ⌘E';
+    softEnter(elements.editView, { rise: 0 });
+    renderViewSwitch();
 }
 
 function toggleReader() {
@@ -637,16 +729,13 @@ function toggleReader() {
 }
 
 function renderClearState() {
-    if (state.justCleared) {
-        elements.clearButton.textContent = 'Undo';
-        elements.clearButton.classList.add('is-emphasized');
-    } else if (state.clearArmed) {
-        elements.clearButton.textContent = 'Clear — sure?';
-        elements.clearButton.classList.add('is-emphasized');
-    } else {
-        elements.clearButton.textContent = 'Clear';
-        elements.clearButton.classList.remove('is-emphasized');
-    }
+    const button = elements.clearButton;
+    button.classList.toggle('is-emphasized', state.justCleared);
+    button.classList.toggle('is-armed', state.clearArmed && !state.justCleared);
+    if (state.justCleared) button.textContent = 'Undo clear';
+    else if (state.clearArmed) button.textContent = 'Click again to clear';
+    else button.textContent = 'Clear';
+    button.disabled = !state.justCleared && !state.markdown;
 }
 
 function clearNow({ withUndo = true } = {}) {
@@ -654,8 +743,11 @@ function clearNow({ withUndo = true } = {}) {
     clearTimeout(undoTimer);
     state.clearArmed = false;
     state.undoMarkdown = withUndo ? state.markdown : null;
+    state.undoFileName = withUndo ? state.currentFileName : '';
     state.justCleared = withUndo && Boolean(state.markdown);
     state.markdown = '';
+    state.currentFileName = '';
+    renderDocName();
     elements.richEditor.innerHTML = '';
     elements.markdownEditor.textContent = '';
     renderMarkdownHighlight();
@@ -681,6 +773,8 @@ function undoClear() {
     const markdown = state.undoMarkdown || '';
     state.justCleared = false;
     state.undoMarkdown = null;
+    state.currentFileName = state.undoFileName;
+    renderDocName();
     renderClearState();
     setDocumentFromMarkdown(markdown);
 }
@@ -716,12 +810,32 @@ function clearSavedData() {
     announce('Saved data cleared');
 }
 
-function announce(message) {
+function announce(message, { toast = true } = {}) {
     elements.statusMessage.textContent = '';
     requestAnimationFrame(() => { elements.statusMessage.textContent = message; });
+    if (!toast) return;
+    elements.toast.textContent = message;
+    elements.toast.classList.remove('is-leaving');
+    elements.toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        if (reducedMotion.matches) {
+            elements.toast.hidden = true;
+            return;
+        }
+        elements.toast.classList.add('is-leaving');
+        toastTimer = setTimeout(() => {
+            elements.toast.hidden = true;
+            elements.toast.classList.remove('is-leaving');
+        }, 160);
+    }, 1800);
 }
 
 async function copyMarkdown() {
+    if (!state.markdown) {
+        announce('Nothing to copy yet');
+        return;
+    }
     let copied = false;
     try {
         await navigator.clipboard.writeText(state.markdown);
@@ -738,24 +852,27 @@ async function copyMarkdown() {
     }
     if (!copied) return;
     state.copied = true;
-    elements.copyButton.textContent = 'Copied ✓';
+    const label = elements.copyButton.querySelector('.copy-label');
+    label.textContent = 'Copied ✓';
+    softEnter(label, { duration: 160, rise: 3 });
     elements.copyButton.classList.add('is-copied');
-    elements.hintText.textContent = 'copied to clipboard';
-    announce('Markdown copied to clipboard');
+    elements.hintText.textContent = 'Markdown copied to clipboard';
+    announce('Markdown copied to clipboard', { toast: false });
     clearTimeout(copiedTimer);
     copiedTimer = setTimeout(() => {
         state.copied = false;
-        elements.copyButton.textContent = 'Copy  ⌘⇧C';
+        label.textContent = 'Copy';
+        softEnter(label, { duration: 160, rise: 3 });
         elements.copyButton.classList.remove('is-copied');
-        elements.hintText.textContent = 'converted as you type';
+        renderStatusHint();
     }, 1400);
 }
 
 function deriveFileName() {
     if (state.currentFileName) return state.currentFileName.replace(/\.(html?|txt|markdown)$/i, '.md');
-    const heading = state.markdown.match(/^#{1,6}\s+(.+)$/m)?.[1] || 'inkdown';
+    const heading = state.markdown.match(/^#{1,6}\s+(.+)$/m)?.[1] || 'untitled';
     const slug = heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-    return `${slug || 'inkdown'}.md`;
+    return `${slug || 'untitled'}.md`;
 }
 
 async function saveMarkdown() {
@@ -778,6 +895,7 @@ async function saveMarkdown() {
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
+    announce(`Downloaded ${filename}`);
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
 
@@ -791,6 +909,7 @@ function inferDocumentKind(name, content, explicitKind) {
 
 function loadDocumentData({ name = '', content = '', kind = '' } = {}) {
     state.currentFileName = name;
+    renderDocName();
     const resolvedKind = inferDocumentKind(name, content, kind);
     if (resolvedKind === 'html') setDocumentFromHtml(content);
     else if (resolvedKind === 'markdown') setDocumentFromMarkdown(content);
@@ -838,10 +957,11 @@ async function pasteFromClipboard() {
         }
         const text = await navigator.clipboard.readText();
         if (text) setDocumentFromMarkdown(text);
+        else announce('Clipboard is empty');
         elements.richEditor.focus();
     } catch {
         elements.richEditor.focus();
-        announce('Press ⌘V to paste');
+        announce('Press ⌘V to paste here');
     }
 }
 
@@ -874,12 +994,34 @@ function runFormattingCommand(command) {
         document.execCommand(command, false, null);
     }
     syncFromRich();
+    renderFormatState();
+}
+
+const FORMAT_STATE_COMMANDS = ['bold', 'italic', 'underline', 'strikeThrough', 'insertUnorderedList', 'insertOrderedList'];
+function renderFormatState() {
+    const selection = window.getSelection();
+    const inEditor = selection?.rangeCount && elements.richEditor.contains(selection.anchorNode);
+    document.querySelectorAll('.format-tool').forEach((button) => {
+        const command = button.dataset.command;
+        let active = false;
+        if (inEditor && FORMAT_STATE_COMMANDS.includes(command)) {
+            try { active = document.queryCommandState(command); } catch { active = false; }
+        }
+        button.classList.toggle('is-active', Boolean(active));
+    });
 }
 
 function cycleTheme() {
     const choices = ['light', 'dark', 'auto'];
     const next = choices[(choices.indexOf(state.preferences.appearance) + 1) % choices.length];
     setPreference('appearance', next);
+    const icon = elements.themeButton.querySelector(`.theme-${next}`);
+    if (!reducedMotion.matches && icon?.animate) {
+        icon.animate([
+            { opacity: 0, transform: 'rotate(-60deg)' },
+            { opacity: 1, transform: 'rotate(0)' }
+        ], { duration: 200, easing: MOTION_EASE });
+    }
 }
 
 function handleGlobalKeydown(event) {
@@ -934,10 +1076,11 @@ function setupDragAndDrop() {
 }
 
 function setupDesktopIntegration() {
+    if (window.desktopBridge?.isElectron) document.body.classList.add('is-desktop');
     if (window.desktopBridge?.isTauri) {
         document.body.classList.add('is-tauri');
         elements.wordmarkStrip.addEventListener('mousedown', (event) => {
-            if (event.button === 0) window.desktopBridge.startDragging?.();
+            if (event.button === 0 && !event.target.closest('button')) window.desktopBridge.startDragging?.();
         });
     }
 
@@ -954,8 +1097,15 @@ function setupDesktopIntegration() {
 function bindEvents() {
     elements.richEditor.addEventListener('input', () => syncFromRich());
     elements.richEditor.addEventListener('paste', insertRichClipboard);
-    elements.richEditor.addEventListener('focus', () => elements.richPane.classList.add('is-focused'));
-    elements.richEditor.addEventListener('blur', () => setTimeout(() => elements.richPane.classList.remove('is-focused'), 120));
+    elements.richEditor.addEventListener('focus', () => {
+        elements.richPane.classList.add('is-focused');
+        renderEmptyState();
+    });
+    elements.richEditor.addEventListener('blur', () => setTimeout(() => {
+        if (document.activeElement === elements.richEditor) return;
+        elements.richPane.classList.remove('is-focused');
+        renderEmptyState();
+    }, 120));
     elements.markdownEditor.addEventListener('input', syncFromMarkdown);
     elements.markdownEditor.addEventListener('paste', insertPlainClipboard);
     elements.markdownEditor.addEventListener('scroll', syncMarkdownScroll);
@@ -967,19 +1117,25 @@ function bindEvents() {
         button.addEventListener('click', () => runFormattingCommand(button.dataset.command));
     });
 
-    elements.pasteButton.addEventListener('mousedown', (event) => event.preventDefault());
-    elements.pasteButton.addEventListener('click', pasteFromClipboard);
+    [elements.pasteButton, elements.emptyPasteButton].forEach((button) => {
+        button.addEventListener('mousedown', (event) => event.preventDefault());
+        button.addEventListener('click', pasteFromClipboard);
+    });
+    elements.emptyOpenButton.addEventListener('click', openDocument);
     elements.copyButton.addEventListener('click', copyMarkdown);
     elements.downloadButton.addEventListener('click', saveMarkdown);
     elements.clearButton.addEventListener('click', handleClear);
     elements.openButton.addEventListener('click', openDocument);
-    elements.readerButton.addEventListener('click', toggleReader);
+    elements.viewEditButton.addEventListener('click', closeReader);
+    elements.viewReadButton.addEventListener('click', openReader);
     elements.settingsButton.addEventListener('click', openSettings);
+    elements.settingsClose.addEventListener('click', closeSettings);
     elements.themeButton.addEventListener('click', cycleTheme);
     elements.settingsBackdrop.addEventListener('click', closeSettings);
     elements.clearSavedButton.addEventListener('click', clearSavedData);
     elements.fileInput.addEventListener('change', () => loadBrowserFile(elements.fileInput.files?.[0]));
     document.addEventListener('keydown', handleGlobalKeydown);
+    document.addEventListener('selectionchange', renderFormatState);
     systemTheme.addEventListener?.('change', () => {
         if (state.preferences.appearance === 'auto') applyTheme();
     });
@@ -991,6 +1147,7 @@ function initialize() {
     applyTheme();
     applyTextSize();
     renderSettingsRows();
+    renderStatusHint();
     setDocumentFromMarkdown(loadDocument(), { persist: false });
     bindEvents();
     setupDragAndDrop();

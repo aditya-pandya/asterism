@@ -24,3 +24,16 @@
 - Overrode Turndown's list-item rule so unordered and ordered markers use one following space (`- item` and `1. item`) while retaining four-space indentation for continuation lines and nested lists.
 - Added a Turndown rule that converts every `pre` element, including bare `pre` elements without an inner `code`, to a triple-backtick fenced block.
 - Removed eager highlight.js script and theme stylesheet tags. The app now injects the bundled local assets on the first rendered `pre code`, lets conversion/rendering continue immediately, and highlights the current code blocks when the script finishes loading.
+
+## October 2026 usability pass
+
+Goal: keep Paper's quiet look but make every action findable without prior knowledge.
+
+- Top bar replaces the centered micro-wordmark: wordmark and open file name on the left, an Edit/Read switch in the middle, Open, appearance and Settings on the right. The bar is still the window drag region (buttons opt out), with a left inset for the macOS traffic lights in both Electron and Tauri.
+- Footer is now a status bar: word and character count, a plain-language status line (converts as you type, saved or auto-save off, copied), and Clear. Clear keeps the two-step confirm and the 8 second Undo, and now also restores the file name.
+- Formatting toolbar is always visible, dimmed until the rich pane is focused, with 28px targets, icons for code, quote, lists and divider, and grouping rules.
+- First-run empty state in the rich pane: what Inkdown does, a primary Paste button, Open file, and the drop hint. The Markdown placeholder says it can be edited too, and a small sync mark on the divider shows the panes are linked.
+- Copy is the only filled button and is disabled with Save when the document is empty. The Markdown pane has a light tint so source and rendered sides read differently.
+- Contrast and size raised: labels 12px in sentence case, tertiary text darkened, the heavy focus outline on the editors removed in favour of the pane label brightening.
+- Settings is an opaque sheet with segmented controls, a close button and a shortcuts list. Visible toasts confirm open, save, download and cleared data.
+- Deviation from the Paper spec: segmented controls use a 1px inset ring for the active option (no drop shadows were added).

@@ -5,13 +5,13 @@
   "description": "A premium, privacy-first rich text and Markdown converter for the browser and macOS desktop.",
   "author": "Aditya Pandya",
   "license": "MIT",
-  "homepage": "https://github.com/aditya-pandya/Inkdown",
+  "homepage": "https://github.com/aditya-pandya/asterism",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aditya-pandya/Inkdown.git"
+    "url": "https://github.com/aditya-pandya/asterism.git"
   },
   "bugs": {
-    "url": "https://github.com/aditya-pandya/Inkdown/issues"
+    "url": "https://github.com/aditya-pandya/asterism/issues"
   },
   "main": "electron/main.js",
   "scripts": {

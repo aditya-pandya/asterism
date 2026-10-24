@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
-    <title>Inkdown</title>
+    <title>Asterism</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles.css">
     <script src="vendor/marked.min.js"></script>
@@ -14,45 +14,105 @@
 </head>
 <body>
     <div class="inkdown" id="app" data-mode="light">
-        <header class="wordmark-strip" id="wordmarkStrip" aria-label="Inkdown window title">
-            <span>INKDOWN</span>
+        <header class="topbar" id="wordmarkStrip" aria-label="Asterism">
+            <div class="topbar-start">
+                <span class="wordmark"><svg class="wordmark-glyph" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6v18M24.2 10.5l15.6 9M39.8 10.5l-15.6 9M17 36v18M9.2 40.5l15.6 9M24.8 40.5l-15.6 9M47 36v18M39.2 40.5l15.6 9M54.8 40.5l-15.6 9"/></svg>Asterism</span>
+                <span class="doc-name" id="docName" hidden></span>
+            </div>
+
+            <div class="view-switch" role="group" aria-label="View">
+                <button class="view-option is-active" id="viewEditButton" aria-pressed="true" title="Edit side by side">Edit</button>
+                <button class="view-option" id="viewReadButton" aria-pressed="false" title="Read  ⌘E">Read</button>
+            </div>
+
+            <div class="topbar-end">
+                <button class="icon-button" id="openButton" title="Open a file  ⌘O" aria-label="Open a file">
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5V12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H8L6.5 3.5H3a1 1 0 0 0-1 1Z"/></svg>
+                    <span class="icon-label">Open</span>
+                </button>
+                <button class="icon-button" id="themeButton" data-appearance="light" title="Appearance" aria-label="Appearance">
+                    <svg class="theme-icon theme-light" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg>
+                    <svg class="theme-icon theme-dark" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.5A5.5 5.5 0 1 1 6.5 2.5a4.5 4.5 0 0 0 7 7Z"/></svg>
+                    <svg class="theme-icon theme-auto" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path class="fill" d="M8 2.5a5.5 5.5 0 0 1 0 11Z"/></svg>
+                </button>
+                <button class="icon-button" id="settingsButton" title="Settings  ⌘," aria-label="Settings">
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h6M11.5 4.5h2M2.5 11.5h2M7.5 11.5h6"/><circle cx="10" cy="4.5" r="1.5"/><circle cx="6" cy="11.5" r="1.5"/></svg>
+                </button>
+            </div>
         </header>
 
         <main class="workspace" id="editView">
             <section class="pane rich-pane" id="richPane" aria-labelledby="richLabel">
                 <div class="pane-header">
-                    <span class="pane-label" id="richLabel">RICH TEXT</span>
-                    <div class="rich-actions">
-                        <div class="format-toolbar" role="toolbar" aria-label="Rich text formatting">
-                            <button class="format-tool tool-bold" data-command="bold" title="Bold ⌘B" aria-label="Bold">B</button>
-                            <button class="format-tool tool-italic" data-command="italic" title="Italic ⌘I" aria-label="Italic">I</button>
-                            <button class="format-tool tool-underline" data-command="underline" title="Underline ⌘U" aria-label="Underline">U</button>
+                    <span class="pane-label" id="richLabel">Rich text</span>
+                    <div class="pane-actions">
+                        <div class="format-toolbar" role="toolbar" aria-label="Formatting">
+                            <button class="format-tool tool-bold" data-command="bold" title="Bold  ⌘B" aria-label="Bold">B</button>
+                            <button class="format-tool tool-italic" data-command="italic" title="Italic  ⌘I" aria-label="Italic">I</button>
+                            <button class="format-tool tool-underline" data-command="underline" title="Underline  ⌘U" aria-label="Underline">U</button>
                             <button class="format-tool tool-strike" data-command="strikeThrough" title="Strikethrough" aria-label="Strikethrough">S</button>
-                            <button class="format-tool tool-code" data-command="code" title="Inline code" aria-label="Inline code">`</button>
-                            <button class="format-tool" data-command="quote" title="Blockquote" aria-label="Blockquote">❝</button>
-                            <button class="format-tool" data-command="insertUnorderedList" title="Bulleted list" aria-label="Bulleted list">•</button>
-                            <button class="format-tool" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">1.</button>
-                            <button class="format-tool" data-command="insertHorizontalRule" title="Divider" aria-label="Divider">—</button>
+                            <span class="tool-gap" aria-hidden="true"></span>
+                            <button class="format-tool" data-command="code" title="Inline code" aria-label="Inline code">
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5"/></svg>
+                            </button>
+                            <button class="format-tool" data-command="quote" title="Quote" aria-label="Quote">
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5v9M6.5 5.5h7M6.5 8h7M6.5 10.5h4.5"/></svg>
+                            </button>
+                            <span class="tool-gap" aria-hidden="true"></span>
+                            <button class="format-tool" data-command="insertUnorderedList" title="Bulleted list" aria-label="Bulleted list">
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4.5h7.5M6 8h7.5M6 11.5h7.5"/><circle class="fill" cx="3" cy="4.5" r=".9"/><circle class="fill" cx="3" cy="8" r=".9"/><circle class="fill" cx="3" cy="11.5" r=".9"/></svg>
+                            </button>
+                            <button class="format-tool" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 4.5h7M6.5 8h7M6.5 11.5h7M2.5 3.5l1-.5v3M2.4 9.6c.3-.6 1.6-.6 1.6.2 0 .6-1.6 1.2-1.6 1.7h1.7"/></svg>
+                            </button>
+                            <button class="format-tool" data-command="insertHorizontalRule" title="Divider" aria-label="Divider">
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h12"/></svg>
+                            </button>
                         </div>
-                        <button class="text-action paste-action" id="pasteButton" title="Paste from clipboard">Paste&nbsp;&nbsp;⌘V</button>
+                        <span class="action-rule" aria-hidden="true"></span>
+                        <button class="text-button" id="pasteButton" title="Replace with clipboard  ⌘V">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3" width="9" height="11" rx="1"/><path d="M6 3V2h4v1"/></svg>
+                            <span class="button-text">Paste</span>
+                        </button>
                     </div>
                 </div>
-                <div class="rich-editor prose" id="richEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Paste anything — ⌘V"></div>
+                <div class="pane-body">
+                    <div class="rich-editor prose" id="richEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="richLabel" data-placeholder="Start typing…"></div>
+                    <div class="empty-state" id="emptyState">
+                        <p class="empty-title">Paste anything to convert it</p>
+                        <p class="empty-copy">Formatted text from Docs, Notion, email or the web turns into clean Markdown on the right.</p>
+                        <div class="empty-actions">
+                            <button class="button button-primary" id="emptyPasteButton">Paste <kbd>⌘V</kbd></button>
+                            <button class="button" id="emptyOpenButton">Open file…</button>
+                        </div>
+                        <p class="empty-hint">or drop a .md, .txt or .html file anywhere</p>
+                    </div>
+                </div>
             </section>
 
-            <div class="pane-divider" aria-hidden="true"></div>
+            <div class="pane-divider" aria-hidden="true">
+                <span class="sync-mark" title="Both sides stay in sync">
+                    <svg viewBox="0 0 16 16"><path d="M3 5.5h9.5M10 3l2.5 2.5L10 8M13 10.5H3.5M6 8l-2.5 2.5L6 13"/></svg>
+                </span>
+            </div>
 
             <section class="pane markdown-pane" id="markdownPane" aria-labelledby="markdownLabel">
                 <div class="pane-header">
-                    <span class="pane-label" id="markdownLabel">MARKDOWN</span>
-                    <div class="markdown-actions">
-                        <button class="text-action" id="downloadButton" title="Download .md file">↓&nbsp; .md</button>
-                        <button class="text-action copy-action" id="copyButton">Copy&nbsp;&nbsp;⌘⇧C</button>
+                    <span class="pane-label" id="markdownLabel">Markdown</span>
+                    <div class="pane-actions">
+                        <button class="text-button" id="downloadButton" title="Save as .md  ⌘S">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>
+                            <span class="button-text">Save .md</span>
+                        </button>
+                        <button class="button button-primary copy-action" id="copyButton" title="Copy Markdown  ⌘⇧C">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.2"/><path d="M10.5 5.5V3.7a1.2 1.2 0 0 0-1.2-1.2H3.7a1.2 1.2 0 0 0-1.2 1.2v5.6a1.2 1.2 0 0 0 1.2 1.2h1.8"/></svg>
+                            <span class="copy-label">Copy</span>
+                        </button>
                     </div>
                 </div>
-                <div class="markdown-stack">
+                <div class="pane-body markdown-stack">
                     <div class="markdown-highlight" id="markdownHighlight" aria-hidden="true"></div>
-                    <div class="markdown-editor" id="markdownEditor" contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-label="Markdown editor" spellcheck="false" data-placeholder="Markdown appears here, instantly"></div>
+                    <div class="markdown-editor" id="markdownEditor" contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-labelledby="markdownLabel" spellcheck="false" data-placeholder="…or write Markdown here. It renders on the left as you type."></div>
                 </div>
             </section>
         </main>
@@ -61,22 +121,15 @@
             <article class="reader prose" id="readerContent"></article>
         </section>
 
-        <footer class="command-bar" aria-label="Document commands">
-            <span class="document-stats" id="documentStats">0 words, 0 characters</span>
-            <span class="separator" aria-hidden="true">·</span>
-            <button class="footer-action" id="clearButton">Clear</button>
-            <span class="separator" aria-hidden="true">·</span>
-            <button class="footer-action" id="openButton">Open&nbsp;⌘O</button>
-            <span class="hint-group"><span class="separator" aria-hidden="true">·</span><span id="hintText">converted as you type</span></span>
-            <span class="separator" aria-hidden="true">·</span>
-            <button class="footer-action" id="readerButton">Reader&nbsp;⌘E</button>
-            <span class="separator" aria-hidden="true">·</span>
-            <button class="footer-action" id="settingsButton">Settings&nbsp;⌘,</button>
-            <span class="separator" aria-hidden="true">·</span>
-            <button class="footer-action" id="themeButton" title="Cycle appearance">◐&nbsp; Light</button>
+        <footer class="statusbar" aria-label="Document status">
+            <span class="document-stats" id="documentStats">0 words · 0 characters</span>
+            <span class="status-hint" id="hintText">Saved on this device</span>
+            <button class="footer-action" id="clearButton" title="Clear the document  ⌘N">Clear</button>
         </footer>
 
         <input id="fileInput" type="file" accept=".md,.markdown,.txt,.html,.htm" hidden>
+
+        <div class="toast" id="toast" aria-hidden="true" hidden></div>
 
         <div class="drag-overlay" id="dragOverlay" aria-hidden="true" hidden>
             <div>
@@ -86,18 +139,33 @@
         </div>
 
         <div class="settings-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
-            <button class="settings-backdrop" id="settingsBackdrop" aria-label="Close settings"></button>
+            <button class="settings-backdrop" id="settingsBackdrop" aria-label="Close settings" tabindex="-1"></button>
             <section class="settings-panel">
-                <h2 id="settingsTitle">SETTINGS</h2>
-                <div id="settingsRows"></div>
-                <div class="setting-row saved-data-row">
-                    <span>Saved data</span>
-                    <button class="setting-option" id="clearSavedButton">Clear all</button>
+                <div class="settings-head">
+                    <h2 id="settingsTitle">Settings</h2>
+                    <button class="icon-button" id="settingsClose" aria-label="Close settings" title="Close  esc">
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+                    </button>
                 </div>
+                <div id="settingsRows"></div>
+                <div class="setting-row">
+                    <span>Saved data</span>
+                    <button class="setting-option setting-danger" id="clearSavedButton">Clear all</button>
+                </div>
+
+                <h3 class="settings-subhead">Shortcuts</h3>
+                <dl class="shortcut-list">
+                    <div><dt>Copy Markdown</dt><dd><kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd></dd></div>
+                    <div><dt>Open file</dt><dd><kbd>⌘</kbd><kbd>O</kbd></dd></div>
+                    <div><dt>Save .md</dt><dd><kbd>⌘</kbd><kbd>S</kbd></dd></div>
+                    <div><dt>Read / Edit</dt><dd><kbd>⌘</kbd><kbd>E</kbd></dd></div>
+                    <div><dt>New document</dt><dd><kbd>⌘</kbd><kbd>N</kbd></dd></div>
+                    <div><dt>Settings</dt><dd><kbd>⌘</kbd><kbd>,</kbd></dd></div>
+                </dl>
+
                 <div class="settings-meta">
-                    <p>Everything stays on this device — offline, no account.</p>
-                    <p>Inkdown 2.0 · © 2026 Aditya Pandya · <a href="mailto:feedback@inkdown.app">Send feedback</a></p>
-                    <p class="escape-hint">esc to close</p>
+                    <p>Everything stays on this device. Offline, no account.</p>
+                    <p>Asterism 2.0 · © 2026 Aditya Pandya · <a href="mailto:feedback@inkdown.app">Send feedback</a></p>
                 </div>
             </section>
         </div>
