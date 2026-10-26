@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Asterism",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "identifier": "com.apandya.inkdown",
   "build": {
     "frontendDist": "dist",
@@ -41,6 +41,7 @@
     "macOS": {
       "minimumSystemVersion": "11.0",
       "hardenedRuntime": false,
+      "signingIdentity": "-",
       "dmg": {
         "windowSize": { "width": 660, "height": 400 },
         "appPosition": { "x": 180, "y": 170 },
