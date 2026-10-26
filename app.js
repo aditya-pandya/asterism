@@ -633,6 +633,7 @@ function openSettings() {
     state.lastFocusedElement = document.activeElement;
     renderSettingsRows();
     elements.settingsOverlay.getAnimations?.().forEach((animation) => animation.cancel());
+    elements.settingsOverlay.classList.remove('is-closing');
     elements.settingsOverlay.hidden = false;
     requestAnimationFrame(() => elements.settingsRows.querySelector('.setting-option.is-active')?.focus());
 }
@@ -642,6 +643,7 @@ function closeSettings() {
     state.settingsOpen = false;
     const overlay = elements.settingsOverlay;
     const panel = overlay.querySelector('.settings-panel');
+    overlay.classList.add('is-closing');
     if (reducedMotion.matches || !overlay.animate) {
         overlay.hidden = true;
     } else {
@@ -876,6 +878,10 @@ function deriveFileName() {
 }
 
 async function saveMarkdown() {
+    if (!state.markdown) {
+        announce('Nothing to save yet');
+        return;
+    }
     const filename = deriveFileName();
     if (window.desktopBridge?.saveFile) {
         try {
@@ -943,6 +949,8 @@ function loadBrowserFile(file) {
 }
 
 async function pasteFromClipboard() {
+    state.currentFileName = '';
+    renderDocName();
     try {
         if (navigator.clipboard?.read) {
             const items = await navigator.clipboard.read();

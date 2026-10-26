@@ -758,6 +758,7 @@ kbd {
     position: absolute;
     inset: 0;
     z-index: 30;
+    -webkit-app-region: no-drag;
 }
 
 .drag-overlay {
@@ -794,6 +795,10 @@ kbd {
     justify-content: center;
     z-index: 40;
     padding: 24px;
+}
+
+.settings-overlay.is-closing {
+    pointer-events: none;
 }
 
 .settings-backdrop {
