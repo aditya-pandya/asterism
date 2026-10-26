@@ -1,3 +1,3 @@
 fn main() {
-    inkdown_lib::run();
+    asterism_lib::run();
 }

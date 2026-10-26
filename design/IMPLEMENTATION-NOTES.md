@@ -45,3 +45,4 @@ Goal: keep Paper's quiet look but make every action findable without prior knowl
 - Copy, Save and Clear use `aria-disabled` instead of `disabled`, so keyboard focus is kept when they dim.
 - Added: copy icon crossfade to a check, a short colour transition on theme change (only while the mode actually changes), a staggered empty-state entrance, a word-count nudge when the count changes, a fade when clearing, and a scale-in for the drop overlay. All skip under reduced motion.
 - Verified in the packaged Electron shell: legacy and fresh data folders, persistence across relaunch, and the interactions above. Tauri was not built.
+- Rust crate renamed to `asterism` (lib `asterism_lib`). The Tauri app built with `npm run tauri:build` and launched as `Asterism.app` (bundle ID unchanged). The Settings footer shows the package version, so bump `index.html` together with `package.json` and `src-tauri/tauri.conf.json` on each release.
