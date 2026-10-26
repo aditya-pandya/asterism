@@ -78,15 +78,11 @@ function createMainWindow() {
     height: 960,
     minWidth: 1100,
     minHeight: 760,
-    backgroundColor: isMac ? '#00000000' : '#050505',
+    backgroundColor: '#fdfdfc',
     title: pkg.productName,
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 18, y: 20 },
     show: false,
-    ...(isMac && {
-      vibrancy: 'under-window',
-      visualEffectState: 'active'
-    }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

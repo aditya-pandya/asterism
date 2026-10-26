@@ -6,3 +6,5 @@ output/
 tmp/
 test-results/
 .playwright-cli/
+src-tauri/target/
+src-tauri/dist/

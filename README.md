@@ -1,4 +1,6 @@
-# ![Inkdown logo](./assets/inkdown-mark.svg) Inkdown
+# ![Asterism icon](./assets/asterism-app-icon.svg) Asterism
+
+> Formerly Inkdown. The name comes from ⁂, three asterisks, the punctuation Markdown is built on.
 
 A privacy-first rich text and Markdown converter for the browser and macOS.
 
@@ -10,11 +12,30 @@ Convert pasted rich text into clean Markdown, render Markdown back into rich tex
 
 The current macOS build is an unsigned Apple Silicon preview:
 
-- [Download the latest release](https://github.com/aditya-pandya/Inkdown/releases/latest)
+- [Download the latest release](https://github.com/aditya-pandya/asterism/releases/latest)
 - Supported Macs: Apple Silicon only
 - Build status: unsigned and not notarized
 
-Because this build is unsigned, macOS may block the first launch. To open it:
+### Why macOS warns you
+
+Asterism (formerly Inkdown) is a personal open-source project. I do not have a paid Apple Developer certificate, so the macOS app is not signed or notarized. Because of that, macOS Gatekeeper shows a warning the first time you open it. It does this for any app that is not signed and notarized.
+
+The warning is about the missing certificate. It is not about anything the app does.
+
+### Why it is safe to use
+
+You do not have to take my word for it. Here is what you can check yourself:
+
+- The full source code is in this public repository under the MIT license.
+- It runs fully offline, with bundled libraries and local assets.
+- The page has a strict Content-Security-Policy with `connect-src 'none'`, so its code cannot send your text anywhere. You can see it in [index.html](./index.html). It can still load remote images: any image your Markdown links to, and images inside rich text you paste in, such as tracking pixels in a copied marketing email.
+- Your content is stored only on your Mac, in the app's local storage. It is never sent to a server.
+- You can skip the download and build it yourself from source with `npm install` and `npm run dist:mac` (see [Desktop Development](#desktop-development)).
+- You can also use the [browser version](#browser-version) and avoid the macOS warning entirely.
+
+### How to open it
+
+The current release was built before the rename, so it is still called Inkdown.
 
 1. Download `Inkdown-1.1.0-arm64.dmg`.
 2. Open the DMG and move Inkdown to Applications.
@@ -33,7 +54,7 @@ If macOS still blocks it, open System Settings, go to Privacy & Security, and ch
 
 ## Browser Version
 
-You can also use Inkdown as a static browser app:
+You can also use Asterism as a static browser app:
 
 1. Clone or download this repository.
 2. Open [index.html](./index.html) in a modern browser.
@@ -42,8 +63,8 @@ You can also use Inkdown as a static browser app:
 5. Copy or download the output.
 
 ```bash
-git clone https://github.com/aditya-pandya/Inkdown.git
-cd Inkdown
+git clone https://github.com/aditya-pandya/asterism.git
+cd asterism
 open index.html
 ```
 
@@ -64,7 +85,7 @@ The build writes the app, DMG, and ZIP into `dist/`.
 
 ## Privacy
 
-Inkdown keeps your content local. The packaged desktop app uses bundled JavaScript, CSS, icons, and syntax-highlighting assets instead of runtime CDN or web font loads.
+Asterism keeps your content local. The packaged desktop app uses bundled JavaScript, CSS, icons, and syntax-highlighting assets instead of runtime CDN or web font loads.
 
 The app can open normal external links only when you explicitly click them. It does not send editor content to an external service.
 
@@ -77,7 +98,7 @@ The app can open normal external links only when you explicitly click them. It d
 - [electron/preload.js](./electron/preload.js) - desktop bridge
 - [scripts/after-pack.js](./scripts/after-pack.js) - macOS package metadata cleanup
 - [vendor/](./vendor) - bundled runtime libraries
-- [assets/inkdown-mark.svg](./assets/inkdown-mark.svg) - primary app mark
+- [assets/asterism-mark.svg](./assets/asterism-mark.svg) - primary app mark
 
 ## Release Notes
 

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+html,body{height:100%;overflow:hidden}
+body{margin:0}
+a{color:#1a1a1a}a:hover{color:#000}
+.ik{--bg-app:#fdfdfc;--editor-bg:#fdfdfc;--text-primary:#1a1a1a;--text-secondary:#5a5a5a;--text-tertiary:#a8a8a4;--border-color:#e2e2de;--border-subtle:#f0f0ec;--accent-primary:#1a1a1a;--selection-bg:rgba(26,26,26,.12);--font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;--font-display:Georgia,'Times New Roman',serif;--t-fast:120ms;--t-base:160ms;--ease-out:cubic-bezier(.4,0,.2,1)}
+.ik[data-mode="dark"]{--bg-app:#0b0b0b;--editor-bg:#0b0b0b;--text-primary:#e6e6e3;--text-secondary:#a2a2a0;--text-tertiary:#5c5c58;--border-color:#232320;--border-subtle:#191917;--accent-primary:#e6e6e3;--selection-bg:rgba(230,230,227,.22)}
+.ik ::selection{background:var(--selection-bg)}
+.ik [contenteditable]{outline:none;caret-color:var(--accent-primary)}
+.ik [contenteditable]:empty::before{content:attr(data-ph);color:var(--text-tertiary);pointer-events:none}
+.ik ::-webkit-scrollbar{width:8px;height:8px}
+.ik ::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:4px}
+.ik ::-webkit-scrollbar-track{background:transparent}
+@keyframes ikUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes ikIn{from{opacity:0}to{opacity:1}}
+.ik .ik-rt h1,.ik .ik-reader h1{font-size:1.6em;font-weight:700;letter-spacing:-.015em;line-height:1.3;margin:.4em 0 .5em}
+.ik .ik-rt h2,.ik .ik-reader h2{font-size:1.3em;font-weight:650;line-height:1.3;margin:.6em 0 .4em}
+.ik .ik-rt h3,.ik .ik-reader h3{font-size:1.1em;font-weight:600;margin:.7em 0 .35em}
+.ik .ik-rt h4,.ik .ik-reader h4{font-size:1em;font-weight:600;margin:.8em 0 .3em}
+.ik .ik-rt p,.ik .ik-reader p{margin:.55em 0}
+.ik .ik-rt ul,.ik .ik-rt ol,.ik .ik-reader ul,.ik .ik-reader ol{margin:.55em 0;padding-left:1.4em}
+.ik .ik-rt li,.ik .ik-reader li{margin:.22em 0}
+.ik .ik-rt blockquote,.ik .ik-reader blockquote{margin:.8em 0;padding:2px 0 2px 14px;border-left:2px solid var(--border-color);color:var(--text-secondary);font-style:italic}
+.ik .ik-rt code,.ik .ik-reader code{font-family:var(--font-mono);font-size:.85em;background:var(--border-subtle);padding:.1em .35em;border-radius:3px}
+.ik .ik-rt pre,.ik .ik-reader pre{font-family:var(--font-mono);font-size:.85em;background:var(--border-subtle);padding:12px 14px;border-radius:4px;overflow-x:auto;margin:.8em 0}
+.ik .ik-rt pre code,.ik .ik-reader pre code{background:none;padding:0}
+.ik .ik-rt a,.ik .ik-reader a{color:var(--text-primary);text-decoration:none;border-bottom:1px solid var(--border-color)}
+.ik .ik-rt hr,.ik .ik-reader hr{border:none;border-top:1px solid var(--border-color);margin:1.2em 0}
+.ik .ik-reader h1{font-size:1.9em;font-weight:600}
+.ik .ik-reader blockquote{font-family:inherit}
+</style>
+</helmet>
+<div class="ik" data-mode="{{modeAttr}}" style="height:100vh;display:flex;flex-direction:column;background:var(--bg-app);color:var(--text-primary);font-family:var(--font-sans);position:relative;overflow:hidden;transition:background-color 160ms var(--ease-out),color 160ms var(--ease-out)">
+  <div style="text-align:center;padding:{{headPad}};flex:none">
+    <span style="font-size:10px;letter-spacing:.34em;color:var(--text-tertiary);font-weight:600;padding-left:.34em;transition:color 160ms var(--ease-out)">{{wordmarkV}}</span>
+  </div>
+  <div style="flex:1;min-height:0;display:{{editDisplay}};grid-template-columns:{{gridCols}};grid-template-rows:{{gridRows}};animation:ikIn 180ms var(--ease-out);padding-top:6px">
+    <div style="display:flex;flex-direction:column;min-height:0;min-width:0;padding:4px {{padX}}px 10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex:none;min-height:18px">
+        <span style="font-size:10px;letter-spacing:.2em;font-weight:600;color:{{rtLabelColor}};transition:color 160ms var(--ease-out)">RICH TEXT</span>
+        <span style="display:flex;gap:15px;align-items:baseline;position:relative">
+          <sc-for list="{{tools}}" as="tool" hint-placeholder-count="9">
+            <span onMouseDown="{{tool.run}}" title="{{tool.title}}" style="cursor:pointer;pointer-events:{{tbPe}};font-size:12.5px;line-height:1;color:var(--text-tertiary);font-weight:{{tool.fw}};font-style:{{tool.fs}};text-decoration:{{tool.td}};font-family:{{tool.ff}};opacity:{{tbOp}};transform:translateY({{tbY}});transition:color 120ms var(--ease-out),opacity 150ms var(--ease-out),transform 150ms var(--ease-out);transition-delay:0ms,{{tool.delay}},{{tool.delay}}" style-hover="color:var(--text-primary)">{{tool.g}}</span>
+          </sc-for>
+          <span onClick="{{pasteText}}" title="Paste from clipboard" style="position:absolute;right:0;top:0;cursor:pointer;pointer-events:{{pastePe}};font-size:11px;line-height:1;color:var(--text-tertiary);opacity:{{pasteOp}};transition:color 120ms var(--ease-out),opacity 150ms var(--ease-out)" style-hover="color:var(--text-primary)">Paste&nbsp;&nbsp;⌘V</span>
+        </span>
+      </div>
+      <div class="ik-rt" contenteditable="true" suppressContentEditableWarning="{{ true }}" data-ph="Paste anything — ⌘V" ref="{{rtRef}}" onInput="{{onRtInput}}" onPaste="{{onRtPaste}}" onFocus="{{rtFocusOn}}" onBlur="{{rtFocusOff}}" style="flex:1;min-height:0;overflow-y:auto;font-size:{{rtSize}}px;line-height:1.75;padding-right:6px"></div>
+    </div>
+    <div style="display:{{divDisplay}};background:var(--border-subtle);transition:background-color 160ms var(--ease-out)"></div>
+    <div style="display:flex;flex-direction:column;min-height:0;min-width:0;padding:4px {{padX}}px 10px;border-top:{{mdTopBorder}}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex:none;min-height:18px">
+        <span style="font-size:10px;letter-spacing:.2em;font-weight:600;color:{{mdLabelColor}};transition:color 160ms var(--ease-out)">MARKDOWN</span>
+        <span style="display:flex;gap:14px;align-items:baseline">
+          <span onClick="{{downloadMd}}" title="Download .md file" style="cursor:pointer;font-size:11px;line-height:1;color:var(--text-tertiary);transition:color 120ms var(--ease-out)" style-hover="color:var(--text-primary)">↓&nbsp;.md</span>
+          <span onClick="{{copyMd}}" style="cursor:pointer;font-size:11px;line-height:1;color:{{copyColor}};border-bottom:1px solid var(--border-color);padding-bottom:2px;transition:color 120ms var(--ease-out),border-color 120ms var(--ease-out)" style-hover="color:var(--text-primary);border-color:var(--text-secondary)">
+            <sc-if value="{{copied}}"><span style="display:inline-block;animation:ikUp 160ms var(--ease-out)">Copied ✓</span></sc-if>
+            <sc-if value="{{notCopied}}" hint-placeholder-val="{{ true }}"><span>Copy&nbsp;&nbsp;⌘⇧C</span></sc-if>
+          </span>
+        </span>
+      </div>
+      <div class="ik-md" contenteditable="true" suppressContentEditableWarning="{{ true }}" spellcheck="false" data-ph="Markdown appears here, instantly" ref="{{mdRef}}" onInput="{{onMdInput}}" onFocus="{{mdFocusOn}}" onBlur="{{mdFocusOff}}" style="flex:1;min-height:0;overflow-y:auto;font-family:var(--font-mono);font-size:12.5px;line-height:1.85;color:var(--text-secondary);white-space:pre-wrap;word-break:break-word;padding-right:6px;transition:color 160ms var(--ease-out)"></div>
+    </div>
+  </div>
+  <sc-if value="{{isReader}}">
+  <div style="flex:1;min-height:0;overflow-y:auto;animation:ikIn 180ms var(--ease-out)">
+    <div class="ik-reader" style="max-width:{{readerMax}};margin:0 auto;padding:24px 44px 72px;font-family:var(--font-display);font-size:17px;line-height:1.85;color:var(--text-primary)">{{readerBody}}</div>
+  </div>
+  </sc-if>
+  <div style="flex:none;display:flex;justify-content:center;align-items:baseline;gap:8px;padding:{{footPad}};font-size:11px;color:var(--text-tertiary)">
+    <span style="font-variant-numeric:tabular-nums">{{words}} words, {{chars}} characters</span>
+    <span style="opacity:.7">·</span>
+    <span onClick="{{clearAll}}" style="cursor:pointer;color:{{clearColor}};transition:color 120ms var(--ease-out)" style-hover="color:var(--text-primary)">{{clearLabel}}</span>
+    <span style="opacity:.7">·</span>
+    <span onClick="{{openFile}}" style="cursor:pointer;transition:color 120ms var(--ease-out)" style-hover="color:var(--text-primary)">Open&nbsp;⌘O</span>
+    <sc-if value="{{showHintsV}}" hint-placeholder-val="{{ true }}"><span style="opacity:.7">·</span><span>{{hintText}}</span></sc-if>
+    <span style="opacity:.7">·</span>
+    <span onClick="{{toggleReader}}" style="cursor:pointer;transition:color 120ms var(--ease-out)" style-hover="color:var(--text-primary)">{{readerLabel}}</span>
+    <span style="opacity:.7">·</span>
+    <span onClick="{{openSettings}}" style="cursor:pointer;transition:color 120ms var(--ease-out)" style-hover="color:var(--text-primary)">Settings&nbsp;⌘,</span>
+    <span style="opacity:.7">·</span>
+    <span onClick="{{cycleTheme}}" title="Cycle appearance" style="cursor:pointer;transition:color 120ms var(--ease-out)" style-hover="color:var(--text-primary)">◐&nbsp;{{themeLabel}}</span>
+  </div>
+  <input type="file" ref="{{fileRef}}" onChange="{{onFilePick}}" accept=".md,.markdown,.txt,.html,.htm" style="display:none">
+  <sc-if value="{{dragging}}">
+  <div style="position:absolute;inset:10px;z-index:30;display:flex;align-items:center;justify-content:center;background:var(--bg-app);opacity:.96;border:1px dashed var(--border-color);pointer-events:none;animation:ikIn 120ms var(--ease-out)">
+    <div style="text-align:center">
+      <div style="font-size:13px;color:var(--text-secondary)">Drop to open</div>
+      <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px">.md, .txt or .html</div>
+    </div>
+  </div>
+  </sc-if>
+  <sc-if value="{{settingsOpen}}">
+  <div onClick="{{closeSettings}}" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:20">
+    <div style="position:absolute;inset:0;background:var(--bg-app);opacity:.94;animation:ikIn 160ms var(--ease-out)"></div>
+    <div onClick="{{stop}}" style="position:relative;width:300px;max-width:82vw;animation:ikUp 180ms var(--ease-out)">
+      <div style="font-size:10px;letter-spacing:.26em;color:var(--text-tertiary);font-weight:600;margin-bottom:16px">SETTINGS</div>
+      <sc-for list="{{settingRows}}" as="row" hint-placeholder-count="4">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--border-subtle)">
+          <span style="font-size:13px;color:var(--text-primary)">{{row.name}}</span>
+          <span style="display:flex;gap:13px">
+            <sc-for list="{{row.options}}" as="opt" hint-placeholder-count="3">
+              <span onClick="{{opt.set}}" style="cursor:pointer;font-size:12px;line-height:1;color:{{opt.color}};border-bottom:1px solid {{opt.line}};padding-bottom:2px;transition:color 120ms var(--ease-out),border-color 120ms var(--ease-out)" style-hover="color:var(--text-primary)">{{opt.label}}</span>
+            </sc-for>
+          </span>
+        </div>
+      </sc-for>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:11px 0">
+        <span style="font-size:13px;color:var(--text-primary)">Saved data</span>
+        <span onClick="{{clearSaved}}" style="cursor:pointer;font-size:12px;line-height:1;color:var(--text-tertiary);border-bottom:1px solid transparent;padding-bottom:2px;transition:color 120ms var(--ease-out)" style-hover="color:var(--text-primary)">{{clearSavedLabel}}</span>
+      </div>
+      <div style="font-size:10.5px;color:var(--text-tertiary);margin-top:28px;line-height:2">
+        <div>Everything stays on this device — offline, no account.</div>
+        <div style="margin-top:6px">Inkdown 2.0 · © 2026 Aditya Pandya · <a href="mailto:feedback@inkdown.app" style="color:var(--text-secondary);text-decoration:none;border-bottom:1px solid var(--border-color)">Send feedback</a></div>
+        <div style="margin-top:14px;opacity:.75">esc to close</div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;compact&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;showHints&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;wordmark&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;INKDOWN&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Brand&quot;}}">
+class Component extends DCLogic {
+  state = { appearance:'light', flavor:'GFM', readerWidth:'72', smartQuotes:true, textSize:'15', autoSave:true, savedCleared:false, view:'edit', settingsOpen:false, rtFocus:false, mdFocus:false, copied:false, md:'', words:0, chars:0, narrow:false, sysDark:false };
+  rtRef = React.createRef();
+  mdRef = React.createRef();
+  fileRef = React.createRef();
+
+  componentDidMount() {
+    try { const p = JSON.parse(localStorage.getItem('inkdown.prefs') || '{}'); this.setState(p); } catch (e) {}
+    this.mq = window.matchMedia('(prefers-color-scheme: dark)');
+    this.mqFn = () => this.setState({ sysDark: this.mq.matches });
+    this.mqFn();
+    this.mq.addEventListener('change', this.mqFn);
+    this.rsFn = () => this.setState({ narrow: window.innerWidth < 640 });
+    this.rsFn();
+    window.addEventListener('resize', this.rsFn);
+    this.kdFn = (e) => this.onKey(e);
+    window.addEventListener('keydown', this.kdFn);
+    this._dragN = 0;
+    this.dgEnter = (e) => { e.preventDefault(); this._dragN++; if (!this.state.dragging) this.setState({ dragging: true }); };
+    this.dgOver = (e) => e.preventDefault();
+    this.dgLeave = (e) => { e.preventDefault(); this._dragN = Math.max(0, this._dragN - 1); if (this._dragN === 0) this.setState({ dragging: false }); };
+    this.dgDrop = (e) => {
+      e.preventDefault(); this._dragN = 0; this.setState({ dragging: false });
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) this.loadFile(f);
+    };
+    window.addEventListener('dragenter', this.dgEnter);
+    window.addEventListener('dragover', this.dgOver);
+    window.addEventListener('dragleave', this.dgLeave);
+    window.addEventListener('drop', this.dgDrop);
+    const rt = this.rtRef.current;
+    let savedDoc = null;
+    try { savedDoc = localStorage.getItem('inkdown.doc'); } catch (e) {}
+    if (rt && !rt.textContent.trim()) {
+      if (savedDoc) {
+        rt.innerHTML = this.mdToHtml(savedDoc);
+        const md = this.mdRef.current; if (md) md.innerHTML = this.mdDim(savedDoc);
+        this.setState(Object.assign({ md: savedDoc }, this.counts()));
+      } else {
+        rt.innerHTML = '<h1>Q3 Launch Plan</h1><p>Ship the beta to design partners by <b>August 15</b>.</p><ul><li>Finalize onboarding flow</li><li>Draft the announcement post</li></ul>';
+        this.syncFromRt(false);
+      }
+    }
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.rsFn);
+    window.removeEventListener('keydown', this.kdFn);
+    window.removeEventListener('dragenter', this.dgEnter);
+    window.removeEventListener('dragover', this.dgOver);
+    window.removeEventListener('dragleave', this.dgLeave);
+    window.removeEventListener('drop', this.dgDrop);
+    if (this.mq) this.mq.removeEventListener('change', this.mqFn);
+    clearTimeout(this._ct);
+  }
+  savePrefs(patch) {
+    this.setState(patch);
+    const next = Object.assign({}, this.state, patch);
+    try { localStorage.setItem('inkdown.prefs', JSON.stringify({ appearance:next.appearance, flavor:next.flavor, readerWidth:next.readerWidth, smartQuotes:next.smartQuotes, textSize:next.textSize, autoSave:next.autoSave })); } catch (e) {}
+  }
+  onKey(e) {
+    const m = e.metaKey || e.ctrlKey;
+    if (m && e.shiftKey && e.key.toLowerCase() === 'c') { e.preventDefault(); this.copyMd(); }
+    else if (m && e.key === ',') { e.preventDefault(); this.setState(s => ({ settingsOpen: !s.settingsOpen })); }
+    else if (m && e.key.toLowerCase() === 'e') { e.preventDefault(); this.toggleReader(); }
+    else if (m && e.key.toLowerCase() === 'o') { e.preventDefault(); this.openFile(); }
+    else if (e.key === 'Escape') {
+      if (this.state.settingsOpen) this.setState({ settingsOpen: false });
+      else if (this.state.view === 'reader') this.setState({ view: 'edit' });
+    }
+  }
+  counts() {
+    const rt = this.rtRef.current; const t = rt ? rt.innerText : '';
+    return { words: (t.trim().match(/\S+/g) || []).length, chars: t.replace(/\n/g, '').length };
+  }
+  persistDoc(m) {
+    if (!this.state.autoSave) return;
+    try { localStorage.setItem('inkdown.doc', m); } catch (e) {}
+  }
+  syncFromRt(flash) {
+    const rt = this.rtRef.current, md = this.mdRef.current;
+    if (!rt) return;
+    const m = this.htmlToMd(rt);
+    this.setState(Object.assign({ md: m }, this.counts()));
+    this.persistDoc(m);
+    if (md) {
+      md.innerHTML = this.mdDim(m);
+      if (flash) { md.style.animation = 'none'; void md.offsetWidth; md.style.animation = 'ikIn 160ms cubic-bezier(.4,0,.2,1)'; }
+    }
+  }
+  onRtInput = () => this.syncFromRt(false);
+  onRtPaste = () => setTimeout(() => this.syncFromRt(true), 0);
+  onMdInput = () => {
+    const md = this.mdRef.current, rt = this.rtRef.current;
+    if (!md) return;
+    const m = md.innerText;
+    if (rt) rt.innerHTML = this.mdToHtml(m);
+    this.setState(Object.assign({ md: m }, this.counts()));
+    this.persistDoc(m);
+  };
+  downloadMd = () => {
+    const blob = new Blob([this.state.md], { type: 'text/markdown' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'inkdown.md';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  setDoc(m) {
+    const rt = this.rtRef.current, md = this.mdRef.current;
+    if (rt) rt.innerHTML = this.mdToHtml(m);
+    if (md) md.innerHTML = this.mdDim(m);
+    this.setState(Object.assign({ md: m, view: 'edit' }, this.counts()));
+    this.persistDoc(m);
+  }
+  setDocFromHtml(html) {
+    const rt = this.rtRef.current;
+    if (!rt) return;
+    const tpl = document.createElement('template');
+    tpl.innerHTML = html;
+    tpl.content.querySelectorAll('script,style,link,meta').forEach(n => n.remove());
+    rt.innerHTML = (tpl.content.querySelector('body') || tpl.content).innerHTML || tpl.innerHTML;
+    this.setState({ view: 'edit' });
+    this.syncFromRt(true);
+  }
+  loadFile(f) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || '');
+      if (/\.html?$/i.test(f.name)) this.setDocFromHtml(text);
+      else this.setDoc(text);
+      const md = this.mdRef.current;
+      if (md) { md.style.animation = 'none'; void md.offsetWidth; md.style.animation = 'ikIn 160ms cubic-bezier(.4,0,.2,1)'; }
+    };
+    reader.readAsText(f);
+  }
+  openFile = () => { const el = this.fileRef.current; if (el) { el.value = ''; el.click(); } };
+  onFilePick = (e) => { const f = e.target.files && e.target.files[0]; if (f) this.loadFile(f); };
+  pasteText = async () => {
+    const rt = this.rtRef.current; if (!rt) return;
+    try {
+      if (navigator.clipboard.read) {
+        const items = await navigator.clipboard.read();
+        for (const it of items) {
+          if (it.types.includes('text/html')) {
+            const html = await (await it.getType('text/html')).text();
+            this.setDocFromHtml(html); return;
+          }
+        }
+      }
+      const t = await navigator.clipboard.readText();
+      if (t) this.setDoc(t);
+    } catch (e) { rt.focus(); }
+  };
+  clearAll = () => {
+    if (this.state.justCleared) { this.undoClear(); return; }
+    if (!this.state.md) return;
+    if (!this.state.clearArmed) {
+      this.setState({ clearArmed: true });
+      clearTimeout(this._act);
+      this._act = setTimeout(() => this.setState({ clearArmed: false }), 3500);
+      return;
+    }
+    clearTimeout(this._act);
+    this.setState({ clearArmed: false });
+    this._undoMd = this.state.md;
+    const rt = this.rtRef.current, md = this.mdRef.current;
+    if (rt) rt.innerHTML = '';
+    if (md) md.innerHTML = '';
+    this.setState({ md: '', words: 0, chars: 0, justCleared: true });
+    try { localStorage.removeItem('inkdown.doc'); } catch (e) {}
+    clearTimeout(this._uct);
+    this._uct = setTimeout(() => { this.setState({ justCleared: false }); this._undoMd = null; }, 8000);
+  };
+  undoClear = () => {
+    clearTimeout(this._uct);
+    const m = this._undoMd || '';
+    const rt = this.rtRef.current, md = this.mdRef.current;
+    if (rt) rt.innerHTML = this.mdToHtml(m);
+    if (md) md.innerHTML = this.mdDim(m);
+    this.setState(Object.assign({ md: m, justCleared: false }, this.counts()));
+    this.persistDoc(m);
+    this._undoMd = null;
+  };
+  clearSaved = () => {
+    try { localStorage.removeItem('inkdown.doc'); localStorage.removeItem('inkdown.prefs'); } catch (e) {}
+    this.setState({ savedCleared: true });
+    setTimeout(() => this.setState({ savedCleared: false }), 1600);
+  };
+  copyMd = () => {
+    try { navigator.clipboard.writeText(this.state.md); } catch (e) {}
+    this.setState({ copied: true });
+    clearTimeout(this._ct);
+    this._ct = setTimeout(() => this.setState({ copied: false }), 1400);
+  };
+  toggleReader = () => this.setState(s => ({ view: s.view === 'reader' ? 'edit' : 'reader', settingsOpen: false }));
+  cycleTheme = () => {
+    const order = ['light', 'dark', 'auto'];
+    this.savePrefs({ appearance: order[(order.indexOf(this.state.appearance) + 1) % 3] });
+  };
+  runTool(cmd) {
+    return (e) => {
+      e.preventDefault();
+      const rt = this.rtRef.current; if (!rt) return;
+      rt.focus();
+      if (cmd === 'code') {
+        const sel = window.getSelection().toString();
+        document.execCommand('insertHTML', false, '<code>' + (sel || 'code') + '</code>');
+      } else if (cmd === 'quote') {
+        document.execCommand('formatBlock', false, 'blockquote');
+      } else {
+        document.execCommand(cmd, false, null);
+      }
+      this.syncFromRt(false);
+    };
+  }
+  esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  htmlToMd(root) {
+    const gfm = this.state.flavor === 'GFM';
+    const walk = (node) => {
+      let out = '';
+      node.childNodes.forEach((n) => {
+        if (n.nodeType === 3) { out += n.nodeValue.replace(/ /g, ' '); return; }
+        if (n.nodeType !== 1) return;
+        const t = n.tagName; const inner = () => walk(n);
+        if (t === 'B' || t === 'STRONG') { const c = inner(); out += c.trim() ? '**' + c + '**' : c; }
+        else if (t === 'I' || t === 'EM') { const c = inner(); out += c.trim() ? '*' + c + '*' : c; }
+        else if (t === 'S' || t === 'STRIKE' || t === 'DEL') { const c = inner(); out += gfm && c.trim() ? '~~' + c + '~~' : c; }
+        else if (t === 'U' || t === 'SPAN' || t === 'FONT') out += inner();
+        else if (t === 'CODE') out += '`' + n.textContent + '`';
+        else if (t === 'A') out += '[' + inner() + '](' + (n.getAttribute('href') || '') + ')';
+        else if (/^H[1-6]$/.test(t)) out += '\n' + '#'.repeat(Math.min(4, +t[1])) + ' ' + inner().trim() + '\n\n';
+        else if (t === 'BR') out += '\n';
+        else if (t === 'HR') out += '\n---\n\n';
+        else if (t === 'UL') { out += '\n' + Array.from(n.children).map(li => '- ' + walk(li).trim()).join('\n') + '\n\n'; }
+        else if (t === 'OL') { out += '\n' + Array.from(n.children).map((li, i) => (i + 1) + '. ' + walk(li).trim()).join('\n') + '\n\n'; }
+        else if (t === 'BLOCKQUOTE') out += '\n> ' + inner().trim().replace(/\n+/g, '\n> ') + '\n\n';
+        else if (t === 'PRE') out += '\n```\n' + n.textContent.replace(/\n$/, '') + '\n```\n\n';
+        else if (t === 'P' || t === 'DIV') { const c = inner().replace(/^\n+|\n+$/g, ''); out += '\n' + c + '\n'; }
+        else out += inner();
+      });
+      return out;
+    };
+    return walk(root).replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+  inlineMd(s) {
+    return s
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+      .replace(/(^|[^*])\*([^*]+)\*/g, '$1<i>$2</i>')
+      .replace(/~~([^~]+)~~/g, '<s>$1</s>')
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>');
+  }
+  mdToHtml(md) {
+    const lines = (md || '').split('\n'); const out = []; let i = 0; let list = null; let para = [];
+    const flushP = () => { if (para.length) { out.push('<p>' + this.inlineMd(para.join('<br>')) + '</p>'); para = []; } };
+    const flushL = () => { if (list) { out.push('<' + list.t + '>' + list.items.map(x => '<li>' + this.inlineMd(x) + '</li>').join('') + '</' + list.t + '>'); list = null; } };
+    while (i < lines.length) {
+      const raw = lines[i]; const l = this.esc(raw);
+      if (/^```/.test(raw)) {
+        flushP(); flushL(); const buf = []; i++;
+        while (i < lines.length && !/^```/.test(lines[i])) { buf.push(this.esc(lines[i])); i++; }
+        i++; out.push('<pre><code>' + buf.join('\n') + '</code></pre>'); continue;
+      }
+      const h = l.match(/^(#{1,4})\s+(.*)/);
+      if (h) { flushP(); flushL(); out.push('<h' + h[1].length + '>' + this.inlineMd(h[2]) + '</h' + h[1].length + '>'); }
+      else if (/^---+\s*$/.test(l)) { flushP(); flushL(); out.push('<hr>'); }
+      else if (/^&gt;\s?/.test(l)) { flushP(); flushL(); out.push('<blockquote><p>' + this.inlineMd(l.replace(/^&gt;\s?/, '')) + '</p></blockquote>'); }
+      else if (/^[-*]\s+/.test(l)) { flushP(); if (!list || list.t !== 'ul') { flushL(); list = { t: 'ul', items: [] }; } list.items.push(l.replace(/^[-*]\s+/, '')); }
+      else if (/^\d+\.\s+/.test(l)) { flushP(); if (!list || list.t !== 'ol') { flushL(); list = { t: 'ol', items: [] }; } list.items.push(l.replace(/^\d+\.\s+/, '')); }
+      else if (!l.trim()) { flushP(); flushL(); }
+      else { flushL(); para.push(l); }
+      i++;
+    }
+    flushP(); flushL(); return out.join('');
+  }
+  mdDim(md) {
+    const M = (m) => '<span style="color:var(--text-tertiary)">' + m + '</span>';
+    return (md || '').split('\n').map((line) => {
+      let l = this.esc(line);
+      l = l.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, t, u) => M('[') + t + M('](' + u + ')'));
+      l = l.replace(/^(#{1,4} )/, M).replace(/^(&gt; )/, M).replace(/^([-*] |\d+\. )/, M).replace(/^(---+\s*)$/, M).replace(/^(```.*)$/, M);
+      l = l.replace(/(\*\*|~~|`)/g, M);
+      return l;
+    }).join('\n');
+  }
+  smartify(md) {
+    return (md || '')
+      .replace(/(^|[\s([{—-])"/g, '$1“').replace(/"/g, '”')
+      .replace(/(^|[\s([{—-])'/g, '$1‘').replace(/'/g, '’');
+  }
+  renderVals() {
+    const s = this.state;
+    const dark = s.appearance === 'dark' || (s.appearance === 'auto' && s.sysDark);
+    const compact = this.props.compact ?? false;
+    const showHints = this.props.showHints ?? true;
+    const wide = !s.narrow;
+    const set = (k, v) => () => this.savePrefs({ [k]: v });
+    const optRow = (key, vals, labels) => vals.map((v, i) => ({
+      label: labels ? labels[i] : v,
+      set: set(key, v),
+      color: s[key] === v ? 'var(--text-primary)' : 'var(--text-tertiary)',
+      line: s[key] === v ? 'var(--accent-primary)' : 'transparent'
+    }));
+    const settingRows = [
+      { name: 'Appearance', options: optRow('appearance', ['light', 'dark', 'auto'], ['Light', 'Dark', 'Auto']) },
+      { name: 'Markdown', options: optRow('flavor', ['GFM', 'CommonMark']) },
+      { name: 'Reader width', options: optRow('readerWidth', ['60', '72', 'Full']) },
+      { name: 'Smart quotes', options: optRow('smartQuotes', [true, false], ['On', 'Off']) },
+      { name: 'Text size', options: optRow('textSize', ['14', '15', '16']) },
+      { name: 'Auto-save', options: optRow('autoSave', [true, false], ['On', 'Off']) }
+    ];
+    const toolDefs = [
+      ['B', 'bold', 'Bold ⌘B', { fw: 700 }],
+      ['I', 'italic', 'Italic ⌘I', { fs: 'italic' }],
+      ['U', 'underline', 'Underline ⌘U', { td: 'underline' }],
+      ['S', 'strikeThrough', 'Strikethrough', { td: 'line-through' }],
+      ['`', 'code', 'Inline code', { ff: "ui-monospace,Menlo,monospace" }],
+      ['❝', 'quote', 'Blockquote', {}],
+      ['•', 'insertUnorderedList', 'Bulleted list', {}],
+      ['1.', 'insertOrderedList', 'Numbered list', {}],
+      ['—', 'insertHorizontalRule', 'Divider', {}]
+    ];
+    const tools = toolDefs.map(([g, cmd, title, st], i) => ({
+      g, title, run: this.runTool(cmd),
+      fw: st.fw || 400, fs: st.fs || 'normal', td: st.td || 'none', ff: st.ff || 'inherit',
+      delay: (i * 18) + 'ms'
+    }));
+    const readerHtml = this.mdToHtml(s.smartQuotes ? this.smartify(s.md) : s.md);
+    return {
+      modeAttr: dark ? 'dark' : 'light',
+      wordmarkV: this.props.wordmark ?? 'INKDOWN',
+      headPad: compact ? '12px 0 2px' : '20px 0 4px',
+      footPad: compact ? '8px 12px 10px' : '10px 16px 16px',
+      isEdit: s.view === 'edit', isReader: s.view === 'reader',
+      editDisplay: s.view === 'edit' ? 'grid' : 'none',
+      gridCols: wide ? '1fr 1px 1fr' : '1fr',
+      gridRows: wide ? '1fr' : '1fr 1fr',
+      divDisplay: wide ? 'block' : 'none',
+      mdTopBorder: wide ? 'none' : '1px solid var(--border-subtle)',
+      padX: wide ? (compact ? 26 : 44) : 22,
+      rtLabelColor: s.rtFocus ? 'var(--text-secondary)' : 'var(--text-tertiary)',
+      mdLabelColor: s.mdFocus ? 'var(--text-secondary)' : 'var(--text-tertiary)',
+      tbOp: s.rtFocus ? 1 : 0,
+      tbY: s.rtFocus ? '0px' : '3px',
+      tbPe: s.rtFocus ? 'auto' : 'none',
+      tools,
+      rtRef: this.rtRef, mdRef: this.mdRef,
+      onRtInput: this.onRtInput, onRtPaste: this.onRtPaste, onMdInput: this.onMdInput,
+      rtFocusOn: () => this.setState({ rtFocus: true }),
+      rtFocusOff: () => setTimeout(() => this.setState({ rtFocus: false }), 120),
+      mdFocusOn: () => this.setState({ mdFocus: true }),
+      mdFocusOff: () => this.setState({ mdFocus: false }),
+      copied: s.copied, notCopied: !s.copied, copyMd: this.copyMd,
+      copyColor: s.copied ? 'var(--text-primary)' : 'var(--text-secondary)',
+      words: s.words, chars: s.chars,
+      clearLabel: s.justCleared ? 'Undo' : (s.clearArmed ? 'Clear — sure?' : 'Clear'),
+      clearColor: (s.justCleared || s.clearArmed) ? 'var(--text-primary)' : 'inherit',
+      dragging: !!s.dragging,
+      fileRef: this.fileRef, onFilePick: this.onFilePick, openFile: this.openFile,
+      pasteText: this.pasteText,
+      pasteOp: s.rtFocus ? 0 : 1,
+      pastePe: s.rtFocus ? 'none' : 'auto',
+      showHintsV: showHints,
+      hintText: s.copied ? 'copied to clipboard' : 'converted as you type',
+      readerLabel: s.view === 'reader' ? 'Close Reader esc' : 'Reader ⌘E',
+      toggleReader: this.toggleReader,
+      openSettings: () => this.setState({ settingsOpen: true }),
+      closeSettings: () => this.setState({ settingsOpen: false }),
+      stop: (e) => e.stopPropagation(),
+      cycleTheme: this.cycleTheme,
+      themeLabel: s.appearance === 'auto' ? 'Auto' : (dark ? 'Dark' : 'Light'),
+      settingsOpen: s.settingsOpen, settingRows,
+      rtSize: s.textSize,
+      downloadMd: this.downloadMd, clearAll: this.clearAll, clearSaved: this.clearSaved,
+      clearSavedLabel: s.savedCleared ? 'Cleared ✓' : 'Clear all',
+      readerMax: s.readerWidth === 'Full' ? 'none' : (s.readerWidth === '60' ? '34em' : '42em'),
+      readerBody: React.createElement('div', { dangerouslySetInnerHTML: { __html: readerHtml || '<p style="color:var(--text-tertiary)">Nothing to read yet.</p>' } })
+    };
+  }
+}
+</script>
+</body>
+</html>

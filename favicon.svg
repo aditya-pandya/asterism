@@ -1,14 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="badge" x1="10%" y1="8%" x2="90%" y2="92%">
-      <stop offset="0%" stop-color="#F3D089"/>
-      <stop offset="55%" stop-color="#DFB469"/>
-      <stop offset="100%" stop-color="#B68543"/>
-    </linearGradient>
-  </defs>
-  <rect x="1" y="1" width="62" height="62" rx="19" fill="url(#badge)"/>
-  <g transform="translate(-0.9 -0.6)">
-    <path d="M22.5 13.5H30.5V53.5H22.5V13.5Z" fill="#17120C"/>
-    <path d="M35.5 13.5H43.5V23.8C43.5 26.22 44.86 28.31 47.08 30.17L50.85 33.4L47.2 36.45L43.5 33.72V53.5H35.5V13.5Z" fill="#17120C"/>
+  <rect width="64" height="64" rx="14" fill="#1C1C1A"/>
+  <g fill="none" stroke="#F3F2EE" stroke-width="3.2" stroke-linecap="round">
+    <path d="M32 12v13M26.4 15.25l11.2 6.5M37.6 15.25l-11.2 6.5"/>
+    <path d="M21 34v13M15.4 37.25l11.2 6.5M26.6 37.25l-11.2 6.5"/>
+    <path d="M43 34v13M37.4 37.25l11.2 6.5M48.6 37.25l-11.2 6.5"/>
   </g>
 </svg>
