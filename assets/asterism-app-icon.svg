@@ -1,6 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <rect width="1024" height="1024" rx="228" fill="#1C1C1A"/>
-  <g fill="none" stroke="#F3F2EE" stroke-width="40" stroke-linecap="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Asterism app icon</title>
+  <desc id="desc">Three light asterisks arranged as an asterism on a near-black rounded square.</desc>
+  <rect x="100" y="100" width="824" height="824" rx="186" fill="#1C1C1A"/>
+  <g transform="translate(512 512) scale(0.8047) translate(-512 -512)" fill="none" stroke="#F3F2EE" stroke-width="40" stroke-linecap="round">
     <path d="M512 214v196M427 263l170 98M597 263l-170 98"/>
     <path d="M342 556v196M257 605l170 98M427 605l-170 98"/>
     <path d="M682 556v196M597 605l170 98M767 605l-170 98"/>

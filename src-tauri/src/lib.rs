@@ -103,7 +103,7 @@ fn build_menu(app: &tauri::App) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> 
         .accelerator("CmdOrCtrl+-")
         .build(app)?;
 
-    let app_menu = SubmenuBuilder::new(app, "Inkdown")
+    let app_menu = SubmenuBuilder::new(app, "Asterism")
         .about(None)
         .separator()
         .item(&settings)
@@ -214,7 +214,7 @@ pub fn run() {
             app.set_menu(build_menu(app)?)?;
 
             WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
-                .title("Inkdown")
+                .title("Asterism")
                 .inner_size(1440.0, 960.0)
                 .min_inner_size(1100.0, 760.0)
                 .title_bar_style(tauri::TitleBarStyle::Overlay)
@@ -249,5 +249,5 @@ pub fn run() {
         })
         .on_menu_event(handle_menu_event)
         .run(tauri::generate_context!())
-        .expect("error while running Inkdown");
+        .expect("error while running Asterism");
 }

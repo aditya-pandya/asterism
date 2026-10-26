@@ -252,10 +252,10 @@ kbd {
 
 /* Press feedback */
 
-.button:active:not(:disabled),
+.button:active:not(:disabled):not([aria-disabled="true"]),
 .icon-button:active,
 .format-tool:active,
-.text-button:active:not(:disabled),
+.text-button:active:not(:disabled):not([aria-disabled="true"]),
 .view-option:active,
 .setting-option:active {
     transform: scale(0.97);
@@ -376,18 +376,48 @@ kbd {
 }
 
 .button:disabled,
-.text-button:disabled {
+.button[aria-disabled="true"],
+.text-button:disabled,
+.text-button[aria-disabled="true"] {
     opacity: 0.4;
     cursor: default;
 }
 
-.text-button:disabled:hover {
+.text-button:disabled:hover,
+.text-button[aria-disabled="true"]:hover {
     background: transparent;
     color: var(--text-secondary);
 }
 
 .copy-action.is-copied {
     animation: rise-in 160ms var(--ease-out);
+}
+
+.copy-icons {
+    display: inline-grid;
+    flex: none;
+    width: 14px;
+    height: 14px;
+}
+
+.copy-icons svg {
+    grid-area: 1 / 1;
+    transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+
+.copy-icon-check {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.copy-action.is-copied .copy-icon-copy {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.copy-action.is-copied .copy-icon-check {
+    opacity: 1;
+    transform: scale(1);
 }
 
 /* Workspace */
@@ -586,6 +616,35 @@ kbd {
     animation: fade-in 180ms var(--ease-out);
 }
 
+/* Staggered entrance: first load and whenever the document becomes empty. Transform and opacity only. */
+.empty-state.is-entering {
+    animation: none;
+}
+
+.empty-state.is-entering > * {
+    animation: rise-in 200ms var(--ease-out) backwards;
+}
+
+.empty-state.is-entering > :nth-child(2) { animation-delay: 40ms; }
+.empty-state.is-entering > :nth-child(3) { animation-delay: 80ms; }
+.empty-state.is-entering > :nth-child(4) { animation-delay: 120ms; }
+
+.clear-ghost {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.rich-pane .clear-ghost {
+    background: var(--bg-app);
+}
+
+.markdown-pane .clear-ghost {
+    background: var(--bg-alt);
+}
+
 .empty-state button {
     pointer-events: auto;
 }
@@ -719,7 +778,10 @@ kbd {
     color: var(--text-primary);
 }
 
-.footer-action:disabled {
+.footer-action:disabled,
+.footer-action[aria-disabled="true"],
+.footer-action[aria-disabled="true"]:hover,
+.footer-action[aria-disabled="true"]:focus-visible {
     color: var(--text-faint);
     background: transparent;
     cursor: default;
@@ -772,7 +834,7 @@ kbd {
     opacity: 0.97;
     pointer-events: none;
     text-align: center;
-    animation: fade-in 120ms var(--ease-out);
+    animation: drag-in 140ms var(--ease-out);
 }
 
 .drag-overlay p {
@@ -1073,6 +1135,11 @@ kbd {
     to { opacity: 1; }
 }
 
+@keyframes drag-in {
+    from { opacity: 0; transform: scale(0.985); }
+    to { opacity: 0.97; transform: scale(1); }
+}
+
 @keyframes rise-in {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
@@ -1090,6 +1157,51 @@ kbd {
 @keyframes toast-in {
     from { opacity: 0; transform: translate(-50%, 6px); }
     to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Appearance change: the class lives on <html> for ~260ms only, so there is no transition on load or hover. */
+.theme-transition,
+.theme-transition body,
+.theme-transition .inkdown,
+.theme-transition .topbar,
+.theme-transition .statusbar,
+.theme-transition .pane,
+.theme-transition .pane-divider,
+.theme-transition .sync-mark,
+.theme-transition .view-switch,
+.theme-transition .view-switch::before,
+.theme-transition .view-option,
+.theme-transition .icon-button,
+.theme-transition .text-button,
+.theme-transition .button,
+.theme-transition .format-tool,
+.theme-transition .tool-gap,
+.theme-transition .action-rule,
+.theme-transition .footer-action,
+.theme-transition .pane-label,
+.theme-transition .doc-name,
+.theme-transition .rich-editor,
+.theme-transition .markdown-editor,
+.theme-transition .markdown-highlight,
+.theme-transition .syntax-marker,
+.theme-transition .empty-title,
+.theme-transition .empty-copy,
+.theme-transition .empty-hint,
+.theme-transition .reader,
+.theme-transition .prose code,
+.theme-transition .prose pre,
+.theme-transition .prose blockquote,
+.theme-transition .prose a,
+.theme-transition .prose th,
+.theme-transition .prose td,
+.theme-transition .prose hr,
+.theme-transition .settings-backdrop,
+.theme-transition .settings-panel,
+.theme-transition .setting-row,
+.theme-transition .setting-options,
+.theme-transition .setting-option,
+.theme-transition .toast {
+    transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out), border-color 200ms var(--ease-out);
 }
 
 @media (max-width: 899px) {

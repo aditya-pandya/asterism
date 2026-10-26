@@ -6,7 +6,7 @@ A privacy-first rich text and Markdown converter for the browser and macOS.
 
 Convert pasted rich text into clean Markdown, render Markdown back into rich text, or use the reader mode for a focused local preview. No account, no server, no content upload.
 
-![Inkdown macOS preview](./docs/assets/inkdown-macos-preview.png)
+![Asterism macOS preview](./docs/assets/asterism-macos-preview.png)
 
 ## Download
 
@@ -35,13 +35,11 @@ You do not have to take my word for it. Here is what you can check yourself:
 
 ### How to open it
 
-The current release was built before the rename, so it is still called Inkdown.
+1. Download `Asterism-1.2.0-arm64.dmg`.
+2. Open the DMG and move Asterism to Applications.
+3. Control-click or right-click Asterism, choose Open, then confirm Open.
 
-1. Download `Inkdown-1.1.0-arm64.dmg`.
-2. Open the DMG and move Inkdown to Applications.
-3. Control-click or right-click Inkdown, choose Open, then confirm Open.
-
-If macOS still blocks it, open System Settings, go to Privacy & Security, and choose Open Anyway for Inkdown.
+If macOS still blocks it, open System Settings, go to Privacy & Security, and choose Open Anyway for Asterism.
 
 ## What It Does
 
@@ -102,7 +100,7 @@ The app can open normal external links only when you explicitly click them. It d
 
 ## Release Notes
 
-See [v1.1.0 Apple Silicon Preview](./docs/release-notes/v1.1.0.md).
+See [v1.2.0 Asterism](./docs/release-notes/v1.2.0.md). Older notes: [v1.1.0 Apple Silicon Preview](./docs/release-notes/v1.1.0.md).
 
 ## License
 
