@@ -1,6 +1,6 @@
 {
-  "name": "inkdown",
-  "productName": "Inkdown",
+  "name": "asterism",
+  "productName": "Asterism",
   "version": "1.1.0",
   "description": "A premium, privacy-first rich text and Markdown converter for the browser and macOS desktop.",
   "author": "Aditya Pandya",
@@ -23,7 +23,7 @@
   },
   "build": {
     "appId": "com.apandya.inkdown",
-    "productName": "Inkdown",
+    "productName": "Asterism",
     "artifactName": "${productName}-${version}-${arch}.${ext}",
     "afterPack": "scripts/after-pack.js",
     "files": [

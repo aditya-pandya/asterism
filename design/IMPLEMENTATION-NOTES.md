@@ -37,3 +37,11 @@ Goal: keep Paper's quiet look but make every action findable without prior knowl
 - Contrast and size raised: labels 12px in sentence case, tertiary text darkened, the heavy focus outline on the editors removed in favour of the pane label brightening.
 - Settings is an opaque sheet with segmented controls, a close button and a shortcuts list. Visible toasts confirm open, save, download and cleared data.
 - Deviation from the Paper spec: segmented controls use a 1px inset ring for the active option (no drop shadows were added).
+
+## Asterism rename and motion polish
+
+- Product renamed to Asterism in `package.json`, Electron and Tauri (window title, app menu, bundle name). The bundle ID and Tauri identifier stay `com.apandya.inkdown` so Tauri's saved data does not move. Electron names its data folder after the app, so `electron/main.js` keeps using an existing `Inkdown` folder and only creates `Asterism` on a fresh install. Saved-data keys stay `inkdown.*`. Cargo crate names are unchanged because the Rust toolchain was not available to rebuild them.
+- New macOS icon set from `assets/asterism-app-icon.svg` (824px rounded square inside a 1024px canvas): `build/icon.icns` and `src-tauri/icons/`.
+- Copy, Save and Clear use `aria-disabled` instead of `disabled`, so keyboard focus is kept when they dim.
+- Added: copy icon crossfade to a check, a short colour transition on theme change (only while the mode actually changes), a staggered empty-state entrance, a word-count nudge when the count changes, a fade when clearing, and a scale-in for the drop overlay. All skip under reduced motion.
+- Verified in the packaged Electron shell: legacy and fresh data folders, persistence across relaunch, and the interactions above. Tauri was not built.

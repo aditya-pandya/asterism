@@ -101,6 +101,37 @@ function softEnter(element, { duration = 180, rise = 4 } = {}) {
     ], { duration, easing: MOTION_EASE });
 }
 
+let themeTransitionTimer = null;
+
+function animateThemeChange() {
+    if (reducedMotion.matches) return;
+    const root = document.documentElement;
+    root.classList.add('theme-transition');
+    clearTimeout(themeTransitionTimer);
+    themeTransitionTimer = setTimeout(() => root.classList.remove('theme-transition'), 260);
+}
+
+let lastStats = null;
+let lastStatsNudge = 0;
+
+function nudgeStats(words, characters) {
+    const previous = lastStats;
+    lastStats = { words, characters };
+    if (!previous || reducedMotion.matches || !elements.documentStats.animate) return;
+    if (previous.words === words && previous.characters === characters) return;
+    // Plain typing changes the character count every keystroke: only nudge on a new word or a bulk change.
+    const bulk = Math.abs(characters - previous.characters) > 1;
+    if (previous.words === words && !bulk) return;
+    const now = performance.now();
+    if (now - lastStatsNudge < 400) return;
+    lastStatsNudge = now;
+    elements.documentStats.animate([
+        { opacity: 1 },
+        { opacity: 0.5, offset: 0.4 },
+        { opacity: 1 }
+    ], { duration: 180, easing: MOTION_EASE });
+}
+
 let lastSyncPulse = 0;
 
 function pulseSyncMark() {
@@ -375,20 +406,52 @@ function renderRichFromMarkdown() {
     highlightCode(elements.richEditor);
 }
 
+// aria-disabled instead of the disabled attribute: a disabled button drops keyboard focus to <body>.
+// Handlers already no-op (or announce) on an empty document.
+function setActionEnabled(button, enabled) {
+    if (enabled) button.removeAttribute('aria-disabled');
+    else button.setAttribute('aria-disabled', 'true');
+}
+
 function updateStats() {
     const text = elements.richEditor.innerText || '';
     const words = (text.trim().match(/\S+/g) || []).length;
     const characters = text.replace(/\n/g, '').length;
     elements.documentStats.textContent = `${words.toLocaleString()} ${words === 1 ? 'word' : 'words'} · ${characters.toLocaleString()} ${characters === 1 ? 'character' : 'characters'}`;
-    elements.copyButton.disabled = !state.markdown;
-    elements.downloadButton.disabled = !state.markdown;
+    nudgeStats(words, characters);
+    setActionEnabled(elements.copyButton, Boolean(state.markdown));
+    setActionEnabled(elements.downloadButton, Boolean(state.markdown));
     renderEmptyState();
     renderClearState();
 }
 
+let emptyShown = false;
+let emptyWasEmpty = false;
+let emptyEntrancePending = true;
+
+function playEmptyEntrance() {
+    if (reducedMotion.matches) return;
+    const empty = elements.emptyState;
+    empty.classList.remove('is-entering');
+    void empty.offsetWidth;
+    empty.classList.add('is-entering');
+}
+
 function renderEmptyState() {
     const isEmpty = !state.markdown && !elements.richEditor.innerText.trim();
-    elements.emptyState.hidden = !isEmpty || elements.richPane.classList.contains('is-focused');
+    const show = isEmpty && !elements.richPane.classList.contains('is-focused');
+    // Staggered entrance on first load and when the document becomes empty, not on every focus/blur.
+    if (isEmpty && !emptyWasEmpty) emptyEntrancePending = true;
+    if (!isEmpty) emptyEntrancePending = false;
+    emptyWasEmpty = isEmpty;
+    elements.emptyState.hidden = !show;
+    if (!show) {
+        elements.emptyState.classList.remove('is-entering');
+    } else if (!emptyShown && emptyEntrancePending) {
+        emptyEntrancePending = false;
+        playEmptyEntrance();
+    }
+    emptyShown = show;
 }
 
 function renderDocName() {
@@ -568,8 +631,9 @@ function resolvedTheme() {
     return state.preferences.appearance;
 }
 
-function applyTheme() {
+function applyTheme({ animate = false } = {}) {
     const mode = resolvedTheme();
+    if (animate && document.documentElement.dataset.mode !== mode) animateThemeChange();
     document.documentElement.dataset.mode = mode;
     elements.app.dataset.mode = mode;
     const label = { light: 'Light', dark: 'Dark', auto: 'Auto (match system)' }[state.preferences.appearance];
@@ -586,7 +650,7 @@ function applyTextSize() {
 function setPreference(key, value) {
     state.preferences[key] = value;
     savePreferences();
-    if (key === 'appearance') applyTheme();
+    if (key === 'appearance') applyTheme({ animate: true });
     if (key === 'textSize') applyTextSize();
     if (key === 'flavor') {
         configureConverters();
@@ -737,10 +801,45 @@ function renderClearState() {
     if (state.justCleared) button.textContent = 'Undo clear';
     else if (state.clearArmed) button.textContent = 'Click again to clear';
     else button.textContent = 'Clear';
-    button.disabled = !state.justCleared && !state.markdown;
+    setActionEnabled(button, state.justCleared || Boolean(state.markdown));
+}
+
+const CLEAR_FADE_MS = 140;
+
+// Old content is cloned into inert ghosts that fade out on top while the real panes are already cleared.
+function snapshotPaneGhosts() {
+    if (reducedMotion.matches || state.view !== 'edit' || !state.markdown) return [];
+    const sources = [
+        { source: elements.richEditor, host: elements.richPane.querySelector('.pane-body') },
+        { source: elements.markdownHighlight, host: elements.markdownPane.querySelector('.pane-body') }
+    ];
+    return sources.map(({ source, host }) => {
+        const ghost = document.createElement('div');
+        ghost.className = 'clear-ghost';
+        ghost.setAttribute('aria-hidden', 'true');
+        ghost.inert = true;
+        const copy = source.cloneNode(true);
+        ['id', 'contenteditable', 'role', 'aria-labelledby', 'aria-hidden', 'data-placeholder'].forEach((name) => copy.removeAttribute(name));
+        ghost.appendChild(copy);
+        return { ghost, host, copy, scrollTop: source.scrollTop, scrollLeft: source.scrollLeft };
+    });
+}
+
+function playClearFade(ghosts) {
+    document.querySelectorAll('.clear-ghost').forEach((node) => node.remove());
+    ghosts.forEach(({ ghost, host, copy, scrollTop, scrollLeft }) => {
+        host.appendChild(ghost);
+        copy.scrollTop = scrollTop;
+        copy.scrollLeft = scrollLeft;
+        const remove = () => ghost.remove();
+        const animation = ghost.animate?.([{ opacity: 1 }, { opacity: 0 }], { duration: CLEAR_FADE_MS, easing: MOTION_EASE, fill: 'forwards' });
+        if (animation) animation.addEventListener('finish', remove, { once: true });
+        setTimeout(remove, CLEAR_FADE_MS + 200);
+    });
 }
 
 function clearNow({ withUndo = true } = {}) {
+    const ghosts = snapshotPaneGhosts();
     clearTimeout(clearArmTimer);
     clearTimeout(undoTimer);
     state.clearArmed = false;
@@ -768,6 +867,7 @@ function clearNow({ withUndo = true } = {}) {
         }, 8000);
     }
     renderClearState();
+    playClearFade(ghosts);
 }
 
 function undoClear() {
@@ -779,6 +879,7 @@ function undoClear() {
     renderDocName();
     renderClearState();
     setDocumentFromMarkdown(markdown);
+    [elements.richPane, elements.markdownPane].forEach((pane) => softEnter(pane.querySelector('.pane-body'), { duration: 160, rise: 3 }));
 }
 
 function handleClear() {
@@ -855,7 +956,7 @@ async function copyMarkdown() {
     if (!copied) return;
     state.copied = true;
     const label = elements.copyButton.querySelector('.copy-label');
-    label.textContent = 'Copied ✓';
+    label.textContent = 'Copied';
     softEnter(label, { duration: 160, rise: 3 });
     elements.copyButton.classList.add('is-copied');
     elements.hintText.textContent = 'Markdown copied to clipboard';
@@ -1145,7 +1246,7 @@ function bindEvents() {
     document.addEventListener('keydown', handleGlobalKeydown);
     document.addEventListener('selectionchange', renderFormatState);
     systemTheme.addEventListener?.('change', () => {
-        if (state.preferences.appearance === 'auto') applyTheme();
+        if (state.preferences.appearance === 'auto') applyTheme({ animate: true });
     });
 }
 

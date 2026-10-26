@@ -8,6 +8,14 @@ const ALLOWED_RENDERER_PERMISSIONS = new Set(['clipboard-read']);
 
 let deferredFilePath = null;
 
+// Saved documents and settings live in the renderer's local storage inside the
+// userData folder. Electron names that folder after the app, so an existing
+// install keeps using the folder it created while the app was called Inkdown.
+const LEGACY_USER_DATA = path.join(app.getPath('appData'), 'Inkdown');
+if (require('node:fs').existsSync(LEGACY_USER_DATA)) {
+  app.setPath('userData', LEGACY_USER_DATA);
+}
+
 function getPrimaryWindow() {
   return BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0] || null;
 }

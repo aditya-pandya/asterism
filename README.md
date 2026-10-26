@@ -6,7 +6,7 @@ A privacy-first rich text and Markdown converter for the browser and macOS.
 
 Convert pasted rich text into clean Markdown, render Markdown back into rich text, or use the reader mode for a focused local preview. No account, no server, no content upload.
 
-![Inkdown macOS preview](./docs/assets/inkdown-macos-preview.png)
+![Asterism macOS preview](./docs/assets/asterism-macos-preview.png)
 
 ## Download
 

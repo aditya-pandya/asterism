@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Permissions for the Inkdown desktop window",
+  "description": "Permissions for the Asterism desktop window",
   "windows": ["main"],
   "permissions": [
     "core:default",
