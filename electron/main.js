@@ -339,6 +339,11 @@ function buildMenu() {
           click: () => sendMenuAction('jump-heading')
         },
         {
+          label: 'Toggle Outline',
+          accelerator: 'CommandOrControl+Alt+O',
+          click: () => sendMenuAction('toggle-outline')
+        },
+        {
           label: 'Toggle Reader View',
           accelerator: 'CommandOrControl+E',
           click: () => sendMenuAction('toggle-reader')

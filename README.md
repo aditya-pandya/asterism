@@ -54,7 +54,8 @@ If macOS still blocks it, open System Settings, go to Privacy & Security, and ch
 - Save opened Markdown files back to the same file on macOS, or use Save As
 - In supported browsers, open Markdown with the browser file picker and save in place or with Save As; changed or missing files are protected by a conflict check. Other browsers download a copy instead. Link a folder to load nearby images and Markdown links
 - Follow local Markdown links and view nearby images in the macOS app; jump to headings from in-document links
-- Jump to any heading from a searchable heading list
+- Navigate a collapsible document outline in Read and Edit, with active-section tracking; toggle it with ⌘⌥O (Ctrl+Alt+O on Windows/Linux)
+- Jump to any heading from the searchable heading list with ⌘⇧O (Ctrl+Shift+O)
 - Convert pasted rich text to Markdown, then copy Markdown or copy the rendered formatting
 - Print the rendered document
 - Use formatting shortcuts, native document shortcuts, and smart Enter behavior for Markdown lists

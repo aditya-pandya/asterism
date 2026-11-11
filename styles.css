@@ -1,3 +1,6 @@
+@font-face { font-family: "Newsreader"; src: url("assets/fonts/newsreader-latin.woff2") format("woff2"); font-weight: 200 800; font-style: normal; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url("assets/fonts/newsreader-italic-latin.woff2") format("woff2"); font-weight: 200 800; font-style: italic; font-display: swap; }
+
 :root {
     color-scheme: light;
     --bg-app: #fbfbfa;
@@ -21,7 +24,7 @@
     --find-active-ink: #1c1c1a;
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    --font-display: Georgia, "Times New Roman", serif;
+    --font-display: "Newsreader", Georgia, "Times New Roman", serif;
     --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
     --radius: 7px;
 }
@@ -308,8 +311,8 @@ kbd {
 
 .topbar-start {
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    align-items: center;
+    gap: 6px;
     min-width: 0;
 }
 
@@ -332,6 +335,7 @@ kbd {
 }
 
 .doc-name {
+    margin-left: 4px;
     overflow: hidden;
     color: var(--text-tertiary);
     font-size: 12.5px;
@@ -949,7 +953,7 @@ kbd {
     color: var(--text-primary);
     font-family: var(--font-display);
     font-size: var(--document-text-size);
-    line-height: 1.75;
+    line-height: 1.7;
 }
 
 .reader.is-width-60 { max-width: 34em; }
@@ -1273,16 +1277,19 @@ kbd {
 .prose h1 {
     margin: 0.4em 0 0.5em;
     font-size: 1.6em;
-    font-weight: 700;
-    letter-spacing: -0.015em;
-    line-height: 1.3;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-wrap: balance;
 }
 
 .prose h2 {
     margin: 0.6em 0 0.4em;
     font-size: 1.3em;
-    font-weight: 650;
-    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    text-wrap: balance;
 }
 
 .prose h3 {
@@ -1300,7 +1307,7 @@ kbd {
 }
 
 .prose > :first-child { margin-top: 0; }
-.prose p { margin: 0.55em 0; }
+.prose p { margin: 0.55em 0; text-wrap: pretty; }
 .prose ul,
 .prose ol { margin: 0.55em 0; padding-left: 1.4em; }
 .prose li { margin: 0.22em 0; }
@@ -1379,7 +1386,7 @@ kbd {
 .prose th[align="right"], .prose td[align="right"] { text-align: right; }
 
 .reader h1 {
-    font-size: 1.9em;
+    font-size: 2em;
     font-weight: 600;
 }
 
@@ -1709,7 +1716,7 @@ kbd {
 @media print {
     .link-popover { display: none !important; }
     body, .inkdown { height: auto !important; overflow: visible !important; background: #fff !important; }
-    .topbar, .statusbar, .find-bar, #editView, .reader-actions, .settings-overlay, .jump-overlay, .toast, .drag-overlay, .sr-status { display: none !important; }
+    .topbar, .statusbar, .find-bar, #editView, .outline, .outline-backdrop, .reader-actions, .settings-overlay, .jump-overlay, .toast, .drag-overlay, .sr-status { display: none !important; }
     .reader-view, .reader-view[hidden] { display: block !important; overflow: visible !important; height: auto !important; animation: none !important; }
     .reader { max-width: none !important; margin: 0 !important; padding: 0 !important; color: #000 !important; }
     .reader a { color: inherit; text-decoration: underline; }
@@ -1727,3 +1734,133 @@ kbd {
 .jump-item[data-level="4"] { padding-left: 52px; }
 .jump-item[data-level="5"] { padding-left: 66px; }
 .jump-item[data-level="6"] { padding-left: 80px; }
+
+/* Document outline */
+
+.doc-shell {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.doc-stage {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.outline {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    width: 232px;
+    min-height: 0;
+    border-right: 1px solid var(--border-subtle);
+    background: var(--bg-app);
+}
+
+.outline-head {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    padding: 0 8px 0 20px;
+}
+
+.outline-title {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.outline-close { display: none; }
+
+.outline-nav {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.outline-list {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 0 8px 24px;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.outline-item {
+    appearance: none;
+    display: block;
+    width: 100%;
+    padding: 5px 10px 5px 12px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    line-height: 1.4;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+
+.outline-item:hover { background: var(--surface-hover); color: var(--text-primary); }
+.outline-item:focus-visible { outline: 2px solid var(--text-tertiary); outline-offset: -2px; }
+.outline-item[data-level="1"] { color: var(--text-primary); font-weight: 600; }
+.outline-item[aria-current="true"] { background: var(--bg-alt); color: var(--text-primary); box-shadow: inset 2px 0 0 var(--text-primary); }
+.outline-item[data-depth="1"] { padding-left: 24px; }
+.outline-item[data-depth="2"] { padding-left: 36px; }
+.outline-item[data-depth="3"] { padding-left: 48px; }
+.outline-item[data-depth="4"] { padding-left: 60px; }
+.outline-item[data-depth="5"] { padding-left: 72px; }
+
+.outline-empty {
+    margin: 0;
+    padding: 4px 20px;
+    color: var(--text-tertiary);
+    font-size: 12.5px;
+}
+
+.outline-backdrop { display: none; }
+
+#outlineButton[aria-expanded="true"] { color: var(--text-primary); }
+
+@media (max-width: 899px) {
+    .outline {
+        position: absolute;
+        z-index: 6;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(280px, 86vw);
+        border-right: 1px solid var(--border-color);
+        background: var(--bg-app);
+    }
+
+    .outline-backdrop {
+        position: absolute;
+        z-index: 5;
+        inset: 0;
+        display: block;
+        padding: 0;
+        border: 0;
+        background: var(--selection-bg);
+        cursor: default;
+    }
+
+    .outline-backdrop[hidden] { display: none; }
+    .outline-close { display: inline-flex; }
+    .outline-item { min-height: 44px; padding-top: 10px; padding-bottom: 10px; }
+    .outline-close { min-width: 44px; min-height: 44px; }
+}

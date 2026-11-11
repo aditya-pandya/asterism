@@ -17,7 +17,8 @@ const DEFAULT_PREFERENCES = Object.freeze({
     readerWidth: '72',
     smartQuotes: true,
     textSize: '16',
-    autoSave: true
+    autoSave: true,
+    outlineHidden: false
 });
 
 const SETTING_DEFINITIONS = [
@@ -150,7 +151,13 @@ const elements = {
     copyFormattedButton: document.getElementById('copyFormattedButton'),
     linkFolderButton: document.getElementById('linkFolderButton'),
     shortcutList: document.getElementById('shortcutList'),
-    shortcutsHeading: document.getElementById('shortcutsHeading')
+    shortcutsHeading: document.getElementById('shortcutsHeading'),
+    outlineButton: document.getElementById('outlineButton'),
+    outlinePanel: document.getElementById('outlinePanel'),
+    outlineList: document.getElementById('outlineList'),
+    outlineEmpty: document.getElementById('outlineEmpty'),
+    outlineClose: document.getElementById('outlineClose'),
+    outlineBackdrop: document.getElementById('outlineBackdrop')
 };
 
 let turndownService = null;
@@ -743,6 +750,7 @@ function updateStats() {
     setActionEnabled(elements.downloadButton, Boolean(state.markdown || state.currentFilePath));
     renderEmptyState();
     renderClearState();
+    scheduleOutline();
 }
 
 let emptyShown = false;
@@ -906,6 +914,7 @@ function setDocumentFromMarkdown(markdown, { persist = true } = {}) {
     renderDocName();
     renderStatusHint();
     refreshFind();
+    refreshOutline();
 }
 
 function bodyHtmlFromDocument(html) {
@@ -920,6 +929,7 @@ function setDocumentFromHtml(html) {
     elements.richEditor.innerHTML = sanitizeHtml(bodyHtmlFromDocument(html), { preserveStyles: true });
     syncFromRich({ flash: true });
     closeReader();
+    refreshOutline();
 }
 
 function setDocumentFromText(text) {
@@ -929,6 +939,7 @@ function setDocumentFromText(text) {
     elements.richEditor.textContent = String(text || '');
     syncFromRich({ flash: true });
     closeReader();
+    refreshOutline();
 }
 
 function normalizePreferences(candidate = {}) {
@@ -946,7 +957,8 @@ function normalizePreferences(candidate = {}) {
         readerWidth,
         smartQuotes: typeof candidate.smartQuotes === 'boolean' ? candidate.smartQuotes : DEFAULT_PREFERENCES.smartQuotes,
         textSize,
-        autoSave: typeof candidate.autoSave === 'boolean' ? candidate.autoSave : DEFAULT_PREFERENCES.autoSave
+        autoSave: typeof candidate.autoSave === 'boolean' ? candidate.autoSave : DEFAULT_PREFERENCES.autoSave,
+        outlineHidden: typeof candidate.outlineHidden === 'boolean' ? candidate.outlineHidden : DEFAULT_PREFERENCES.outlineHidden
     };
 }
 
@@ -1104,6 +1116,7 @@ function renderSettingsRows() {
 }
 
 function openSettings() {
+    closeOutlineDrawer({ restore: false });
     state.settingsOpen = true;
     state.lastFocusedElement = document.activeElement;
     renderSettingsRows();
@@ -1187,9 +1200,11 @@ function renderReader() {
     }
     elements.readerContent.classList.toggle('is-width-60', state.preferences.readerWidth === '60');
     elements.readerContent.classList.toggle('is-width-full', state.preferences.readerWidth === 'Full');
+    scheduleOutlineActive();
 }
 
 function openReader() {
+    closeOutlineDrawer({ restore: false });
     closeSettings();
     state.view = 'reader';
     renderReader();
@@ -1207,10 +1222,13 @@ function renderViewSwitch() {
     elements.viewEditButton.setAttribute('aria-pressed', String(!reading));
     elements.viewReadButton.setAttribute('aria-pressed', String(reading));
     elements.viewEditButton.parentElement?.classList.toggle('is-reading', reading);
+    outlineLastScroll = '';
+    scheduleOutlineActive();
 }
 
 function closeReader() {
     if (state.view !== 'reader') return;
+    closeOutlineDrawer({ restore: false });
     state.view = 'edit';
     elements.readerView.hidden = true;
     elements.editView.hidden = false;
@@ -1348,6 +1366,7 @@ function refreshFind({ reset = false, scroll = false } = {}) {
 }
 
 function openFind({ replace = false } = {}) {
+    closeOutlineDrawer({ restore: false });
     if (replace && state.view === 'reader') closeReader();
     if (replace) state.lastEditor = 'markdown';
     const selected = window.getSelection()?.toString() || '';
@@ -1402,11 +1421,15 @@ function replaceMarkdown(nextMarkdown, message) {
     selection.removeAllRanges();
     selection.addRange(range);
     state.programmaticReplace = true;
-    const nativeUndo = document.execCommand('insertText', false, nextMarkdown);
-    if (nativeUndo && state.markdown !== nextMarkdown) syncFromMarkdown();
+    let nativeUndo = document.execCommand('insertText', false, nextMarkdown);
     state.programmaticReplace = false;
+    // Native insertText can add div/br newline artifacts; the source must equal the requested string.
+    // When it does not, restore the exact value and fall back to the custom snapshot undo.
+    if (!nativeUndo || state.markdown !== nextMarkdown) {
+        nativeUndo = false;
+        setDocumentFromMarkdown(nextMarkdown);
+    }
     state.replacementNativeUndo = nativeUndo;
-    if (!nativeUndo) setDocumentFromMarkdown(nextMarkdown);
     refreshFind();
     announce(message);
 }
@@ -1553,6 +1576,7 @@ function clearNow({ withUndo = true, confirmNew = false } = {}) {
     renderMarkdownHighlight();
     updateStats();
     closeReader();
+    refreshOutline();
     try {
         localStorage.removeItem(STORAGE_KEYS.document);
         localStorage.removeItem(STORAGE_KEYS.documentMeta);
@@ -2588,6 +2612,7 @@ function markJumpSelection() {
 }
 
 function openJump() {
+    closeOutlineDrawer({ restore: false });
     if (jumpOpen()) return;
     if (state.settingsOpen) closeSettings();
     jumpReturnFocus = document.activeElement;
@@ -2619,12 +2644,12 @@ function chooseJump(position) {
     jumpToHeading(item, returnFocus);
 }
 
-function jumpToHeading(item, returnFocus) {
+function jumpToHeading(item, returnFocus, list = jumpItems) {
     if (state.view === 'reader') {
         const headings = [...elements.readerContent.querySelectorAll('h1, h2, h3, h4, h5, h6')];
-        let target = headings.length === jumpItems.length ? headings[item.index] : null;
+        let target = headings.length === list.length ? headings[item.index] : null;
         if (!target) {
-            const nth = jumpItems.filter((other) => other.index < item.index && other.label === item.label).length;
+            const nth = list.filter((other) => other.index < item.index && other.label === item.label).length;
             target = headings.filter((heading) => heading.textContent.replace(/\s+/g, ' ').trim() === item.label)[nth];
         }
         if (!target) {
@@ -2670,6 +2695,274 @@ function handleJumpKeydown(event) {
     } else if (event.key === 'Tab') {
         event.preventDefault();
     }
+}
+
+// ---- Document outline ----
+// A quiet left rail built from parseHeadings(); clicks reuse jumpToHeading() so Reader, rich and
+// Markdown stay on the same heading identity. Rebuilds only when the heading list changes.
+
+const OUTLINE_QUERY = window.matchMedia('(min-width: 900px)');
+let outlineItems = [];
+let outlineSignature = null;
+let outlineTimer = null;
+let outlineForced = false;
+let outlineDrawerOpen = false;
+let outlineReturnFocus = null;
+let outlineLastScroll = '';
+let outlineMapper = null;
+let outlineMapperObserver = null;
+let outlineFrame = 0;
+let outlineActive = -1;
+let outlineOffsets = null;
+let outlineOffsetsFor = null;
+
+function outlineWide() {
+    return OUTLINE_QUERY.matches;
+}
+
+function outlineNeeded() {
+    return outlineWide() ? !state.preferences.outlineHidden : outlineDrawerOpen;
+}
+
+function outlineBackground() {
+    return [document.getElementById('wordmarkStrip'), elements.findBar, document.querySelector('.doc-stage'), document.querySelector('.statusbar')].filter(Boolean);
+}
+
+function outlineVisible() {
+    if (!outlineWide()) return outlineDrawerOpen;
+    return !state.preferences.outlineHidden && (outlineItems.length > 0 || outlineForced);
+}
+
+function renderOutlineChrome() {
+    const visible = outlineVisible();
+    elements.outlinePanel.hidden = !visible;
+    const modal = visible && !outlineWide();
+    elements.outlineBackdrop.hidden = !modal;
+    const panel = elements.outlinePanel;
+    if (modal) {
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'true');
+        panel.setAttribute('aria-label', 'Document outline');
+    } else {
+        panel.removeAttribute('role');
+        panel.removeAttribute('aria-modal');
+        panel.removeAttribute('aria-label');
+    }
+    for (const el of outlineBackground()) el.inert = modal;
+    elements.outlineButton.setAttribute('aria-expanded', String(visible));
+    elements.outlineButton.title = platformLabel(`${visible ? 'Hide' : 'Show'} outline  ⌘⌥O`);
+}
+
+function renderOutlineList() {
+    const list = elements.outlineList;
+    const focusedIndex = list.contains(document.activeElement) ? Number(document.activeElement.dataset.index) : -1;
+    const minLevel = outlineItems.reduce((min, item) => Math.min(min, item.level), 6);
+    list.replaceChildren(...outlineItems.map((item) => {
+        const row = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'outline-item';
+        button.dataset.level = String(item.level);
+        button.dataset.depth = String(Math.min(5, item.level - minLevel));
+        button.dataset.index = String(item.index);
+        button.title = item.label;
+        button.textContent = item.label;
+        row.appendChild(button);
+        return row;
+    }));
+    list.hidden = outlineItems.length === 0;
+    elements.outlineEmpty.hidden = outlineItems.length > 0;
+    outlineActive = -1;
+    if (focusedIndex >= 0) list.querySelector(`[data-index="${Math.min(focusedIndex, outlineItems.length - 1)}"]`)?.focus({ preventScroll: true });
+}
+
+function refreshOutline() {
+    clearTimeout(outlineTimer);
+    outlineTimer = null;
+    if (!outlineNeeded()) {
+        outlineSignature = null;
+        renderOutlineChrome();
+        return;
+    }
+    outlineItems = parseHeadings(state.markdown);
+    const signature = outlineItems.map((item) => `${item.level}:${item.label}`).join('\n');
+    if (signature !== outlineSignature) {
+        outlineSignature = signature;
+        renderOutlineList();
+    }
+    renderOutlineChrome();
+    scheduleOutlineActive();
+}
+
+function scheduleOutline() {
+    if (!outlineNeeded()) return;
+    clearTimeout(outlineTimer);
+    outlineTimer = setTimeout(refreshOutline, 160);
+}
+
+function outlineSource() {
+    if (state.view === 'reader') return 'reader';
+    return outlineLastScroll || (state.lastEditor === 'markdown' ? 'markdown' : 'rich');
+}
+
+function outlineMarkdownOffsets() {
+    if (outlineOffsetsFor === state.markdown && outlineOffsets) return outlineOffsets;
+    const lines = state.markdown.split('\n');
+    const starts = [];
+    let at = 0;
+    lines.forEach((text) => { starts.push(at); at += text.length + 1; });
+    outlineOffsets = outlineItems.map((item) => (item.line >= 0 && item.line < lines.length ? starts[item.line] : -1));
+    outlineOffsetsFor = state.markdown;
+    return outlineOffsets;
+}
+
+function computeOutlineActive() {
+    const source = outlineSource();
+    const container = source === 'reader' ? elements.readerView : source === 'markdown' ? elements.markdownEditor : elements.richEditor;
+    const box = container.getBoundingClientRect();
+    if (!box.height) return -1;
+    const line = box.top + Math.min(96, box.height * 0.25);
+    let tops;
+    if (source === 'markdown') {
+        if (outlineMapperObserver) {
+            if (outlineMapperObserver.takeRecords().length) outlineMapper = null;
+        } else outlineMapper = null;
+        if (!outlineMapper) outlineMapper = createFindRangeMapper(elements.markdownEditor);
+        const mapper = outlineMapper;
+        tops = outlineMarkdownOffsets().map((start) => {
+            const range = start >= 0 ? mapper(start, start + 1) : null;
+            return range ? range.getBoundingClientRect().top : Infinity;
+        });
+    } else {
+        const root = source === 'reader' ? elements.readerContent : elements.richEditor;
+        const headings = root.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        if (headings.length !== outlineItems.length) return -1;
+        tops = Array.from(headings, (heading) => heading.getBoundingClientRect().top);
+    }
+    let active = -1;
+    for (let i = 0; i < tops.length; i += 1) if (tops[i] <= line) active = i;
+    if (container.scrollTop > 0 && container.scrollTop + container.clientHeight >= container.scrollHeight - 2 && tops.length) active = tops.length - 1;
+    return active;
+}
+
+function setOutlineActive(index) {
+    if (index === outlineActive) return;
+    const buttons = elements.outlineList.children;
+    if (buttons[outlineActive]) buttons[outlineActive].firstChild.removeAttribute('aria-current');
+    outlineActive = index;
+    const button = buttons[index]?.firstChild;
+    if (!button) return;
+    button.setAttribute('aria-current', 'true');
+    const list = elements.outlineList.getBoundingClientRect();
+    const rect = button.getBoundingClientRect();
+    if (rect.top < list.top) elements.outlineList.scrollTop -= list.top - rect.top + 8;
+    else if (rect.bottom > list.bottom) elements.outlineList.scrollTop += rect.bottom - list.bottom + 8;
+}
+
+function updateOutlineActive() {
+    outlineFrame = 0;
+    if (!outlineVisible() || !outlineItems.length) return;
+    setOutlineActive(computeOutlineActive());
+}
+
+function scheduleOutlineActive() {
+    if (outlineFrame || !outlineVisible()) return;
+    outlineFrame = requestAnimationFrame(updateOutlineActive);
+}
+
+function openOutlineDrawer() {
+    if (outlineDrawerOpen) return;
+    outlineReturnFocus = document.activeElement;
+    outlineDrawerOpen = true;
+    refreshOutline();
+    updateOutlineActive();
+    (elements.outlineList.querySelector('[aria-current="true"]') || elements.outlineList.querySelector('button') || elements.outlineClose).focus();
+}
+
+function closeOutlineDrawer({ restore = true } = {}) {
+    if (!outlineDrawerOpen) return;
+    outlineDrawerOpen = false;
+    renderOutlineChrome();
+    const target = outlineReturnFocus?.isConnected && outlineReturnFocus !== document.body ? outlineReturnFocus : elements.outlineButton;
+    outlineReturnFocus = null;
+    if (restore) target.focus?.();
+}
+
+function toggleOutline() {
+    if (!outlineWide()) {
+        if (outlineDrawerOpen) closeOutlineDrawer();
+        else openOutlineDrawer();
+        return;
+    }
+    if (outlineVisible()) {
+        state.preferences.outlineHidden = true;
+    } else {
+        state.preferences.outlineHidden = false;
+        outlineForced = true;
+    }
+    savePreferences();
+    refreshOutline();
+}
+
+function chooseOutline(index) {
+    const item = outlineItems[index];
+    if (!item) return;
+    setOutlineActive(index);
+    if (!outlineWide()) closeOutlineDrawer({ restore: false });
+    jumpToHeading(item, elements.outlineButton, outlineItems);
+}
+
+function bindOutlineEvents() {
+    elements.outlineButton.addEventListener('click', toggleOutline);
+    elements.outlineClose.addEventListener('click', () => closeOutlineDrawer());
+    elements.outlineBackdrop.addEventListener('click', () => closeOutlineDrawer());
+    elements.outlineList.addEventListener('click', (event) => {
+        const button = event.target.closest('.outline-item');
+        if (button) chooseOutline(Number(button.dataset.index));
+    });
+    elements.outlinePanel.addEventListener('keydown', (event) => {
+        if (event.key !== 'Tab' || !outlineDrawerOpen) return;
+        const focusable = [...elements.outlinePanel.querySelectorAll('button')].filter((b) => !b.disabled && b.offsetParent !== null);
+        if (!focusable.length) return;
+        const at = focusable.indexOf(document.activeElement);
+        const next = focusable[(at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length];
+        event.preventDefault();
+        next.focus();
+    });
+    elements.outlineList.addEventListener('keydown', (event) => {
+        const keys = { ArrowDown: 1, ArrowUp: -1, Home: 'first', End: 'last' };
+        if (!(event.key in keys) || event.altKey || event.metaKey || event.ctrlKey) return;
+        const buttons = [...elements.outlineList.querySelectorAll('.outline-item')];
+        const at = buttons.indexOf(document.activeElement);
+        if (at < 0) return;
+        event.preventDefault();
+        const move = keys[event.key];
+        const next = move === 'first' ? 0 : move === 'last' ? buttons.length - 1 : Math.min(buttons.length - 1, Math.max(0, at + move));
+        buttons[next].focus();
+    });
+    elements.readerView.addEventListener('scroll', scheduleOutlineActive, { passive: true });
+    elements.editView.addEventListener('scroll', (event) => {
+        if (event.target === elements.markdownEditor) outlineLastScroll = 'markdown';
+        else if (event.target === elements.richEditor) outlineLastScroll = 'rich';
+        else return;
+        scheduleOutlineActive();
+    }, { capture: true, passive: true });
+    if (typeof MutationObserver === 'function') {
+        outlineMapperObserver = new MutationObserver(() => { outlineMapper = null; });
+        outlineMapperObserver.observe(elements.markdownEditor, { childList: true, characterData: true, subtree: true });
+    }
+    elements.editView.addEventListener('focusin', (event) => {
+        if (event.target === elements.markdownEditor) outlineLastScroll = 'markdown';
+        else if (event.target === elements.richEditor) outlineLastScroll = 'rich';
+        else return;
+        scheduleOutlineActive();
+    });
+    OUTLINE_QUERY.addEventListener?.('change', () => {
+        const hadFocus = elements.outlinePanel.contains(document.activeElement);
+        outlineDrawerOpen = false;
+        refreshOutline();
+        if (hadFocus) elements.outlineButton.focus();
+    });
 }
 
 // ---- Copy formatted, print, shortcut help ----
@@ -2746,7 +3039,7 @@ const SHORTCUTS = [
     ['Numbered list', ['Mod', 'Shift', '7']], ['Bulleted list', ['Mod', 'Shift', '8']], ['Task list', ['Mod', 'Shift', '9']],
     ['Indent / outdent', ['Tab', 'Shift+Tab']],
     ['Find', ['Mod', 'F']], ['Next / previous', ['Mod', 'G']], ['Replace', ['Alt', 'Mod', 'F']],
-    ['Jump to heading', ['Mod', 'Shift', 'O']], ['Read / Edit', ['Mod', 'E']],
+    ['Jump to heading', ['Mod', 'Shift', 'O']], ['Toggle outline', ['Mod', 'Alt', 'O']], ['Read / Edit', ['Mod', 'E']],
     ['Open file', ['Mod', 'O']], ['Save', ['Mod', 'S']], ['Save As', ['Mod', 'Shift', 'S']],
     ['Copy Markdown', ['Mod', 'Shift', 'C']], ['Print', ['Mod', 'P']], ['New document', ['Mod', 'N']],
     ['Settings', ['Mod', ',']], ['Shortcut help', ['Mod', '/']]
@@ -2843,6 +3136,10 @@ function handleEscape(event) {
     if (document.activeElement === elements.markdownEditor) tabReleased = true;
     if (jumpOpen()) closeJump();
     else if (state.settingsOpen) closeSettings();
+    else if (outlineDrawerOpen) {
+        event.preventDefault();
+        closeOutlineDrawer();
+    }
     else if (state.findOpen) closeFind();
     else if (state.view === 'reader' && !event.defaultPrevented) closeReader();
 }
@@ -2890,6 +3187,12 @@ function handleGlobalKeydown(event) {
             event.preventDefault();
             toggleSettings();
         }
+        return;
+    }
+
+    if (modifier && event.altKey && !event.shiftKey && event.code === 'KeyO' && !event.getModifierState?.('AltGraph')) {
+        event.preventDefault();
+        toggleOutline();
         return;
     }
 
@@ -2998,6 +3301,9 @@ function setupDesktopIntegration() {
         else if (action === 'find-next') moveFind(1);
         else if (action === 'find-previous') moveFind(-1);
         else if (action === 'jump-heading' || action === 'jump-to-heading') toggleJump();
+        else if (action === 'toggle-outline') {
+            if (!jumpOpen() && !state.settingsOpen) toggleOutline();
+        }
         else if (action === 'toggle-reader') toggleReader();
         else if (action === 'print-document' || action === 'print') printDocument();
         else if (action === 'copy-formatted') copyFormatted();
@@ -3103,6 +3409,7 @@ function bindEvents() {
     elements.copyButton.addEventListener('click', copyMarkdown);
     elements.copyFormattedButton.addEventListener('click', copyFormatted);
     elements.jumpButton.addEventListener('click', toggleJump);
+    bindOutlineEvents();
     elements.jumpBackdrop.addEventListener('click', () => closeJump());
     elements.jumpInput.addEventListener('input', () => { jumpIndex = 0; renderJumpList(); });
     elements.jumpInput.addEventListener('keydown', handleJumpKeydown);
@@ -3187,6 +3494,7 @@ function initialize() {
     bindEvents();
     setupDragAndDrop();
     setupDesktopIntegration();
+    renderOutlineChrome();
     if (savedDocument) openReader();
 }
 

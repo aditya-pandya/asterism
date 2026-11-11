@@ -126,8 +126,10 @@ async function main() {
     assert.match(await evaluate(win, `document.getElementById('readerContent').textContent`), /Print me/, 'print should populate the Reader content');
     assert.match(printCss, /\.reader-view, \.reader-view\[hidden\]\s*\{\s*display:\s*block\s*!important/s,
       'print CSS should reveal Reader even while the app remains in Edit');
-    assert.match(printCss, /\.topbar, \.statusbar, \.find-bar, #editView, \.reader-actions[^}]*display:\s*none\s*!important/s,
-      'print CSS should hide editor controls and Reader actions');
+    assert.match(printCss, /\.topbar, \.statusbar, \.find-bar, #editView[^}]*display:\s*none\s*!important/s,
+      'print CSS should hide editor controls');
+    assert.match(printCss, /\.outline, \.outline-backdrop, \.reader-actions[^}]*display:\s*none\s*!important/s,
+      'print CSS should hide the outline and Reader actions');
     await evaluate(win, `window.dispatchEvent(new Event('afterprint'));`);
     assert.equal(await evaluate(win, 'state.view'), 'edit', 'afterprint should restore the prior Edit view');
 

@@ -16,6 +16,9 @@
     <div class="inkdown" id="app" data-mode="light">
         <header class="topbar" id="wordmarkStrip" aria-label="Asterism">
             <div class="topbar-start">
+            <button class="icon-button" id="outlineButton" title="Show outline  ⌘⌥O" aria-label="Document outline" aria-expanded="false" aria-controls="outlinePanel">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 3.5h11M5.5 6.5h8M5.5 9.5h8M2.5 12.5h11"/></svg>
+            </button>
                 <span class="wordmark"><svg class="wordmark-glyph" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6v18M24.2 10.5l15.6 9M39.8 10.5l-15.6 9M17 36v18M9.2 40.5l15.6 9M24.8 40.5l-15.6 9M47 36v18M39.2 40.5l15.6 9M54.8 40.5l-15.6 9"/></svg>Asterism</span>
                 <span class="doc-name" id="docName" hidden></span>
             </div>
@@ -69,6 +72,21 @@
             </div>
         </div>
 
+        <div class="doc-shell" id="docShell">
+        <div class="outline" id="outlinePanel" hidden>
+            <div class="outline-head">
+                <h2 class="outline-title">Outline</h2>
+                <button class="icon-button outline-close" id="outlineClose" type="button" aria-label="Close outline" title="Close  esc">
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+                </button>
+            </div>
+            <nav class="outline-nav" aria-label="Headings">
+                <ul class="outline-list" id="outlineList"></ul>
+                <p class="outline-empty" id="outlineEmpty" hidden>Headings appear here.</p>
+            </nav>
+        </div>
+        <button class="outline-backdrop" id="outlineBackdrop" type="button" aria-label="Close outline" tabindex="-1" hidden></button>
+        <div class="doc-stage">
         <main class="workspace" id="editView">
             <section class="pane rich-pane" id="richPane" aria-labelledby="richLabel">
                 <div class="pane-header">
@@ -153,6 +171,8 @@
             <div class="reader-actions"><button class="text-button" id="copyFormattedButton" title="Copy the rendered document with formatting">Copy formatted</button></div>
             <article class="reader prose" id="readerContent"></article>
         </section>
+        </div>
+        </div>
 
         <footer class="statusbar" aria-label="Document status">
             <span class="document-stats" id="documentStats">0 words · 0 characters</span>

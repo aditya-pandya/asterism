@@ -40,6 +40,14 @@ This scope supports one local document at a time. Asterism does not need a vault
 
 Auto-save off stops future recovery snapshots but retains the last local snapshot until **Clear all** in Settings. Recovered drafts can offer **Reconnect file** on native Markdown drafts. Reattachment proceeds only if the selected file still matches the raw stored baseline; otherwise Save As remains the route. Electron's actual Cancel/Discard dialog was exercised. Tauri implementation is compile-checked, but its desktop interaction has not been exercised.
 
+## App polish and persistent outline
+
+The app now uses locally bundled Newsreader for shared reading/formatted typography. A collapsible, hierarchical outline appears beside documents on desktop and uses a keyboard-contained drawer in narrow windows. It reuses the same Markdown heading parser as quick jump, supports duplicate and non-Latin headings, excludes fenced code, and follows the active editor or Reader section. The desktop visibility preference persists; the narrow drawer is temporary. Toggle it with Mod+Alt+O; searchable quick jump remains Mod+Shift+O.
+
+Find/Replace now restores the exact requested Markdown if native contenteditable insertion produces extra blank lines, retaining replacement undo/redo. The outline caches its text-node mapper and invalidates it on editor DOM changes.
+
+Verification for this pass: 25 unit tests and all five isolated Electron suites passed (`ui-polish`, core features, Markdown roundtrip, recovered-draft reattachment, source fidelity). The new suite covers themes/font settings, replacement undo/redo and exact whitespace, outline updates/jumps/hierarchy, preference reload, drawer focus/inert/Escape/overlay transitions, and print/PDF output. Screenshots of Paper and Midnight in Edit/Read and the narrow drawer were visually reviewed. These renderer shortcut tests do not establish physical macOS accelerator dispatch: the native inspection tool timed out before that check. Safari, Firefox and Tauri interaction remain untested.
+
 ## Verification and limits
 
 - `npm test` passes 25/25 tests. All four Electron smoke scripts pass: core features, Markdown round-trip, source fidelity, and recovered-draft reattachment.
