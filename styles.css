@@ -68,13 +68,41 @@
     --find-bg: #dfe39a; --find-active-bg: #e3b563; --find-ink: #1f2a1f; --find-active-ink: #1f2a1f;
 }
 
+/* Dark palettes: neutral prose, accent reserved for links, active markers, focus, selection, primary buttons */
 :root[data-palette="dark-midnight"], #app[data-palette="dark-midnight"] {
-    --bg-app: #0b1018; --bg-alt: #0f1620; --surface: #141c28; --surface-hover: #1c2636;
-    --text-primary: #e4e9f2; --text-secondary: #a3aec2; --text-tertiary: #7a869c; --text-faint: #4f5a6e;
-    --border-color: #263043; --border-subtle: #1a2230; --accent-primary: #e4e9f2; --accent-contrast: #0b1018;
-    --danger: #f08a84; --selection-bg: rgba(134,174,240,.28); --link: #86aef0;
-    --find-bg: #5a5320; --find-active-bg: #d9a441; --find-ink: #f3f0dc; --find-active-ink: #0b1018;
+    --bg-app: #060b17; --bg-alt: #0a1121; --surface: #0f1830; --surface-hover: #17233f;
+    --text-primary: #e6ecf7; --text-secondary: #aab7d0; --text-tertiary: #8896b3; --text-faint: #4d5a75;
+    --border-color: #22304d; --border-subtle: #141d33; --accent-primary: #6fd6c4; --accent-contrast: #04120f;
+    --danger: #f59a94; --selection-bg: rgba(111,214,196,.28); --link: #7fdccb;
+    --find-bg: #5a5320; --find-active-bg: #d9a441; --find-ink: #f3f0dc; --find-active-ink: #060b17;
 }
+
+:root[data-palette="dark-onyx"], #app[data-palette="dark-onyx"] {
+    --bg-app: #050505; --bg-alt: #0b0b0b; --surface: #131312; --surface-hover: #1e1e1c;
+    --text-primary: #ece9e2; --text-secondary: #b3afa6; --text-tertiary: #908c84; --text-faint: #54524d;
+    --border-color: #2b2b28; --border-subtle: #1a1a18; --accent-primary: #e3b341; --accent-contrast: #0a0a08;
+    --danger: #f59a94; --selection-bg: rgba(227,179,65,.30); --link: #e3b341;
+    --find-bg: #5a5320; --find-active-bg: #d9a441; --find-ink: #f3f0dc; --find-active-ink: #050505;
+}
+
+:root[data-palette="dark-ember"], #app[data-palette="dark-ember"] {
+    --bg-app: #17120f; --bg-alt: #1c1612; --surface: #241d18; --surface-hover: #2f261f;
+    --text-primary: #efe8e1; --text-secondary: #bdb1a5; --text-tertiary: #a29586; --text-faint: #62574c;
+    --border-color: #3a2f27; --border-subtle: #272019; --accent-primary: #e0956a; --accent-contrast: #170f0a;
+    --danger: #f59a94; --selection-bg: rgba(224,149,106,.30); --link: #eba37a;
+    --find-bg: #5a5320; --find-active-bg: #d9a441; --find-ink: #f3f0dc; --find-active-ink: #17120f;
+}
+
+/* Dark-only accent markers (light themes unchanged) */
+:root[data-mode="dark"] button:focus-visible,
+:root[data-mode="dark"] a:focus-visible,
+:root[data-mode="dark"] .outline-item:focus-visible,
+:root[data-mode="dark"] .link-popover input:focus-visible,
+:root[data-mode="dark"] .link-button:focus-visible,
+:root[data-mode="dark"] .jump-panel input:focus-visible { outline-color: var(--accent-primary); }
+:root[data-mode="dark"] .outline-item[aria-current="true"] { box-shadow: inset 2px 0 0 var(--accent-primary); }
+:root[data-mode="dark"] .setting-option.is-active { box-shadow: 0 0 0 1px var(--accent-primary); }
+:root[data-mode="dark"] .syntax-marker { color: var(--text-tertiary); }
 
 :root[data-palette="light-paper"] .hljs-keyword,
 :root[data-palette="light-sage"] .hljs-keyword {

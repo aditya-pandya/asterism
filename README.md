@@ -50,7 +50,7 @@ If macOS still blocks it, open System Settings, go to Privacy & Security, and ch
 - Edit formatted text and Markdown side by side, using one document source
 - Find in Read and Edit, with next/previous matches and Markdown replace
 - Use one text-size setting across reading and editing
-- Choose Paper or Sage light palettes and Midnight dark palette, alongside Default, with Light, Dark, or Auto appearance
+- Choose Default, Paper, or Sage for light appearance; Midnight (navy/mint), Onyx (black/gold), or Ember (charcoal/copper) for dark appearance, with Light, Dark, or Auto switching
 - Save opened Markdown files back to the same file on macOS, or use Save As
 - In supported browsers, open Markdown with the browser file picker and save in place or with Save As; changed or missing files are protected by a conflict check. Other browsers download a copy instead. Link a folder to load nearby images and Markdown links
 - Follow local Markdown links and view nearby images in the macOS app; jump to headings from in-document links

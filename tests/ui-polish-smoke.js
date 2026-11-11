@@ -66,7 +66,7 @@ async function main() {
     }
     const dark = await choose('appearance', 'dark');
     assert.equal(dark.mode, 'dark', 'Dark appearance should resolve to dark mode');
-    assert.equal(dark.palette, 'dark-default', 'Dark should retain its selected default palette');
+    assert.equal(dark.palette, 'dark-midnight', 'Dark should use Midnight as its fresh-profile default palette');
     const midnight = await choose('darkTheme', 'midnight');
     assert.equal(midnight.palette, 'dark-midnight', 'Midnight should apply in Dark mode');
     const light = await choose('appearance', 'light');

@@ -12,7 +12,7 @@ const STORAGE_KEYS = {
 const DEFAULT_PREFERENCES = Object.freeze({
     appearance: 'light',
     lightTheme: 'default',
-    darkTheme: 'default',
+    darkTheme: 'midnight',
     flavor: 'GFM',
     readerWidth: '72',
     smartQuotes: true,
@@ -24,7 +24,7 @@ const DEFAULT_PREFERENCES = Object.freeze({
 const SETTING_DEFINITIONS = [
     { key: 'appearance', name: 'Appearance', values: ['light', 'dark', 'auto'], labels: ['Light', 'Dark', 'Auto'] },
     { key: 'lightTheme', name: 'Light theme', values: ['default', 'paper', 'sage'], labels: ['Default', 'Paper', 'Sage'] },
-    { key: 'darkTheme', name: 'Dark theme', values: ['default', 'midnight'], labels: ['Default', 'Midnight'] },
+    { key: 'darkTheme', name: 'Dark theme', values: ['midnight', 'onyx', 'ember'], labels: ['Midnight', 'Onyx', 'Ember'] },
     { key: 'flavor', name: 'Markdown', values: ['GFM', 'CommonMark'] },
     { key: 'readerWidth', name: 'Reader width', values: ['60', '72', 'Full'] },
     { key: 'smartQuotes', name: 'Smart quotes', values: [true, false], labels: ['On', 'Off'] },
@@ -945,7 +945,8 @@ function setDocumentFromText(text) {
 function normalizePreferences(candidate = {}) {
     const appearance = ['light', 'dark', 'auto'].includes(candidate.appearance) ? candidate.appearance : DEFAULT_PREFERENCES.appearance;
     const lightTheme = ['default', 'paper', 'sage'].includes(candidate.lightTheme) ? candidate.lightTheme : DEFAULT_PREFERENCES.lightTheme;
-    const darkTheme = ['default', 'midnight'].includes(candidate.darkTheme) ? candidate.darkTheme : DEFAULT_PREFERENCES.darkTheme;
+    const legacyDark = candidate.darkTheme === 'default' ? 'onyx' : candidate.darkTheme;
+    const darkTheme = ['midnight', 'onyx', 'ember'].includes(legacyDark) ? legacyDark : DEFAULT_PREFERENCES.darkTheme;
     const flavor = String(candidate.flavor || '').toLowerCase() === 'commonmark' ? 'CommonMark' : 'GFM';
     const readerWidth = ['60', '72', 'Full'].includes(String(candidate.readerWidth)) ? String(candidate.readerWidth) : DEFAULT_PREFERENCES.readerWidth;
     const textSize = ['14', '16', '18'].includes(String(candidate.textSize)) ? String(candidate.textSize) : DEFAULT_PREFERENCES.textSize;
