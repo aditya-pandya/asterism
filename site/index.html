@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f7f1e6">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Asterism: Markdown, made to be read">
-<meta property="og:description" content="Open Markdown as a calm reading page. Edit when you need to. Local, no account, MIT.">
+<meta property="og:description" content="Open Markdown in a formatted Read view and switch to Edit when you need to. Local, no account, MIT.">
 <meta property="og:url" content="https://asterism.adityapandya.com/">
 <meta property="og:image" content="https://asterism.adityapandya.com/assets/asterism-reader.png">
 <meta property="og:image:alt" content="Asterism showing a Markdown document in Read view">
@@ -29,7 +29,7 @@
   </a>
   <nav aria-label="Primary">
     <a href="#themes">Themes</a>
-    <a href="#source">Source</a>
+    <a href="#source">Read &amp; edit</a>
     <a href="#faq">Questions</a>
     <a class="nav-open" href="/app/">Open app</a>
   </nav>
@@ -42,12 +42,12 @@
       <span class="l1">Markdown,</span>
       <span class="l2">made to be <span class="em"><b class="star" aria-hidden="true">*</b>read<b class="star" aria-hidden="true">*</b></span>.</span>
     </h1>
-    <p class="lede">Open a <code>.md</code> file and it arrives as a quiet page, not a wall of symbols. Switch to Edit when you want to change something. Local, no account.</p>
+    <p class="lede">Asterism opens a <code>.md</code> file in Read view, with headings, lists and links formatted as a page. Switch to Edit to change it. Documents stay on your device and there is no account.</p>
     <div class="cta">
       <a class="btn primary" href="/app/">Open Asterism in your browser</a>
       <a class="btn ghost" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.zip">Download for Mac (ZIP)</a>
     </div>
-    <p class="fine">Mac preview is Apple Silicon only and not notarized, so macOS asks you to confirm the first launch.</p>
+    <p class="fine">Apple Silicon preview. Not notarized; macOS may block the first launch. <a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.1/README.md#how-to-open-it">How to open it</a>.</p>
   </div>
   <svg class="sig" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
     <g fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round">
@@ -58,13 +58,13 @@
   </svg>
   <figure class="hero-shot">
     <div class="shot-back" aria-hidden="true"></div>
-    <img src="assets/asterism-reader.png" width="1280" height="768" alt="Asterism in Read view with the Paper theme: release notes with headings, a checklist and a table set as a clean page.">
+    <img src="assets/asterism-reader.png" width="1280" height="768" alt="Asterism in Read view with the Paper theme: the Asterism 1.3.0-preview.1 release notes shown as a formatted page.">
   </figure>
 </section>
 
 <section class="themes" id="themes" data-theme="paper" aria-labelledby="h-themes">
   <div class="themes-head">
-    <h2 id="h-themes">Pick the page <br>you read on.</h2>
+    <h2 id="h-themes">Choose a reading <br>theme.</h2>
     <div class="picker" role="group" aria-label="Reading theme">
       <button type="button" class="pick" data-theme="paper" aria-pressed="true"><i aria-hidden="true"></i>Paper</button>
       <button type="button" class="pick" data-theme="sage" aria-pressed="false"><i aria-hidden="true"></i>Sage</button>
@@ -72,44 +72,42 @@
     </div>
   </div>
   <figure class="stage">
-    <img class="stage-img is-on" data-for="paper" src="assets/asterism-reader.png" width="1280" height="768" alt="Asterism Read view in the Paper theme: warm white page, dark text.">
-    <img class="stage-img" data-for="sage" src="assets/sage.png" width="1280" height="768" alt="Asterism Read view in the Sage theme: soft green-grey page, dark green text.">
-    <img class="stage-img" data-for="midnight" src="assets/midnight.png" width="1280" height="768" alt="Asterism Read view in the Midnight theme: dark page, light text.">
-    <figcaption id="stage-caption" aria-live="polite"><strong>Paper.</strong> Warm white, high contrast, the closest thing to print.</figcaption>
+    <img class="stage-img is-on" data-for="paper" src="assets/asterism-reader.png" width="1280" height="768" alt="Asterism Read view in the Paper theme: release notes on a warm off-white page with dark text.">
+    <img class="stage-img" data-for="sage" src="assets/sage.png" width="1280" height="768" alt="Asterism Read view in the Sage theme: release notes on a pale green-grey page.">
+    <img class="stage-img" data-for="midnight" src="assets/midnight.png" width="1280" height="768" alt="Asterism Read view in the Midnight theme: release notes on a dark page with light text.">
+    <figcaption id="stage-caption" aria-live="polite"><strong>Paper.</strong> Warm off-white page with dark text.</figcaption>
   </figure>
 </section>
 
 <section class="source" id="source" aria-labelledby="h-source">
   <div class="source-head">
-    <h2 id="h-source">Every <span class="mk">#</span>, <span class="mk">*</span> and <span class="mk">&gt;</span> steps aside.</h2>
-    <p>Illustrative sample, not the app running. Flip it to see what Read view does with the punctuation.</p>
+    <h2 id="h-source">Markdown and formatted text.</h2>
+    <p>The same Markdown in both views, taken from the 1.3.0-preview.1 release notes. This is a static sample, not the running app.</p>
     <div class="seg" role="group" aria-label="Sample view">
       <button type="button" data-mode="source" aria-pressed="false">Source</button>
       <button type="button" data-mode="read" aria-pressed="true">Reading</button>
     </div>
   </div>
   <div class="doc is-read" id="doc" role="group" aria-label="Sample Markdown document">
-    <p class="ln h1"><span class="m" aria-hidden="true"># </span>Trip notes: Lisbon</p>
-    <p class="ln">Land at <span class="m" aria-hidden="true">**</span><strong>9:40</strong><span class="m" aria-hidden="true">**</span>, then take the <span class="m" aria-hidden="true">_</span><em>red line</em><span class="m" aria-hidden="true">_</span> into town.</p>
-    <p class="ln h2"><span class="m" aria-hidden="true">## </span>Pack</p>
-    <p class="ln li"><span class="m" aria-hidden="true">- [x] </span><span class="box done" aria-hidden="true"></span>Passport</p>
-    <p class="ln li"><span class="m" aria-hidden="true">- [ ] </span><span class="box" aria-hidden="true"></span>Phone charger</p>
-    <p class="ln quote"><span class="m" aria-hidden="true">&gt; </span>Wander up Alfama before the crowds do.</p>
+    <p class="ln h1"><span class="m" aria-hidden="true"># </span>Asterism 1.3.0-preview.1</p>
+    <p class="ln">This prerelease preview is for Apple Silicon Macs.</p>
+    <p class="ln h2"><span class="m" aria-hidden="true">## </span>What&rsquo;s new</p>
+    <p class="ln li"><span class="m" aria-hidden="true">- </span>Jump to headings from a searchable heading list.</p>
   </div>
 </section>
 
 <section class="open" aria-labelledby="h-open">
-  <h2 id="h-open">Two ways in.</h2>
+  <h2 id="h-open">Browser or Mac</h2>
   <a class="door web" href="/app/">
     <span class="door-label">In your browser</span>
     <span class="door-title">Open the app</span>
-    <span class="door-text">Nothing to install. Open a file, read, edit, save.</span>
+    <span class="door-text">Nothing to install. Open a file, read, edit and save.</span>
     <span class="door-go" aria-hidden="true">&rarr;</span>
   </a>
   <div class="door mac">
     <span class="door-label">On your Mac</span>
     <span class="door-title">Preview build</span>
-    <span class="door-text">Apple Silicon only. Not notarized: Control-click, choose Open the first time.</span>
+    <span class="door-text">Apple Silicon preview. Not notarized; macOS may block the first launch.</span>
     <a class="btn ghost dl" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.zip">Download v1.3.0-preview.1 (ZIP)</a>
   </div>
 </section>
@@ -119,11 +117,11 @@
   <div class="faq-list">
     <details>
       <summary>What does the browser version do with files?</summary>
-      <p>Where the browser supports the File System Access API, Save writes back to the file, and Link folder lets Asterism resolve local images and relative Markdown links inside the one folder you pick. Elsewhere, Save downloads a copy and local images and relative links are not resolved.</p>
+      <p>In supported browsers, Save writes back to the file, and Link folder lets Asterism find nearby images and Markdown links in the folder you pick. In other browsers, Save downloads a copy.</p>
     </details>
     <details>
-      <summary>Does editing change my Markdown?</summary>
-      <p>Source mode keeps your text exactly as written. If you edit in Read view, the page is converted back to Markdown, and that conversion can normalize formatting. Copy formatted gives you rich text for pasting elsewhere.</p>
+      <summary>Can editing change my Markdown?</summary>
+      <p>The Markdown pane shows your exact source. In Edit, the formatted pane converts what you type back to Markdown, which can change syntax. Asterism warns about common cases and lets you restore the original during the session. The Read view is not editable.</p>
     </details>
     <details>
       <summary>What stays on my device?</summary>

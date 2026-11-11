@@ -7,9 +7,9 @@
   var section = document.getElementById('themes');
   var caption = document.getElementById('stage-caption');
   var notes = {
-    paper: ['Paper.', 'Warm white, high contrast, the closest thing to print.'],
-    sage: ['Sage.', 'A soft green-grey page that is gentler over long reads.'],
-    midnight: ['Midnight.', 'Dark surface, light text, for low light.']
+    paper: ['Paper.', 'Warm off-white page with dark text.'],
+    sage: ['Sage.', 'Pale green-grey page with dark text.'],
+    midnight: ['Midnight.', 'Dark page with light text.']
   };
   var picks = Array.prototype.slice.call(section.querySelectorAll('.pick'));
   var imgs = Array.prototype.slice.call(section.querySelectorAll('.stage-img'));

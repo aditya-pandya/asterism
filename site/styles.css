@@ -97,6 +97,10 @@ html:not(.js) .seg{display:none}
 .doc.is-read .ln.h2{font:700 1.55rem/1.2 var(--serif);margin-top:1.4rem}
 .m{display:inline-block;color:var(--verm-text);font-family:var(--mono);font-weight:500;white-space:pre;max-width:8ch;overflow:hidden;vertical-align:baseline;transition:max-width .45s cubic-bezier(.5,0,.2,1),opacity .3s}
 .doc.is-read .m{max-width:0;opacity:0}
+.m.long{max-width:20ch}
+.doc.is-read .m.long{max-width:0}
+.doc:not(.is-read) .lk{text-decoration:none}
+.doc.is-read .lk{text-decoration:underline;text-underline-offset:.18em}
 .doc:not(.is-read) strong,.doc:not(.is-read) em{font-weight:400;font-style:normal}
 .doc.is-read strong{font-weight:800}
 .ln.quote{transition:all .35s}
