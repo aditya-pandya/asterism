@@ -1,4 +1,4 @@
-/* Asterism concept: real Markdown characters travel from source to typeset page.
+/* Asterism concept: real Markdown characters travel from source to typeset page, and the paper follows the wave.
    Parsing uses the vendored marked lexer. Output is built only with createElement/textContent. */
 (function () {
   'use strict';
@@ -6,7 +6,7 @@
   var DEFAULT_MD = [
     '# Asterism',
     '',
-    'A **local** Markdown reader and editor. Open a file, read it as a page, and switch to *Edit* when you want to change it.',
+    'A **local** Markdown reader and editor for the browser and Apple Silicon Macs, with a *source* pane that stays in sync.',
     '',
     '## Shortcuts',
     '',
@@ -16,20 +16,21 @@
     '| Cmd S | Save |',
     '| Cmd E | Read / Edit |',
     '',
-    'Run the desktop app:',
+    '## Read & revise',
     '',
-    '```bash',
-    'npm start',
-    '```',
+    'Markdown opens as a formatted page. Source and formatted text stay together while you edit.',
     '',
-    'Nothing is uploaded, and [the source is public](https://github.com/aditya-pandya/asterism/tree/v1.3.0-preview.1).'
+    'Files open and save on your machine. Nothing is uploaded.',
+    '',
+    '***'
   ].join('\n');
 
   var stage = document.getElementById('stage');
+  var paper = document.getElementById('paper');
   var spread = document.getElementById('spread');
   var doc = document.getElementById('doc');
   var lcSrc = document.getElementById('lcSrc'), lcRead = document.getElementById('lcRead');
-  if (!stage || !spread || !doc || !window.marked) { root.classList.remove('js'); return; }
+  if (!stage || !paper || !spread || !doc || !window.marked) { root.classList.remove('js'); return; }
   var range = document.getElementById('range');
   var replay = document.getElementById('replay'), btnSrc = document.getElementById('toSrc'), btnRead = document.getElementById('toRead');
   var staticDoc = document.getElementById('static');
@@ -137,8 +138,11 @@
           });
           return;
         case 'hr':
-          Array.from(t.raw.replace(/\s+$/, '')).forEach(function (c, i) {
-            chars.push(ch(c, { mark: true, kind: 'x', rg: i === 0 ? '⁂' : null, merge: i > 0, hrs: i === 0 }));
+          var k = 0;
+          Array.from(t.raw.replace(/\s+$/, '')).forEach(function (c) {
+            if (/\s/.test(c)) { chars.push(ch(c, { mark: true, kind: 'x' })); return; }
+            k++;
+            chars.push(ch(c, { mark: true, kind: 'x', rg: k <= 3 ? '*' : null, hrs: Math.min(k, 3), merge: k > 3 }));
           });
           blocks.push({ type: 'hr', chars: chars }); return;
         default:
@@ -160,18 +164,39 @@
   function r2(n) { return Math.round(n * 100) / 100; }
   function rsClass(b, c) {
     var s = b.type === 'tr' ? (b.head ? 'rs-th' : c.cell === 0 ? 'rs-kc' : 'rs-p') : 'rs-' + (b.type === 'code' ? 'c' : b.li ? 'l' : b.type);
+    if (b.type === 'h') s += ' lv' + b.lvl;
+    if (b.lede) s += ' rs-lede';
     if (c.st) for (var k in c.st) s += ' st-' + k;
     if (c.bullet) s += ' bl';
-    if (c.hrs) s += ' hrs';
+    if (c.hrs) s += ' hrs hrs' + c.hrs;
     return s;
   }
   function readText(c) { return c.mark ? (c.rg || '') : c.nl && !c.keepnl ? ' ' : c.ch; }
 
+  /* Roles for the read layout: headline, deck, the star mark, then two lanes balanced by weight. */
+  function assign(list) {
+    var i, units = [], cur = null, prev = '', total = 0, acc = 0;
+    list.forEach(function (b) { b.role = null; b.lede = false; });
+    var head = list[0] && list[0].type === 'h' && list[0].lvl === 1;
+    if (head) list[0].role = 'head';
+    if (head && list[1] && list[1].type === 'p' && !list[1].li) { list[1].role = 'lede'; list[1].lede = true; }
+    for (i = 0; i < list.length; i++) if (list[i].type === 'hr') { list[i].role = 'star'; break; }
+    list.forEach(function (b) {
+      if (b.role) return;
+      var kind = b.type === 'tr' ? 't' : b.li ? 'l' : b.type;
+      if (!(cur && (cur.head || (kind === prev && (kind === 't' || kind === 'l'))))) { cur = { items: [], w: 0, head: false }; units.push(cur); }
+      cur.items.push(b); cur.w += b.chars.length + 40; cur.head = b.type === 'h' && cur.items.length === 1; prev = kind;
+    });
+    units.forEach(function (u) { total += u.w; });
+    units.forEach(function (u) { var lane = acc < total / 2 ? 'A' : 'B'; acc += u.w; u.items.forEach(function (b) { b.role = lane; }); });
+  }
+
   function ghost(blocks, mode, w) {
-    var g = el('div', 'ghost g-' + mode), spans = [];
+    var g = el('div', 'ghost g-' + mode), spans = [], divs = [], lanes = null, laneEl = {};
     g.setAttribute('aria-hidden', 'true'); g.style.width = w + 'px';
     blocks.forEach(function (b) {
-      var d = el('div', 'b b-' + b.type + (b.lvl ? ' lv' + b.lvl : '') + (b.li ? ' li' : '') + (b.lend ? ' lend' : '') + (b.head ? ' hd' : '') + (b.delim ? ' dl' : '')), cells = [];
+      var d = el('div', 'b b-' + b.type + (b.lvl ? ' lv' + b.lvl : '') + (b.li ? ' li' : '') + (b.lend ? ' lend' : '') + (b.head ? ' hd' : '') + (b.delim ? ' dl' : '') +
+        (mode === 'read' && b.role ? ' rh-' + b.role : '') + (mode === 'read' && b.type === 'hr' && b.role !== 'star' ? ' sm' : '')), cells = [], par = g;
       b.chars.forEach(function (c) {
         var s = document.createElement('span'), t = mode === 'src' ? c.ch : readText(c), host = d;
         s.textContent = t;
@@ -179,13 +204,17 @@
         if (mode === 'read' && c.cell != null) { host = cells[c.cell] || (cells[c.cell] = d.appendChild(el('span', 'cell'))); }
         host.appendChild(s); spans.push(s);
       });
-      g.appendChild(d);
+      if (mode === 'read' && (b.role === 'A' || b.role === 'B')) {
+        if (!lanes) lanes = g.appendChild(el('div', 'rh-lanes'));
+        par = laneEl[b.role] || (laneEl[b.role] = lanes.appendChild(el('div', 'lane lane-' + b.role)));
+      }
+      par.appendChild(d); divs.push(d);
     });
-    return { g: g, spans: spans };
+    return { g: g, spans: spans, divs: divs };
   }
 
   /* ---------- layout & live characters ---------- */
-  var blocks = [], p = 0, anim = 0, ro = 0;
+  var blocks = [], p = 0, anim = 0, ro = 0, geo = null;
   function pos(e) { var x = 0, y = 0; while (e && e !== spread) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return [x, y]; }
   function clearGhosts() { [lcSrc, lcRead].forEach(function (h) { Array.prototype.slice.call(h.querySelectorAll('.ghost')).forEach(function (n) { h.removeChild(n); }); }); }
 
@@ -193,24 +222,23 @@
     clearGhosts(); doc.textContent = '';
     var w1 = lcSrc.clientWidth || 400, w2 = lcRead.clientWidth || 500;
     var gs = ghost(blocks, 'src', w1), gr = ghost(blocks, 'read', w2);
-    gs.g.classList.add('echo'); gr.g.classList.add('echo-r');
     lcSrc.appendChild(gs.g); lcRead.appendChild(gr.g);
     var Hs = Math.max(gs.g.offsetHeight, 40), Hr = Math.max(gr.g.offsetHeight, 40);
-    spread.style.height = Math.max(Math.max(Hs, Hr) + lcSrc.offsetTop + 46, 420) + 'px';
+    spread.style.height = Math.max(Math.max(Hs, Hr) + lcSrc.offsetTop + 28, 340) + 'px';
+    var SW = Math.max(stage.offsetWidth, 1), SH = Math.max(stage.offsetHeight, 1), ox = spread.offsetLeft, oy = spread.offsetTop;
     var fsSrc = parseFloat(getComputedStyle(gs.g).fontSize) || 14;
-    var P1 = pos(gs.g), P2 = pos(gr.g);
     var frag = document.createDocumentFragment(), decoFrag = document.createDocumentFragment();
-    var idx = 0, firstStar = null;
+    var idx = 0, stars = {}, items = [], decos = [];
     blocks.forEach(function (b, bi) {
-      var firstD = null, gdiv = gr.g.children[bi];
+      var firstT = null, gdiv = gr.divs[bi];
       b.chars.forEach(function (c) {
         var i = idx++, sSpan = gs.spans[i], rSpan = gr.spans[i];
         var ps = pos(sSpan), xs = ps[0], ys = ps[1];
-        var d = Math.min(1, Math.max(0, ((xs - P1[0]) / w1 + (ys - P1[1]) / Hs) / 2));
-        if (firstD === null) firstD = d;
-        if (c.hrs) firstStar = { i: i };
+        var t = ((xs + ox) / SW + (ys + oy) / SH) / 2;
+        if (firstT === null) firstT = t;
+        if (c.hrs && !c.merge) stars[c.hrs] = i;
         var dx = 0, dy = 0, s = 1, hidden = !readText(c);
-        if (c.merge && firstStar) { rSpan = gr.spans[firstStar.i]; hidden = false; }
+        if (c.merge && stars[3] != null) { rSpan = gr.spans[stars[3]]; hidden = false; }
         if (!hidden) {
           var pr = pos(rSpan);
           dx = pr[0] - xs; dy = pr[1] - ys;
@@ -218,31 +246,54 @@
         }
         if (c.nl || /^\s$/.test(c.ch)) return;
         var e = el('span', 'c' + (c.mark && !c.rg ? ' mk' : '') + (c.merge ? ' mg' : '') + (c.kind ? ' k-' + c.kind : ''));
-        e.style.cssText = 'left:' + r2(xs) + 'px;top:' + r2(ys) + 'px;--d:' + r2(d * 1000) / 1000 + ';--dx:' + r2(dx) + ';--dy:' + r2(dy) + ';--s:' + r2(s) +
+        e.style.cssText = 'left:' + r2(xs) + 'px;top:' + r2(ys) + 'px;--dx:' + r2(dx) + ';--dy:' + r2(dy) + ';--s:' + r2(s) +
           ';--rot:' + r2((rnd(i, 1) - .5) * 60) + ';--lift:' + r2(18 + rnd(i, 2) * 70) +
           ';--rx:' + r2((rnd(i, 3) - .5) * 90) + ';--ry:' + r2(-40 - rnd(i, 4) * 90);
         var m = el('i', 'm'); m.textContent = c.ch; e.appendChild(m);
         if (!c.mark || c.rg) { var r = el('i', 'r ' + rsClass(b, c)); r.textContent = c.mark ? c.rg : c.ch; e.appendChild(r); }
-        frag.appendChild(e);
+        frag.appendChild(e); items.push({ e: e, t: t });
       });
       if ((b.type === 'code' || (b.type === 'tr' && !b.delim)) && gdiv) {
         var pb = pos(gdiv), dc = el('div', b.type === 'code' ? 'deco cb' : 'deco rl' + (b.head ? ' hd' : ''));
         dc.style.cssText = 'left:' + r2(pb[0]) + 'px;top:' + r2(pb[1] + (b.type === 'code' ? 0 : gdiv.offsetHeight - 1)) + 'px;width:' + r2(gdiv.offsetWidth) + 'px;' +
-          (b.type === 'code' ? 'height:' + r2(gdiv.offsetHeight) + 'px;' : '') + '--d:' + r2(firstD || 0);
-        decoFrag.appendChild(dc);
+          (b.type === 'code' ? 'height:' + r2(gdiv.offsetHeight) + 'px;' : '');
+        decoFrag.appendChild(dc); decos.push({ e: dc, t: firstT || 0 });
       }
     });
+    /* normalise the wave over the source's own extent so the whole timeline is used */
+    var dmin = 1, dmax = 0;
+    items.forEach(function (it) { dmin = Math.min(dmin, it.t); dmax = Math.max(dmax, it.t); });
+    if (!items.length) { dmin = 0; dmax = 1; }
+    var span = Math.max(dmax - dmin, .001);
+    items.concat(decos).forEach(function (it) { it.e.style.setProperty('--d', r2(((it.t - dmin) / span) * 1000) / 1000); });
+    geo = { W: SW, H: SH, dmin: dmin, dmax: dmax };
     doc.appendChild(decoFrag); doc.appendChild(frag);
     apply();
   }
 
-  /* ---------- progress: a wavefront sweeps the source leaf; characters leave in that order ---------- */
-  function ease(t) { return t * t * (3 - 2 * t); }
+  /* ---------- progress: a wavefront sweeps the source; characters leave in that order, and the paper follows it ---------- */
+  function frontT(c) {
+    var h = W_WIN / 2;
+    if (c <= 0) return -.03 + (Math.max(c, -h) + h) / h * (geo.dmin + .03);
+    if (c <= 1) return geo.dmin + (geo.dmax - geo.dmin) * c;
+    return geo.dmax + (Math.min(c, 1 + h) - 1) / h * (1.04 - geo.dmax);
+  }
+  function clipFor(T) {
+    var W = geo.W, H = geo.H, k = 2 * T, pts = [[0, 0], [W, 0], [W, H], [0, H]], out = [];
+    function f(q) { return q[0] / W + q[1] / H - k; }
+    for (var i = 0; i < 4; i++) {
+      var a = pts[i], b = pts[(i + 1) % 4], fa = f(a), fb = f(b);
+      if (fa <= 0) out.push(a);
+      if ((fa < 0 && fb > 0) || (fa > 0 && fb < 0)) { var u = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]); }
+    }
+    if (out.length < 3) return 'polygon(0 0,0 0,0 0)';
+    return 'polygon(' + out.map(function (q) { return r2(q[0]) + 'px ' + r2(q[1]) + 'px'; }).join(',') + ')';
+  }
   function apply() {
-    var pe = ease(Math.min(1, Math.max(0, p)));
-    spread.style.setProperty('--c', -W_WIN / 2 + p * (1 + W_WIN));
-    spread.style.setProperty('--pe', pe);
+    var c = -W_WIN / 2 + p * (1 + W_WIN);
+    spread.style.setProperty('--c', c);
     spread.style.setProperty('--w', W_WIN);
+    if (geo) paper.style.clipPath = clipFor(frontT(c));
     range.value = Math.round(p * 1000);
     range.style.setProperty('--fill', (p * 100) + '%');
     range.setAttribute('aria-valuetext', p < .03 ? 'Markdown source' : p > .97 ? 'Typeset page' : Math.round(p * 100) + ' percent typeset');
@@ -310,7 +361,7 @@
     });
   }
 
-  function load(src) { blocks = parse(src); semantic(); build(); }
+  function load(src) { blocks = parse(src); assign(blocks); semantic(); build(); }
 
   /* ---------- wiring ---------- */
   range.addEventListener('input', function () { cancelAnimationFrame(anim); p = range.value / 1000; apply(); });
@@ -329,7 +380,8 @@
 
   var fonts = document.fonts && document.fonts.load ? Promise.all([
     document.fonts.load('300 40px Newsreader'), document.fonts.load('400 20px Newsreader'),
-    document.fonts.load('italic 400 20px Newsreader'), document.fonts.load('700 20px Newsreader')
+    document.fonts.load('italic 300 40px Newsreader'), document.fonts.load('700 20px Newsreader'),
+    document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('600 14px "Bricolage Grotesque"')
   ]).catch(function () {}) : Promise.resolve();
   var timeout = new Promise(function (r) { setTimeout(r, 1500); });
 
@@ -340,6 +392,6 @@
       root.classList.add('ready');
       if (reduce.matches) { p = 1; apply(); }
       else { p = 0; apply(); setTimeout(function () { tween(1, 3400); }, 450); }
-    } catch (e) { root.classList.remove('js'); root.classList.remove('ready'); if (window.console) console.error(e); }
+    } catch (e) { root.classList.remove('js'); root.classList.remove('ready'); paper.style.clipPath = ''; if (window.console) console.error(e); }
   });
 })();

@@ -1,15 +1,15 @@
 # Asterism website concept
 
-Review draft, 11 November 2026. This folder is separate from the production `site/` build.
+Review draft, 11 November 2026. This folder is separate from the production `site/` build. Not production ready.
 
-Preview: https://concept-asterism-site.aditya-pandya.workers.dev/
+Preview: https://concept-asterism-site.aditya-pandya.workers.dev/ (review preview; production is unchanged).
 
-The document spread animates Markdown characters into their formatted positions. Source, Read, Replay, the range control, and the editable sample work locally. The visual layer is hidden from accessibility APIs; a semantic article provides the readable content.
+Second pass after the first concept was rejected as generic. The page is now one field where Markdown source becomes the typeset document at poster scale, with the ⁂ mark built from the three `*` of a horizontal rule. See `DESIGN.md` for the idea, colour and motion.
 
-References inspected: Aditya's personal site, Mornumi, Monday Music Mix, and totalBarça. This is a proposed direction for review, not an approved replacement.
+Functionality kept: Markdown, Page, Replay, the range control and Edit source work locally. The animated layer is hidden from accessibility APIs; a semantic article provides the readable content. With JavaScript off the article is shown as the page.
 
-Verification: 34 isolated Electron checks passed, covering 1280×900, 390×844, and 1554×817 layouts, keyboard and edit controls, input safety, semantic content, and control contrast. The separate HTTPS preview matches the tested HTML. Production remains on Cloudflare version `4f92a917-6435-44c4-a785-2f79b8cf9f4f`.
+Verification: the final poster and content pass passed 28 isolated Electron checks for keyboard/range/editor behavior, reduced motion, inert hostile Markdown, semantic content, and responsive overflow/control placement at 1280×900, 390×844 and 1554×817. Source syntax and whitespace checks passed. Rendered screenshot pixels confirmed the solid ink/paper, blue/paper and orange/dark pairs at 14.83:1, 6.31:1 and 6.65:1 respectively. These samples do not certify every antialiased or moving glyph. Desktop, mobile and transition screenshots were reviewed; the creative direction remains subject to user review.
 
-Limits: the demo parser handles representative Markdown rather than all CommonMark/GFM constructs. Safari, Firefox, and assistive-technology interaction have not been exercised. Asterism's actual browser app and downloadable Mac preview are unchanged.
+Known risks: the difference-blend colour model means automated contrast tools that read computed colours see white text on the dark ground, not the final ink on paper; solid pixel pairs were checked as described above; moving glyphs and other browser engines remain unverified. The demo parser handles representative Markdown rather than all CommonMark/GFM. In custom Edit source samples, links and code are visual only (the animated glyph layer is not clickable); the hidden semantic article carries the real links. Underlines on multi-word links break at spaces during and after the move. Safari, Firefox and assistive-technology interaction have not been exercised. Asterism's browser app and Mac preview are unchanged.
 
 Serve locally with `python3 -m http.server 8768 --directory site-concept` from the repository root. Font and Marked licenses are bundled beside their assets.
