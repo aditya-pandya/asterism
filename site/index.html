@@ -3,93 +3,143 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Asterism: open Markdown to read, edit when you need to</title>
-<meta name="description" content="Asterism is a minimal, local Markdown reader and editor for the browser and Apple Silicon Macs. Open a file to read it, switch to Edit to change it. MIT licensed.">
+<title>Asterism: Markdown, made to be read</title>
+<meta name="description" content="Asterism is a local Markdown reader and editor for the browser and Apple Silicon Macs. Open a file, read it as a page, switch to Edit when you need to. MIT licensed.">
 <link rel="canonical" href="https://asterism.adityapandya.com/">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#fbfbfa">
+<meta name="theme-color" content="#f7f1e6">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Asterism">
-<meta property="og:description" content="Open Markdown to read. Edit when you need to. Local, no account, MIT.">
+<meta property="og:title" content="Asterism: Markdown, made to be read">
+<meta property="og:description" content="Open Markdown as a calm reading page. Edit when you need to. Local, no account, MIT.">
 <meta property="og:url" content="https://asterism.adityapandya.com/">
 <meta property="og:image" content="https://asterism.adityapandya.com/assets/asterism-reader.png">
 <meta property="og:image:alt" content="Asterism showing a Markdown document in Read view">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="fonts/Fraunces.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
+<script src="site.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+
 <header class="top">
-  <a class="brand" href="./"><img src="assets/asterism-mark.svg" alt="" width="28" height="28"><span>Asterism</span></a>
-  <nav aria-label="Page">
-    <a href="#how">How it works</a>
+  <a class="brand" href="./" aria-label="Asterism home">
+    <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"><path d="M32 6v18M24.2 10.5l15.6 9M39.8 10.5l-15.6 9"/><path d="M17 36v18M9.2 40.5l15.6 9M24.8 40.5l-15.6 9"/><path d="M47 36v18M39.2 40.5l15.6 9M54.8 40.5l-15.6 9"/></g></svg>
+    Asterism
+  </a>
+  <nav aria-label="Primary">
+    <a href="#themes">Themes</a>
+    <a href="#source">Source</a>
     <a href="#faq">Questions</a>
-    <a href="https://github.com/aditya-pandya/asterism/tree/v1.3.0-preview.1">Source</a>
+    <a class="nav-open" href="/app/">Open app</a>
   </nav>
 </header>
 
 <main id="main">
-<section class="intro" aria-labelledby="h-title">
-  <div class="intro-text">
-    <h1 id="h-title">Open a Markdown file and read it. Edit when you need to.</h1>
-    <p>Asterism is a small Markdown reader and editor that runs in your browser or as a Mac app. Files stay on your device.</p>
-    <p class="actions">
-      <a class="btn" href="/app/">Open in browser</a>
-      <a class="textlink" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.zip">Download Mac preview</a>
-    </p>
-    <p class="note">Apple Silicon macOS preview (v1.3.0-preview.1). The build is not notarized, so macOS will warn on first open; see <a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.1/README.md#how-to-open-it">how to open it</a>.</p>
+<section class="hero">
+  <div class="hero-copy">
+    <h1>
+      <span class="l1">Markdown,</span>
+      <span class="l2">made to be <span class="em"><b class="star" aria-hidden="true">*</b>read<b class="star" aria-hidden="true">*</b></span>.</span>
+    </h1>
+    <p class="lede">Open a <code>.md</code> file and it arrives as a quiet page, not a wall of symbols. Switch to Edit when you want to change something. Local, no account.</p>
+    <div class="cta">
+      <a class="btn primary" href="/app/">Open Asterism in your browser</a>
+      <a class="btn ghost" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.zip">Download for Mac (ZIP)</a>
+    </div>
+    <p class="fine">Mac preview is Apple Silicon only and not notarized, so macOS asks you to confirm the first launch.</p>
   </div>
-  <figure class="shot">
-    <img src="assets/asterism-reader.png" width="1280" height="768" alt="Asterism in Read view showing a formatted Markdown document">
-    <figcaption>
-      <span>Read view, Paper theme.</span>
-      <span class="themes" role="group" aria-label="Theme screenshots">
-        <span>Theme screenshots:</span>
-        <a href="assets/asterism-reader.png" target="_blank" rel="noopener">Paper</a>
-        <a href="assets/sage.png" target="_blank" rel="noopener">Sage</a>
-        <a href="assets/midnight.png" target="_blank" rel="noopener">Midnight</a>
-      </span>
-    </figcaption>
+  <svg class="sig" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round">
+      <path pathLength="1" d="M32 6v18"/><path pathLength="1" d="M24.2 10.5l15.6 9"/><path pathLength="1" d="M39.8 10.5l-15.6 9"/>
+      <path pathLength="1" d="M17 36v18"/><path pathLength="1" d="M9.2 40.5l15.6 9"/><path pathLength="1" d="M24.8 40.5l-15.6 9"/>
+      <path pathLength="1" d="M47 36v18"/><path pathLength="1" d="M39.2 40.5l15.6 9"/><path pathLength="1" d="M54.8 40.5l-15.6 9"/>
+    </g>
+  </svg>
+  <figure class="hero-shot">
+    <div class="shot-back" aria-hidden="true"></div>
+    <img src="assets/asterism-reader.png" width="1280" height="768" alt="Asterism in Read view with the Paper theme: release notes with headings, a checklist and a table set as a clean page.">
   </figure>
 </section>
 
-<section class="how" id="how" aria-labelledby="h-how">
-  <h2 id="h-how">Read a README, fix a line, save it</h2>
-  <ol class="steps">
-    <li><h3>Open</h3><p>Choose a Markdown, text or HTML file. It opens in <strong>Read</strong>, with headings you can jump between and links that scroll to their target.</p></li>
-    <li><h3>Edit</h3><p>Switch to <strong>Edit</strong> for two panes on one document: Markdown source and formatted text. Find works in Read and Edit; replace text in Markdown. The usual keyboard shortcuts apply.</p></li>
-    <li><h3>Save</h3><p>On the Mac, Save writes back to the file you opened, or use Save As. In the browser, supported browsers can save in place; others download a copy.</p></li>
-  </ol>
+<section class="themes" id="themes" data-theme="paper" aria-labelledby="h-themes">
+  <div class="themes-head">
+    <h2 id="h-themes">Pick the page <br>you read on.</h2>
+    <div class="picker" role="group" aria-label="Reading theme">
+      <button type="button" class="pick" data-theme="paper" aria-pressed="true"><i aria-hidden="true"></i>Paper</button>
+      <button type="button" class="pick" data-theme="sage" aria-pressed="false"><i aria-hidden="true"></i>Sage</button>
+      <button type="button" class="pick" data-theme="midnight" aria-pressed="false"><i aria-hidden="true"></i>Midnight</button>
+    </div>
+  </div>
+  <figure class="stage">
+    <img class="stage-img is-on" data-for="paper" src="assets/asterism-reader.png" width="1280" height="768" alt="Asterism Read view in the Paper theme: warm white page, dark text.">
+    <img class="stage-img" data-for="sage" src="assets/sage.png" width="1280" height="768" alt="Asterism Read view in the Sage theme: soft green-grey page, dark green text.">
+    <img class="stage-img" data-for="midnight" src="assets/midnight.png" width="1280" height="768" alt="Asterism Read view in the Midnight theme: dark page, light text.">
+    <figcaption id="stage-caption" aria-live="polite"><strong>Paper.</strong> Warm white, high contrast, the closest thing to print.</figcaption>
+  </figure>
 </section>
 
-<section class="prose" aria-labelledby="h-honest">
-  <h2 id="h-honest">Source or formatted: what changes your file</h2>
-  <p>The Markdown pane keeps your source exactly as written. Editing in the formatted pane converts the document, which can rewrite syntax Asterism does not model, so it first checks for common cases (HTML, link definitions, footnotes, front matter) and lets you stay in Markdown or convert. If you convert, you can restore the original for the rest of that session, and with Auto-save on, recovery drafts reopen on the next launch.</p>
-  <p>You can also paste rich text and get clean Markdown to copy or save.</p>
-  <p>Pick a theme: Default, Paper or Sage for light, Default or Midnight for dark, or follow the system. One text-size setting covers reading and editing.</p>
+<section class="source" id="source" aria-labelledby="h-source">
+  <div class="source-head">
+    <h2 id="h-source">Every <span class="mk">#</span>, <span class="mk">*</span> and <span class="mk">&gt;</span> steps aside.</h2>
+    <p>Illustrative sample, not the app running. Flip it to see what Read view does with the punctuation.</p>
+    <div class="seg" role="group" aria-label="Sample view">
+      <button type="button" data-mode="source" aria-pressed="false">Source</button>
+      <button type="button" data-mode="read" aria-pressed="true">Reading</button>
+    </div>
+  </div>
+  <div class="doc is-read" id="doc" role="group" aria-label="Sample Markdown document">
+    <p class="ln h1"><span class="m" aria-hidden="true"># </span>Trip notes: Lisbon</p>
+    <p class="ln">Land at <span class="m" aria-hidden="true">**</span><strong>9:40</strong><span class="m" aria-hidden="true">**</span>, then take the <span class="m" aria-hidden="true">_</span><em>red line</em><span class="m" aria-hidden="true">_</span> into town.</p>
+    <p class="ln h2"><span class="m" aria-hidden="true">## </span>Pack</p>
+    <p class="ln li"><span class="m" aria-hidden="true">- [x] </span><span class="box done" aria-hidden="true"></span>Passport</p>
+    <p class="ln li"><span class="m" aria-hidden="true">- [ ] </span><span class="box" aria-hidden="true"></span>Phone charger</p>
+    <p class="ln quote"><span class="m" aria-hidden="true">&gt; </span>Wander up Alfama before the crowds do.</p>
+  </div>
 </section>
 
-<section class="prose" aria-labelledby="h-local">
-  <h2 id="h-local">Where your documents go</h2>
-  <p>Asterism has no account and does not upload your document. Recovery drafts are stored on your device, and turning Auto-save off stops new snapshots. Remote images referenced by a document can still load from their servers.</p>
+<section class="open" aria-labelledby="h-open">
+  <h2 id="h-open">Two ways in.</h2>
+  <a class="door web" href="/app/">
+    <span class="door-label">In your browser</span>
+    <span class="door-title">Open the app</span>
+    <span class="door-text">Nothing to install. Open a file, read, edit, save.</span>
+    <span class="door-go" aria-hidden="true">&rarr;</span>
+  </a>
+  <div class="door mac">
+    <span class="door-label">On your Mac</span>
+    <span class="door-title">Preview build</span>
+    <span class="door-text">Apple Silicon only. Not notarized: Control-click, choose Open the first time.</span>
+    <a class="btn ghost dl" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.zip">Download v1.3.0-preview.1 (ZIP)</a>
+  </div>
 </section>
 
-<section class="prose faq" id="faq" aria-labelledby="h-faq">
-  <h2 id="h-faq">Questions</h2>
-  <dl>
-    <dt>Which Macs does the preview run on?</dt>
-    <dd>Apple Silicon only. The build is not notarized, so Gatekeeper asks you to confirm the first launch.</dd>
-    <dt>What does the browser version lack?</dt>
-    <dd>Where the browser supports the File System Access API, Save writes back to the file and Link folder lets Asterism resolve local images and relative Markdown links inside the folder you pick. Elsewhere, Save downloads a copy and local images and relative links are not resolved.</dd>
-    <dt>Is it finished?</dt>
-    <dd>It is a personal open-source project and this is a preview. Feedback is welcome on GitHub.</dd>
-  </dl>
+<section class="faq" id="faq" aria-labelledby="h-faq">
+  <h2 id="h-faq">Good to know</h2>
+  <div class="faq-list">
+    <details>
+      <summary>What does the browser version do with files?</summary>
+      <p>Where the browser supports the File System Access API, Save writes back to the file, and Link folder lets Asterism resolve local images and relative Markdown links inside the one folder you pick. Elsewhere, Save downloads a copy and local images and relative links are not resolved.</p>
+    </details>
+    <details>
+      <summary>Does editing change my Markdown?</summary>
+      <p>Source mode keeps your text exactly as written. If you edit in Read view, the page is converted back to Markdown, and that conversion can normalize formatting. Copy formatted gives you rich text for pasting elsewhere.</p>
+    </details>
+    <details>
+      <summary>What stays on my device?</summary>
+      <p>Documents are processed locally and there is no account. Asterism keeps recovery snapshots on your device; turn autosave off and it stops taking them. Remote images in a document load from their own servers, like any web page.</p>
+    </details>
+    <details>
+      <summary>Is it finished?</summary>
+      <p>It is a personal open-source project and this is a preview. Feedback is welcome on <a href="https://github.com/aditya-pandya/asterism/issues">GitHub</a>.</p>
+    </details>
+  </div>
 </section>
 </main>
 
 <footer>
-  <p><img src="assets/asterism-mark.svg" alt="" width="18" height="18"> Asterism, MIT licensed.</p>
-  <p><a href="https://github.com/aditya-pandya/asterism/tree/v1.3.0-preview.1">Source</a> · <a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.1/LICENSE">License</a> · <a href="https://github.com/aditya-pandya/asterism/releases">Releases</a> · <a href="https://github.com/aditya-pandya/asterism/issues">Feedback</a></p>
+  <p class="foot-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"><path d="M32 6v18M24.2 10.5l15.6 9M39.8 10.5l-15.6 9"/><path d="M17 36v18M9.2 40.5l15.6 9M24.8 40.5l-15.6 9"/><path d="M47 36v18M39.2 40.5l15.6 9M54.8 40.5l-15.6 9"/></g></svg>Asterism, MIT licensed</p>
+  <p><a href="https://github.com/aditya-pandya/asterism/tree/v1.3.0-preview.1">Source</a> · <a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.1/LICENSE">License</a> · <a href="https://github.com/aditya-pandya/asterism/releases">Releases</a> · <a href="https://github.com/aditya-pandya/asterism/issues">Feedback</a> · <a href="fonts/Fraunces-OFL.txt">Fraunces</a> and <a href="fonts/HankenGrotesk-OFL.txt">Hanken Grotesk</a> (OFL)</p>
 </footer>
 </body>
 </html>
