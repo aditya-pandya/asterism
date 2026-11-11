@@ -13,6 +13,23 @@ const appFiles = [
   'browser-files.js',
   'favicon.svg',
 ];
+// Public landing-page inputs. The approved production copy in site/ is the
+// source of truth; its headers carry the production policy.
+const landingFiles = [
+  'index.html',
+  'styles.css',
+  'boot.js',
+  'site.js',
+  'favicon.svg',
+  '_headers',
+  'fonts/BricolageGrotesque-OFL.txt',
+  'fonts/Newsreader-OFL.txt',
+  'fonts/bricolage-grotesque-latin.woff2',
+  'fonts/newsreader-italic-latin.woff2',
+  'fonts/newsreader-latin.woff2',
+  'vendor/marked-LICENSE.md',
+  'vendor/marked.min.js',
+];
 
 async function requireFile(relativePath) {
   const filePath = path.join(root, relativePath);
@@ -38,13 +55,19 @@ async function requireDirectory(relativePath) {
 
 async function main() {
   const siteDirectory = await requireFile('site/index.html');
-  const screenshot = await requireFile('site/assets/asterism-reader.png');
+  const productionHeaders = await requireFile('site/_headers');
+  await Promise.all(landingFiles.filter((file) => file !== '_headers').map((file) => requireFile(`site/${file}`)));
   await Promise.all(appFiles.map((file) => requireFile(file)));
   await Promise.all(['assets', 'vendor'].map(requireDirectory));
 
   await fs.rm(destination, { recursive: true, force: true });
   await fs.mkdir(destination, { recursive: true });
-  await fs.cp(path.dirname(siteDirectory), destination, { recursive: true });
+  for (const file of landingFiles) {
+    const source = file === '_headers' ? productionHeaders : path.join(path.dirname(siteDirectory), file);
+    const target = path.join(destination, file);
+    await fs.mkdir(path.dirname(target), { recursive: true });
+    await fs.copyFile(source, target);
+  }
 
   const appDirectory = path.join(destination, 'app');
   await fs.mkdir(appDirectory, { recursive: true });
@@ -55,7 +78,7 @@ async function main() {
     fs.cp(path.join(root, directory), path.join(appDirectory, directory), { recursive: true })
   ));
 
-  console.log(`Built static site at ${path.relative(root, destination)} (screenshot: ${path.basename(screenshot)})`);
+  console.log(`Built static site at ${path.relative(root, destination)} (landing and app)`);
 }
 
 main().catch((error) => {

@@ -41,9 +41,17 @@ async function main() {
   const required = [
     'index.html',
     'styles.css',
+    'boot.js',
+    'site.js',
     'favicon.svg',
-    'assets/asterism-mark.svg',
-    'assets/asterism-reader.png',
+    'fonts/BricolageGrotesque-OFL.txt',
+    'fonts/Newsreader-OFL.txt',
+    'fonts/bricolage-grotesque-latin.woff2',
+    'fonts/newsreader-italic-latin.woff2',
+    'fonts/newsreader-latin.woff2',
+    'vendor/marked-LICENSE.md',
+    'vendor/marked.min.js',
+    '_headers',
     'app/index.html',
     'app/styles.css',
     'app/app.js',
@@ -59,8 +67,14 @@ async function main() {
   }
 
   const siteHtml = await fs.readFile(path.join(siteDirectory, 'index.html'), 'utf8').catch(() => '');
-  if (!siteHtml.includes('https://asterism.adityapandya.com')) {
-    errors.push('Site HTML must identify https://asterism.adityapandya.com as its canonical domain.');
+  if (!/<link\b[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/asterism\.adityapandya\.com\/?["']/i.test(siteHtml)
+      && !/<link\b[^>]*href=["']https:\/\/asterism\.adityapandya\.com\/?["'][^>]*rel=["']canonical["']/i.test(siteHtml)) {
+    errors.push('Site HTML must include a canonical link for https://asterism.adityapandya.com.');
+  }
+
+  const headers = await fs.readFile(path.join(siteDirectory, '_headers'), 'utf8').catch(() => '');
+  if (/x-robots-tag\s*:\s*noindex/i.test(headers)) {
+    errors.push('Production site headers must not disallow indexing.');
   }
 
   if (await exists(siteDirectory)) {

@@ -1,6 +1,6 @@
 # Asterism site concept: design
 
-Review draft. Flat only: no perspective, rotation of the page, shadows or folds.
+Approved by Aditya, 11 November 2026. Flat only: no perspective, rotation of the page, shadows or folds.
 
 ## Idea
 
