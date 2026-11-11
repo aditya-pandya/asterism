@@ -21,14 +21,18 @@
             </div>
 
             <div class="view-switch" role="group" aria-label="View">
-                <button class="view-option is-active" id="viewEditButton" aria-pressed="true" title="Edit side by side">Edit</button>
-                <button class="view-option" id="viewReadButton" aria-pressed="false" title="Read  ⌘E">Read</button>
+                <button class="view-option is-active" id="viewEditButton" aria-pressed="true" title="Edit rich text and Markdown side by side">Edit</button>
+                <button class="view-option" id="viewReadButton" aria-pressed="false" title="Read the formatted document  ⌘E">Read</button>
             </div>
 
             <div class="topbar-end">
                 <button class="icon-button" id="openButton" title="Open a file  ⌘O" aria-label="Open a file">
                     <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5V12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H8L6.5 3.5H3a1 1 0 0 0-1 1Z"/></svg>
                     <span class="icon-label">Open</span>
+                </button>
+                <button class="icon-button" id="downloadButton" title="Save as .md  ⌘S" aria-label="Save Markdown" aria-disabled="true">
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2.5h8l2 2V13H3zM5 2.5v4h5v-4M5 13V9h6v4"/></svg>
+                    <span class="icon-label">Save</span>
                 </button>
                 <button class="icon-button" id="themeButton" data-appearance="light" title="Appearance" aria-label="Appearance">
                     <svg class="theme-icon theme-light" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg>
@@ -41,10 +45,33 @@
             </div>
         </header>
 
+        <div class="find-bar" id="findBar" role="search" aria-label="Find in document" hidden>
+            <div class="find-main">
+                <label class="sr-only" for="findInput">Find in document</label>
+                <input id="findInput" type="search" placeholder="Find in document" autocomplete="off" spellcheck="false">
+                <span class="find-scope" id="findScope"></span>
+                <span class="find-count" id="findCount" aria-live="polite"></span>
+                <button class="find-button" id="findPrevious" aria-label="Previous match" title="Previous match  ⌘⇧G">↑</button>
+                <button class="find-button" id="findNext" aria-label="Next match" title="Next match  ⌘G">↓</button>
+                <button class="find-button find-close" id="findClose" aria-label="Close find" title="Close find  Esc">×</button>
+            </div>
+            <div class="replace-main" id="replaceMain" hidden>
+                <label class="sr-only" for="replaceInput">Replace with</label>
+                <input id="replaceInput" type="text" placeholder="Replace in Markdown" autocomplete="off" spellcheck="false">
+                <button class="find-text-button" id="replaceOne">Replace</button>
+                <button class="find-text-button" id="replaceAll">Replace all</button>
+                <button class="find-text-button" id="replaceUndo" hidden>Undo</button>
+            </div>
+        </div>
+
         <main class="workspace" id="editView">
             <section class="pane rich-pane" id="richPane" aria-labelledby="richLabel">
                 <div class="pane-header">
-                    <span class="pane-label" id="richLabel">Rich text</span>
+                    <div class="pane-heading">
+                        <span class="pane-label" id="richLabel">Rich text</span>
+                        <span class="pane-info" aria-hidden="true" title="Formatted edits may simplify Markdown syntax. Use the Markdown pane to preserve exact source.">ⓘ</span>
+                    </div>
+                    <span class="sr-only" id="richEditorNote">Formatted edits may simplify Markdown syntax. Use the Markdown pane to preserve exact source.</span>
                     <div class="pane-actions">
                         <div class="format-toolbar" role="toolbar" aria-label="Formatting">
                             <button class="format-tool tool-bold" data-command="bold" title="Bold  ⌘B" aria-label="Bold">B</button>
@@ -77,10 +104,10 @@
                     </div>
                 </div>
                 <div class="pane-body">
-                    <div class="rich-editor prose" id="richEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="richLabel" data-placeholder="Start typing…"></div>
+                    <div class="rich-editor prose" id="richEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="richLabel" aria-describedby="richEditorNote" data-placeholder="Start typing…"></div>
                     <div class="empty-state" id="emptyState">
-                        <p class="empty-title">Paste anything to convert it</p>
-                        <p class="empty-copy">Formatted text from Docs, Notion, email or the web turns into clean Markdown on the right.</p>
+                        <p class="empty-title">Write or paste to begin</p>
+                        <p class="empty-copy">Edit formatted text here or Markdown on the right. Both stay in sync.</p>
                         <div class="empty-actions">
                             <button class="button button-primary" id="emptyPasteButton">Paste <kbd>⌘V</kbd></button>
                             <button class="button" id="emptyOpenButton">Open file…</button>
@@ -100,10 +127,6 @@
                 <div class="pane-header">
                     <span class="pane-label" id="markdownLabel">Markdown</span>
                     <div class="pane-actions">
-                        <button class="text-button" id="downloadButton" title="Save as .md  ⌘S">
-                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>
-                            <span class="button-text">Save .md</span>
-                        </button>
                         <button class="button button-primary copy-action" id="copyButton" title="Copy Markdown  ⌘⇧C">
                             <span class="copy-icons" aria-hidden="true">
                                 <svg class="copy-icon-copy" viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="8" height="8" rx="1.2"/><path d="M10.5 5.5V3.7a1.2 1.2 0 0 0-1.2-1.2H3.7a1.2 1.2 0 0 0-1.2 1.2v5.6a1.2 1.2 0 0 0 1.2 1.2h1.8"/></svg>
@@ -158,9 +181,13 @@
 
                 <h3 class="settings-subhead">Shortcuts</h3>
                 <dl class="shortcut-list">
+                    <div><dt>Find</dt><dd><kbd>⌘</kbd><kbd>F</kbd></dd></div>
+                    <div><dt>Next / previous</dt><dd><kbd>⌘</kbd><kbd>G</kbd></dd></div>
+                    <div><dt>Replace</dt><dd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>F</kbd></dd></div>
                     <div><dt>Copy Markdown</dt><dd><kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd></dd></div>
                     <div><dt>Open file</dt><dd><kbd>⌘</kbd><kbd>O</kbd></dd></div>
-                    <div><dt>Save .md</dt><dd><kbd>⌘</kbd><kbd>S</kbd></dd></div>
+                    <div><dt>Save</dt><dd><kbd>⌘</kbd><kbd>S</kbd></dd></div>
+                    <div><dt>Save As</dt><dd><kbd>⌘</kbd><kbd>⇧</kbd><kbd>S</kbd></dd></div>
                     <div><dt>Read / Edit</dt><dd><kbd>⌘</kbd><kbd>E</kbd></dd></div>
                     <div><dt>New document</dt><dd><kbd>⌘</kbd><kbd>N</kbd></dd></div>
                     <div><dt>Settings</dt><dd><kbd>⌘</kbd><kbd>,</kbd></dd></div>

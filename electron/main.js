@@ -5,8 +5,69 @@ const pkg = require('../package.json');
 const isMac = process.platform === 'darwin';
 const ALLOWED_EXTERNAL_PROTOCOLS = new Set(['https:', 'mailto:']);
 const ALLOWED_RENDERER_PERMISSIONS = new Set(['clipboard-read']);
+const SUPPORTED_DOCUMENT_EXTENSIONS = new Set(['.md', '.markdown', '.txt', '.html', '.htm']);
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 let deferredFilePath = null;
+let needsUnsavedPrompt = false;
+const openedDocumentPaths = new Set();
+const writableMarkdownPaths = new Set();
+
+function confirmDiscardChanges() {
+  if (!needsUnsavedPrompt) return true;
+  const options = {
+    type: 'warning',
+    title: 'Unsaved changes',
+    message: 'Discard unsaved changes?',
+    detail: 'Your edits have not been saved.',
+    buttons: ['Cancel', 'Discard Changes'],
+    defaultId: 0,
+    cancelId: 0,
+    noLink: true
+  };
+  const window = getPrimaryWindow();
+  const choice = window ? dialog.showMessageBoxSync(window, options) : dialog.showMessageBoxSync(options);
+  if (choice !== 1) return false;
+  needsUnsavedPrompt = false;
+  return true;
+}
+
+function authorizeDocumentPath(filePath) {
+  const resolvedPath = path.resolve(filePath);
+  const extension = path.extname(resolvedPath).toLowerCase();
+  if (!SUPPORTED_DOCUMENT_EXTENSIONS.has(extension)) return;
+  openedDocumentPaths.add(resolvedPath);
+  if (extension === '.md' || extension === '.markdown') writableMarkdownPaths.add(resolvedPath);
+}
+
+function resolveRelativePath(baseFilePath, reference) {
+  if (typeof baseFilePath !== 'string' || !openedDocumentPaths.has(path.resolve(baseFilePath))) {
+    throw new Error('Open the document in Asterism before following local links');
+  }
+  if (typeof reference !== 'string') throw new TypeError('Local link must be text');
+  const rawPath = reference.trim().split(/[?#]/, 1)[0];
+  let relativePath;
+  try {
+    relativePath = decodeURIComponent(rawPath);
+  } catch {
+    throw new Error('Invalid local link');
+  }
+  if (!relativePath || path.isAbsolute(relativePath) || relativePath.startsWith('\\') ||
+      relativePath.includes('\\') || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(relativePath) ||
+      relativePath.includes('\0')) {
+    throw new Error('Only relative local links are supported');
+  }
+  return path.resolve(path.dirname(baseFilePath), relativePath);
+}
+
+function imageMimeType(filePath, data) {
+  const extension = path.extname(filePath).toLowerCase();
+  if (extension === '.png' && data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) return 'image/png';
+  if (['.jpg', '.jpeg'].includes(extension) && data.length >= 3 && data[0] === 255 && data[1] === 216 && data[2] === 255) return 'image/jpeg';
+  if (extension === '.gif' && ['GIF87a', 'GIF89a'].includes(data.toString('ascii', 0, 6))) return 'image/gif';
+  if (extension === '.webp' && data.toString('ascii', 0, 4) === 'RIFF' && data.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';
+  throw new Error('Only PNG, JPEG, GIF, and WebP images are supported');
+}
 
 // Saved documents and settings live in the renderer's local storage inside the
 // userData folder. Electron names that folder after the app, so an existing
@@ -100,6 +161,10 @@ function createMainWindow() {
     }
   });
 
+  mainWindow.on('close', event => {
+    if (!confirmDiscardChanges()) event.preventDefault();
+  });
+
   lockDownRendererSession(mainWindow);
 
   mainWindow.once('ready-to-show', () => {
@@ -130,6 +195,7 @@ function createMainWindow() {
           name: path.basename(deferredFilePath),
           content
         });
+        authorizeDocumentPath(deferredFilePath);
       } catch (err) {
         console.error('Failed to read deferred file:', err);
       }
@@ -175,9 +241,14 @@ function buildMenu() {
         },
         { type: 'separator' },
         {
-          label: 'Save Output…',
+          label: 'Save',
           accelerator: 'CommandOrControl+S',
           click: () => sendMenuAction('save-output')
+        },
+        {
+          label: 'Save As…',
+          accelerator: 'CommandOrControl+Shift+S',
+          click: () => sendMenuAction('save-as')
         }
       ]
     },
@@ -192,7 +263,33 @@ function buildMenu() {
         { role: 'paste' },
         { role: 'pasteAndMatchStyle' },
         { role: 'delete' },
-        { role: 'selectAll' }
+        { role: 'selectAll' },
+        { type: 'separator' },
+        {
+          label: 'Find',
+          submenu: [
+            {
+              label: 'Find…',
+              accelerator: 'CommandOrControl+F',
+              click: () => sendMenuAction('find')
+            },
+            {
+              label: 'Find and Replace…',
+              accelerator: 'Alt+CommandOrControl+F',
+              click: () => sendMenuAction('replace')
+            },
+            {
+              label: 'Find Next',
+              accelerator: 'CommandOrControl+G',
+              click: () => sendMenuAction('find-next')
+            },
+            {
+              label: 'Find Previous',
+              accelerator: 'CommandOrControl+Shift+G',
+              click: () => sendMenuAction('find-previous')
+            }
+          ]
+        }
       ]
     },
     {
@@ -224,6 +321,11 @@ function buildMenu() {
 }
 
 function registerIpcHandlers() {
+  ipcMain.on('desktop:set-unsaved-state', (event, needsPrompt) => {
+    needsUnsavedPrompt = needsPrompt === true;
+    event.returnValue = true;
+  });
+
   ipcMain.handle('desktop:open-file', async () => {
     const targetWindow = getPrimaryWindow();
     const result = await dialog.showOpenDialog(targetWindow, {
@@ -242,6 +344,7 @@ function registerIpcHandlers() {
 
     const filePath = result.filePaths[0];
     const content = await fs.readFile(filePath, 'utf8');
+    authorizeDocumentPath(filePath);
 
     return {
       canceled: false,
@@ -264,7 +367,49 @@ function registerIpcHandlers() {
     }
 
     await fs.writeFile(result.filePath, options.content || '', 'utf8');
+    authorizeDocumentPath(result.filePath);
     return { canceled: false, filePath: result.filePath };
+  });
+
+  ipcMain.handle('desktop:write-file', async (_event, options = {}) => {
+    const { filePath, content, expectedContent, force = false } = options;
+    if (typeof filePath !== 'string' || !writableMarkdownPaths.has(path.resolve(filePath))) {
+      throw new Error('The file must be opened or saved in Asterism first');
+    }
+    if (typeof content !== 'string') throw new TypeError('File content must be text');
+    if (force !== true) {
+      if (typeof expectedContent !== 'string') throw new TypeError('Expected file content must be text');
+      let diskContent;
+      try {
+        diskContent = await fs.readFile(filePath, 'utf8');
+      } catch (error) {
+        if (error?.code === 'ENOENT') return { conflict: true };
+        throw error;
+      }
+      if (diskContent !== expectedContent) return { conflict: true };
+    }
+    await fs.writeFile(filePath, content, 'utf8');
+    return { canceled: false, filePath };
+  });
+
+  ipcMain.handle('desktop:open-relative-file', async (_event, { baseFilePath, href } = {}) => {
+    const filePath = resolveRelativePath(baseFilePath, href);
+    if (!SUPPORTED_DOCUMENT_EXTENSIONS.has(path.extname(filePath).toLowerCase())) {
+      throw new Error('Only Markdown, text, and HTML documents can be opened');
+    }
+    const content = await fs.readFile(filePath, 'utf8');
+    authorizeDocumentPath(filePath);
+    return { canceled: false, filePath, name: path.basename(filePath), kind: inferDocumentKind(filePath, content), content };
+  });
+
+  ipcMain.handle('desktop:read-relative-image', async (_event, { baseFilePath, src } = {}) => {
+    const filePath = resolveRelativePath(baseFilePath, src);
+    const info = await fs.stat(filePath);
+    if (!info.isFile() || info.size > MAX_IMAGE_BYTES) throw new Error('Image must be a file under 10 MiB');
+    const data = await fs.readFile(filePath);
+    if (data.length > MAX_IMAGE_BYTES) throw new Error('Image must be under 10 MiB');
+    const mimeType = imageMimeType(filePath, data);
+    return `data:${mimeType};base64,${data.toString('base64')}`;
   });
 
   ipcMain.on('desktop:set-app-icon-theme', (_event, dataUrl) => {
@@ -290,6 +435,7 @@ app.on('open-file', async (event, filePath) => {
   if (win && !win.isDestroyed()) {
     try {
       const content = await fs.readFile(filePath, 'utf8');
+      authorizeDocumentPath(filePath);
       win.webContents.send('open-file', { filePath, name: path.basename(filePath), content });
     } catch (err) {
       console.error('Failed to read file:', err);
@@ -297,6 +443,10 @@ app.on('open-file', async (event, filePath) => {
   } else {
     deferredFilePath = filePath;
   }
+});
+
+app.on('before-quit', event => {
+  if (!confirmDiscardChanges()) event.preventDefault();
 });
 
 app.whenReady().then(() => {

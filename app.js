@@ -1,5 +1,6 @@
 const STORAGE_KEYS = {
     document: 'inkdown.doc',
+    documentMeta: 'inkdown.docMeta',
     preferences: 'inkdown.prefs',
     oldSettings: 'inkdown_settings',
     oldContent: 'inkdown_content',
@@ -12,7 +13,7 @@ const DEFAULT_PREFERENCES = Object.freeze({
     flavor: 'GFM',
     readerWidth: '72',
     smartQuotes: true,
-    textSize: '15',
+    textSize: '16',
     autoSave: true
 });
 
@@ -21,7 +22,7 @@ const SETTING_DEFINITIONS = [
     { key: 'flavor', name: 'Markdown', values: ['GFM', 'CommonMark'] },
     { key: 'readerWidth', name: 'Reader width', values: ['60', '72', 'Full'] },
     { key: 'smartQuotes', name: 'Smart quotes', values: [true, false], labels: ['On', 'Off'] },
-    { key: 'textSize', name: 'Text size', values: ['14', '15', '16'] },
+    { key: 'textSize', name: 'Text size', values: ['14', '16', '18'] },
     { key: 'autoSave', name: 'Auto-save', values: [true, false], labels: ['On', 'Off'] }
 ];
 
@@ -40,10 +41,34 @@ const state = {
     justCleared: false,
     copied: false,
     currentFileName: '',
+    currentFilePath: '',
+    currentFileKind: '',
+    lastSavedMarkdown: '',
+    lastDiskContent: '',
+    fileConflict: false,
+    recoveredDocument: false,
+    documentRevision: 0,
     undoMarkdown: null,
     undoFileName: '',
+    undoFilePath: '',
+    undoFileKind: '',
+    undoLastSavedMarkdown: '',
+    undoLastDiskContent: '',
+    undoFileConflict: false,
+    undoRecoveredDocument: false,
     dragDepth: 0,
-    lastFocusedElement: null
+    lastFocusedElement: null,
+    lastEditor: 'rich',
+    findOpen: false,
+    replaceOpen: false,
+    findQuery: '',
+    findMatches: [],
+    findIndex: -1,
+    findRangeAt: null,
+    replacementUndoMarkdown: null,
+    replacementRedoMarkdown: null,
+    replacementNativeUndo: false,
+    programmaticReplace: false
 };
 
 const elements = {
@@ -80,7 +105,19 @@ const elements = {
     settingsBackdrop: document.getElementById('settingsBackdrop'),
     settingsRows: document.getElementById('settingsRows'),
     clearSavedButton: document.getElementById('clearSavedButton'),
-    statusMessage: document.getElementById('statusMessage')
+    statusMessage: document.getElementById('statusMessage'),
+    findBar: document.getElementById('findBar'),
+    findInput: document.getElementById('findInput'),
+    findScope: document.getElementById('findScope'),
+    findCount: document.getElementById('findCount'),
+    findPrevious: document.getElementById('findPrevious'),
+    findNext: document.getElementById('findNext'),
+    findClose: document.getElementById('findClose'),
+    replaceMain: document.getElementById('replaceMain'),
+    replaceInput: document.getElementById('replaceInput'),
+    replaceOne: document.getElementById('replaceOne'),
+    replaceAll: document.getElementById('replaceAll'),
+    replaceUndo: document.getElementById('replaceUndo')
 };
 
 let turndownService = null;
@@ -90,6 +127,7 @@ let undoTimer = null;
 let copiedTimer = null;
 let savedDataTimer = null;
 let toastTimer = null;
+const localImageCache = new Map();
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const MOTION_EASE = 'cubic-bezier(.4,0,.2,1)';
 
@@ -158,7 +196,8 @@ function escapeHtml(value) {
 function safeUrl(value, image = false) {
     const url = String(value || '').trim();
     if (!url) return '';
-    if (url.startsWith('#') || url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) return url;
+    if (url.startsWith('#') || (url.startsWith('/') && !url.startsWith('//'))) return url;
+    if (isRelativeResource(url)) return url;
     if (image && /^data:image\/(png|gif|jpe?g|webp);base64,/i.test(url)) return url;
     try {
         const parsed = new URL(url, window.location.href);
@@ -192,6 +231,14 @@ function sanitizeHtml(html, { preserveStyles = false } = {}) {
 
     const nodes = Array.from(template.content.querySelectorAll('*')).reverse();
     nodes.forEach((node) => {
+        if (node.tagName === 'INPUT' && node.getAttribute('type')?.toLowerCase() === 'checkbox') {
+            const checked = node.hasAttribute('checked');
+            Array.from(node.attributes).forEach((attribute) => node.removeAttribute(attribute.name));
+            node.setAttribute('type', 'checkbox');
+            node.setAttribute('disabled', '');
+            if (checked) node.setAttribute('checked', '');
+            return;
+        }
         if (!ALLOWED_TAGS.has(node.tagName)) {
             if (/^(SCRIPT|STYLE|LINK|META|IFRAME|OBJECT|EMBED|FORM|INPUT|BUTTON|SVG|CANVAS)$/i.test(node.tagName)) {
                 node.remove();
@@ -310,7 +357,12 @@ function markdownToHtml(markdown) {
 
 function richHtmlToMarkdown() {
     if (!turndownService) return elements.richEditor.innerText || '';
-    const normalized = sanitizeHtml(elements.richEditor.innerHTML, { preserveStyles: true });
+    const source = elements.richEditor.cloneNode(true);
+    source.querySelectorAll('img[data-asterism-relative-src]').forEach((image) => {
+        image.setAttribute('src', image.getAttribute('data-asterism-relative-src'));
+        image.removeAttribute('data-asterism-relative-src');
+    });
+    const normalized = sanitizeHtml(source.innerHTML, { preserveStyles: true });
     try {
         return turndownService.turndown(normalized).trim();
     } catch (error) {
@@ -403,6 +455,7 @@ function getMarkdownEditorText() {
 
 function renderRichFromMarkdown() {
     elements.richEditor.innerHTML = markdownToHtml(state.markdown);
+    hydrateLocalImages(elements.richEditor);
     highlightCode(elements.richEditor);
 }
 
@@ -420,7 +473,7 @@ function updateStats() {
     elements.documentStats.textContent = `${words.toLocaleString()} ${words === 1 ? 'word' : 'words'} · ${characters.toLocaleString()} ${characters === 1 ? 'character' : 'characters'}`;
     nudgeStats(words, characters);
     setActionEnabled(elements.copyButton, Boolean(state.markdown));
-    setActionEnabled(elements.downloadButton, Boolean(state.markdown));
+    setActionEnabled(elements.downloadButton, Boolean(state.markdown || state.currentFilePath));
     renderEmptyState();
     renderClearState();
 }
@@ -455,22 +508,46 @@ function renderEmptyState() {
 }
 
 function renderDocName() {
-    elements.docName.textContent = state.currentFileName;
+    elements.docName.textContent = state.currentFileName + (state.recoveredDocument ? ' (recovered)' : state.currentFilePath &&
+        (state.markdown !== state.lastSavedMarkdown || state.fileConflict) ? ' •' : '');
     elements.docName.hidden = !state.currentFileName;
     document.title = state.currentFileName ? `${state.currentFileName} · Asterism` : 'Asterism';
+    const savesToSource = Boolean(state.currentFilePath && state.currentFileKind === 'markdown');
+    elements.downloadButton.title = savesToSource ? 'Save  ⌘S' : 'Save as .md  ⌘S';
+    elements.downloadButton.setAttribute('aria-label', savesToSource ? 'Save file' : 'Save Markdown');
+}
+
+function hasUnpersistedDocument() {
+    return !state.preferences.autoSave && Boolean(state.markdown) &&
+        (!state.currentFileName || state.recoveredDocument || state.markdown !== state.lastSavedMarkdown);
 }
 
 function renderStatusHint() {
+    window.desktopBridge?.setUnsavedState?.({ needsPrompt: hasUnpersistedDocument() });
     if (state.copied) return;
-    elements.hintText.textContent = state.preferences.autoSave
-        ? 'Converts as you type · saved on this device'
-        : 'Converts as you type · auto-save off';
+    if (state.recoveredDocument) {
+        elements.hintText.textContent = 'Recovered draft · Save As to keep it';
+    } else if (state.fileConflict) {
+        elements.hintText.textContent = 'File changed outside Asterism · Save to resolve';
+    } else if (state.currentFilePath && state.currentFileKind !== 'markdown') {
+        elements.hintText.textContent = 'Imported document · save as Markdown to keep edits';
+    } else if (state.currentFilePath && state.markdown !== state.lastSavedMarkdown) {
+        elements.hintText.textContent = state.preferences.autoSave
+            ? 'Unsaved file changes · recovery saved on this device'
+            : 'Unsaved file changes';
+    } else if (state.currentFilePath) {
+        elements.hintText.textContent = 'File saved';
+    } else {
+        elements.hintText.textContent = state.preferences.autoSave ? 'Saved on this device'
+            : state.markdown ? 'Unsaved document · Save to keep it' : 'Auto-save off';
+    }
 }
 
 function persistDocument() {
     if (!state.preferences.autoSave) return;
     try {
         localStorage.setItem(STORAGE_KEYS.document, state.markdown);
+        localStorage.setItem(STORAGE_KEYS.documentMeta, JSON.stringify({ name: state.currentFileName }));
     } catch (error) {
         console.warn('Unable to save the document:', error);
     }
@@ -486,6 +563,7 @@ function cancelUndoOnEdit() {
 
 function syncFromRich({ flash = false } = {}) {
     cancelUndoOnEdit();
+    clearReplacementUndo();
     if (!elements.richEditor.innerText.trim() && !elements.richEditor.querySelector('img, hr')) {
         elements.richEditor.innerHTML = '';
     }
@@ -494,6 +572,9 @@ function syncFromRich({ flash = false } = {}) {
     renderMarkdownHighlight();
     updateStats();
     persistDocument();
+    renderDocName();
+    renderStatusHint();
+    refreshFind();
     pulseSyncMark();
     if (flash) {
         elements.markdownHighlight.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'cubic-bezier(.4,0,.2,1)' });
@@ -502,6 +583,7 @@ function syncFromRich({ flash = false } = {}) {
 
 function syncFromMarkdown() {
     cancelUndoOnEdit();
+    if (!state.programmaticReplace) clearReplacementUndo();
     state.markdown = getMarkdownEditorText();
     if (!state.markdown) elements.markdownEditor.textContent = '';
     renderMarkdownHighlight();
@@ -509,6 +591,9 @@ function syncFromMarkdown() {
     pulseSyncMark();
     updateStats();
     persistDocument();
+    renderDocName();
+    renderStatusHint();
+    refreshFind();
 }
 
 function setDocumentFromMarkdown(markdown, { persist = true } = {}) {
@@ -519,6 +604,9 @@ function setDocumentFromMarkdown(markdown, { persist = true } = {}) {
     updateStats();
     if (persist) persistDocument();
     closeReader();
+    renderDocName();
+    renderStatusHint();
+    refreshFind();
 }
 
 function bodyHtmlFromDocument(html) {
@@ -542,7 +630,7 @@ function normalizePreferences(candidate = {}) {
     const appearance = ['light', 'dark', 'auto'].includes(candidate.appearance) ? candidate.appearance : DEFAULT_PREFERENCES.appearance;
     const flavor = String(candidate.flavor || '').toLowerCase() === 'commonmark' ? 'CommonMark' : 'GFM';
     const readerWidth = ['60', '72', 'Full'].includes(String(candidate.readerWidth)) ? String(candidate.readerWidth) : DEFAULT_PREFERENCES.readerWidth;
-    const textSize = ['14', '15', '16'].includes(String(candidate.textSize)) ? String(candidate.textSize) : DEFAULT_PREFERENCES.textSize;
+    const textSize = ['14', '16', '18'].includes(String(candidate.textSize)) ? String(candidate.textSize) : DEFAULT_PREFERENCES.textSize;
     return {
         appearance,
         flavor,
@@ -557,8 +645,8 @@ function migrateOldPreferences(old = {}) {
     const themeMap = { system: 'auto', auto: 'auto', light: 'light', dark: 'dark', black: 'dark' };
     const maxWidth = Number(old.contentMaxWidth);
     const readerWidth = maxWidth >= 1100 ? 'Full' : (maxWidth && maxWidth <= 700 ? '60' : '72');
-    const size = Number(old.contentFontSize || 15);
-    const textSize = String([14, 15, 16].reduce((best, value) => Math.abs(value - size) < Math.abs(best - size) ? value : best, 15));
+    const size = Number(old.contentFontSize || 16);
+    const textSize = String([14, 16, 18].reduce((best, value) => Math.abs(value - size) < Math.abs(best - size) ? value : best, 16));
     return normalizePreferences({
         appearance: themeMap[old.themeMode || old.theme] || 'auto',
         flavor: String(old.markdownFlavor || 'gfm').toLowerCase() === 'gfm' ? 'GFM' : 'CommonMark',
@@ -644,7 +732,7 @@ function applyTheme({ animate = false } = {}) {
 }
 
 function applyTextSize() {
-    elements.richEditor.style.setProperty('--rich-text-size', `${state.preferences.textSize}px`);
+    elements.app.style.setProperty('--document-text-size', `${state.preferences.textSize}px`);
 }
 
 function setPreference(key, value) {
@@ -662,6 +750,7 @@ function setPreference(key, value) {
         renderStatusHint();
     }
     if (state.view === 'reader' && ['readerWidth', 'smartQuotes', 'flavor'].includes(key)) renderReader();
+    if (key === 'flavor' || key === 'smartQuotes') refreshFind({ reset: true });
     renderSettingsRows();
 }
 
@@ -749,11 +838,25 @@ function applySmartQuotes(root) {
     textNodes.forEach((node) => { node.nodeValue = smartenText(node.nodeValue); });
 }
 
+function addReaderHeadingAnchors() {
+    const counts = new Map();
+    elements.readerContent.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+        const slug = heading.textContent.toLowerCase().trim()
+            .replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, '')
+            .replace(/\s/g, '-') || 'section';
+        const count = counts.get(slug) || 0;
+        counts.set(slug, count + 1);
+        heading.id = count ? `${slug}-${count}` : slug;
+    });
+}
+
 function renderReader() {
     if (!state.markdown) {
         elements.readerContent.innerHTML = '<p class="empty-reader">Nothing to read yet.</p>';
     } else {
         elements.readerContent.innerHTML = markdownToHtml(state.markdown);
+        addReaderHeadingAnchors();
+        hydrateLocalImages(elements.readerContent);
         if (state.preferences.smartQuotes) applySmartQuotes(elements.readerContent);
         highlightCode(elements.readerContent);
     }
@@ -769,6 +872,7 @@ function openReader() {
     elements.readerView.hidden = false;
     softEnter(elements.readerView);
     renderViewSwitch();
+    refreshFind({ reset: true });
 }
 
 function renderViewSwitch() {
@@ -787,11 +891,248 @@ function closeReader() {
     elements.editView.hidden = false;
     softEnter(elements.editView, { rise: 0 });
     renderViewSwitch();
+    refreshFind({ reset: true });
 }
 
 function toggleReader() {
     if (state.view === 'reader') closeReader();
     else openReader();
+}
+
+function clearFindHighlights() {
+    window.CSS?.highlights?.delete('asterism-find');
+    window.CSS?.highlights?.delete('asterism-find-active');
+}
+
+function clearReplacementUndo() {
+    state.replacementUndoMarkdown = null;
+    state.replacementRedoMarkdown = null;
+    state.replacementNativeUndo = false;
+    elements.replaceUndo.hidden = true;
+}
+
+function findTarget() {
+    if (state.view === 'reader') return 'reader';
+    if (state.replaceOpen) return 'markdown';
+    return state.lastEditor;
+}
+
+function findRoot(target) {
+    if (target === 'reader') return elements.readerContent;
+    if (target === 'markdown') return elements.markdownHighlight;
+    return elements.richEditor;
+}
+
+function createFindRangeMapper(root) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let position = 0;
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        const length = node.nodeValue.length;
+        if (!length) continue;
+        nodes.push({ node, start: position, end: position + length });
+        position += length;
+    }
+
+    function pointAt(offset) {
+        let low = 0;
+        let high = nodes.length - 1;
+        while (low <= high) {
+            const mid = (low + high) >> 1;
+            const item = nodes[mid];
+            if (offset < item.start) high = mid - 1;
+            else if (offset > item.end) low = mid + 1;
+            else return { node: item.node, offset: offset - item.start };
+        }
+        return null;
+    }
+
+    return (start, end) => {
+        const first = pointAt(start);
+        const last = pointAt(end);
+        if (!first || !last) return null;
+        const range = document.createRange();
+        range.setStart(first.node, first.offset);
+        range.setEnd(last.node, last.offset);
+        return range;
+    };
+}
+
+function matchOffsets(text, query) {
+    if (!query) return [];
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const expression = new RegExp(escaped, 'gi');
+    const matches = [];
+    for (const match of text.matchAll(expression)) {
+        matches.push({ start: match.index, end: match.index + match[0].length });
+    }
+    return matches;
+}
+
+function scrollToFindMatch() {
+    const match = state.findMatches[state.findIndex];
+    const range = match && state.findRangeAt?.(match.start, match.end);
+    if (!range) return;
+    const target = findTarget();
+    const scroller = target === 'reader' ? elements.readerView
+        : target === 'markdown' ? elements.markdownEditor : elements.richEditor;
+    const rect = range.getBoundingClientRect();
+    const viewport = scroller.getBoundingClientRect();
+    if (rect.top < viewport.top + 24 || rect.bottom > viewport.bottom - 24) {
+        scroller.scrollTop += rect.top - viewport.top - viewport.height / 3;
+    }
+}
+
+const MAX_VISIBLE_FIND_HIGHLIGHTS = 300;
+
+function paintFind({ scroll = false } = {}) {
+    clearFindHighlights();
+    const target = findTarget();
+    elements.findScope.textContent = { reader: 'Read', rich: 'Formatted', markdown: 'Markdown' }[target];
+    elements.findCount.textContent = !state.findQuery ? ''
+        : state.findMatches.length ? `${state.findIndex + 1} of ${state.findMatches.length}` : 'No matches';
+    elements.findPrevious.disabled = !state.findMatches.length;
+    elements.findNext.disabled = !state.findMatches.length;
+    elements.replaceOne.disabled = !state.replaceOpen || !state.findMatches.length;
+    elements.replaceAll.disabled = !state.replaceOpen || !state.findMatches.length;
+
+    if (window.CSS?.highlights && window.Highlight) {
+        const first = Math.max(0, state.findIndex - MAX_VISIBLE_FIND_HIGHLIGHTS / 2);
+        const visible = state.findMatches.slice(first, first + MAX_VISIBLE_FIND_HIGHLIGHTS);
+        const all = visible.map((match) => state.findRangeAt?.(match.start, match.end)).filter(Boolean);
+        if (all.length) window.CSS.highlights.set('asterism-find', new window.Highlight(...all));
+        const activeMatch = state.findMatches[state.findIndex];
+        const active = activeMatch && state.findRangeAt?.(activeMatch.start, activeMatch.end);
+        if (active) window.CSS.highlights.set('asterism-find-active', new window.Highlight(active));
+    }
+    if (scroll) scrollToFindMatch();
+}
+
+function refreshFind({ reset = false, scroll = false } = {}) {
+    if (!state.findOpen) return;
+    const target = findTarget();
+    const root = findRoot(target);
+    const text = target === 'markdown' ? state.markdown : root.textContent || '';
+    state.findMatches = matchOffsets(text, state.findQuery);
+    state.findRangeAt = createFindRangeMapper(root);
+    if (reset) state.findIndex = state.findMatches.length ? 0 : -1;
+    else if (state.findIndex >= state.findMatches.length) state.findIndex = state.findMatches.length - 1;
+    else if (state.findIndex < 0 && state.findMatches.length) state.findIndex = 0;
+    paintFind({ scroll });
+}
+
+function openFind({ replace = false } = {}) {
+    if (replace && state.view === 'reader') closeReader();
+    if (replace) state.lastEditor = 'markdown';
+    const selected = window.getSelection()?.toString() || '';
+    if (!state.findOpen && selected && selected.length <= 100 && !selected.includes('\n')) {
+        elements.findInput.value = selected;
+    }
+    state.findOpen = true;
+    state.replaceOpen = replace;
+    state.findQuery = elements.findInput.value;
+    elements.findBar.hidden = false;
+    elements.replaceMain.hidden = !replace;
+    refreshFind({ reset: true, scroll: true });
+    requestAnimationFrame(() => {
+        elements.findInput.focus();
+        elements.findInput.select();
+    });
+}
+
+function closeFind() {
+    if (!state.findOpen) return;
+    state.findOpen = false;
+    state.replaceOpen = false;
+    state.findMatches = [];
+    state.findIndex = -1;
+    state.findRangeAt = null;
+    elements.findBar.hidden = true;
+    clearFindHighlights();
+    if (state.view === 'reader') elements.viewReadButton.focus();
+    else (state.lastEditor === 'markdown' ? elements.markdownEditor : elements.richEditor).focus();
+}
+
+function moveFind(direction) {
+    if (!state.findOpen) {
+        openFind();
+        return;
+    }
+    if (!state.findMatches.length) return;
+    state.findIndex = (state.findIndex + direction + state.findMatches.length) % state.findMatches.length;
+    paintFind({ scroll: true });
+}
+
+function replaceMarkdown(nextMarkdown, message) {
+    if (nextMarkdown === state.markdown) return;
+    state.replacementUndoMarkdown = state.markdown;
+    state.replacementRedoMarkdown = null;
+    elements.replaceUndo.hidden = false;
+    const editor = elements.markdownEditor;
+    editor.focus();
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    state.programmaticReplace = true;
+    const nativeUndo = document.execCommand('insertText', false, nextMarkdown);
+    if (nativeUndo && state.markdown !== nextMarkdown) syncFromMarkdown();
+    state.programmaticReplace = false;
+    state.replacementNativeUndo = nativeUndo;
+    if (!nativeUndo) setDocumentFromMarkdown(nextMarkdown);
+    refreshFind();
+    announce(message);
+}
+
+function replaceOneMatch() {
+    const match = state.findMatches[state.findIndex];
+    if (!state.replaceOpen || !match) return;
+    const replacement = elements.replaceInput.value;
+    replaceMarkdown(
+        state.markdown.slice(0, match.start) + replacement + state.markdown.slice(match.end),
+        'Replaced one match'
+    );
+}
+
+function replaceAllMatches() {
+    if (!state.replaceOpen || !state.findMatches.length) return;
+    let updated = state.markdown;
+    const replacement = elements.replaceInput.value;
+    for (const match of [...state.findMatches].reverse()) {
+        updated = updated.slice(0, match.start) + replacement + updated.slice(match.end);
+    }
+    replaceMarkdown(updated, `Replaced ${state.findMatches.length} matches`);
+}
+
+function undoReplacement() {
+    if (state.replacementUndoMarkdown === null) return;
+    if (state.replacementNativeUndo) {
+        const previous = state.replacementUndoMarkdown;
+        elements.markdownEditor.focus();
+        document.execCommand('undo');
+        if (state.markdown !== previous) setDocumentFromMarkdown(previous);
+        clearReplacementUndo();
+        announce('Replacement undone');
+        return;
+    }
+    state.replacementRedoMarkdown = state.markdown;
+    const previous = state.replacementUndoMarkdown;
+    state.replacementUndoMarkdown = null;
+    elements.replaceUndo.hidden = true;
+    setDocumentFromMarkdown(previous);
+    announce('Replacement undone');
+}
+
+function redoReplacement() {
+    if (state.replacementRedoMarkdown === null) return;
+    state.replacementUndoMarkdown = state.markdown;
+    const next = state.replacementRedoMarkdown;
+    state.replacementRedoMarkdown = null;
+    elements.replaceUndo.hidden = false;
+    setDocumentFromMarkdown(next);
+    announce('Replacement redone');
 }
 
 function renderClearState() {
@@ -838,16 +1179,36 @@ function playClearFade(ghosts) {
     });
 }
 
-function clearNow({ withUndo = true } = {}) {
+function clearNow({ withUndo = true, confirmNew = false } = {}) {
+    const dirtyFile = state.currentFilePath && state.markdown !== state.lastSavedMarkdown;
+    if ((dirtyFile || (confirmNew && state.markdown)) &&
+        !window.confirm(dirtyFile
+            ? `Discard unsaved changes to ${state.currentFileName}?`
+            : 'Start a new document and replace the current one?')) return;
     const ghosts = snapshotPaneGhosts();
     clearTimeout(clearArmTimer);
     clearTimeout(undoTimer);
     state.clearArmed = false;
     state.undoMarkdown = withUndo ? state.markdown : null;
     state.undoFileName = withUndo ? state.currentFileName : '';
+    state.undoFilePath = withUndo ? state.currentFilePath : '';
+    state.undoFileKind = withUndo ? state.currentFileKind : '';
+    state.undoLastSavedMarkdown = withUndo ? state.lastSavedMarkdown : '';
+    state.undoLastDiskContent = withUndo ? state.lastDiskContent : '';
+    state.undoFileConflict = withUndo ? state.fileConflict : false;
+    state.undoRecoveredDocument = withUndo ? state.recoveredDocument : false;
     state.justCleared = withUndo && Boolean(state.markdown);
     state.markdown = '';
+    state.documentRevision += 1;
     state.currentFileName = '';
+    state.currentFilePath = '';
+    state.currentFileKind = '';
+    state.lastSavedMarkdown = '';
+    state.lastDiskContent = '';
+    state.fileConflict = false;
+    state.recoveredDocument = false;
+    localImageCache.clear();
+    clearReplacementUndo();
     renderDocName();
     elements.richEditor.innerHTML = '';
     elements.markdownEditor.textContent = '';
@@ -856,6 +1217,7 @@ function clearNow({ withUndo = true } = {}) {
     closeReader();
     try {
         localStorage.removeItem(STORAGE_KEYS.document);
+        localStorage.removeItem(STORAGE_KEYS.documentMeta);
     } catch (error) {
         console.warn('Unable to clear the saved document:', error);
     }
@@ -868,6 +1230,8 @@ function clearNow({ withUndo = true } = {}) {
     }
     renderClearState();
     playClearFade(ghosts);
+    renderStatusHint();
+    refreshFind({ reset: true });
 }
 
 function undoClear() {
@@ -876,6 +1240,13 @@ function undoClear() {
     state.justCleared = false;
     state.undoMarkdown = null;
     state.currentFileName = state.undoFileName;
+    state.documentRevision += 1;
+    state.currentFilePath = state.undoFilePath;
+    state.currentFileKind = state.undoFileKind;
+    state.lastSavedMarkdown = state.undoLastSavedMarkdown;
+    state.lastDiskContent = state.undoLastDiskContent;
+    state.fileConflict = state.undoFileConflict;
+    state.recoveredDocument = state.undoRecoveredDocument;
     renderDocName();
     renderClearState();
     setDocumentFromMarkdown(markdown);
@@ -978,32 +1349,105 @@ function deriveFileName() {
     return `${slug || 'untitled'}.md`;
 }
 
-async function saveMarkdown() {
-    if (!state.markdown) {
+function markFileSaved(filePath, savedMarkdown, documentRevision) {
+    if (state.documentRevision !== documentRevision) return;
+    state.currentFilePath = filePath;
+    state.currentFileName = filePath.split(/[\\/]/).pop();
+    state.currentFileKind = /\.(md|markdown)$/i.test(filePath) ? 'markdown' : 'text';
+    state.lastSavedMarkdown = savedMarkdown;
+    state.lastDiskContent = savedMarkdown;
+    state.fileConflict = false;
+    state.recoveredDocument = false;
+    renderDocName();
+    renderStatusHint();
+    persistDocument();
+}
+
+let activeSavePromise = null;
+let queuedSave = null;
+
+async function performSaveMarkdown({ saveAs = false } = {}) {
+    if (!state.markdown && !state.currentFilePath) {
         announce('Nothing to save yet');
         return;
     }
     const filename = deriveFileName();
-    if (window.desktopBridge?.saveFile) {
+    const content = state.markdown;
+    const documentRevision = state.documentRevision;
+    if (!saveAs && state.currentFilePath && state.currentFileKind === 'markdown' && window.desktopBridge?.writeFile) {
         try {
-            const result = await window.desktopBridge.saveFile({
-                content: state.markdown,
-                defaultPath: filename,
-                filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'txt'] }]
-            });
-            if (!result?.canceled) announce(`Saved ${result.filePath?.split(/[\\/]/).pop() || filename}`);
+            const filePath = state.currentFilePath;
+            const options = { filePath, content, expectedContent: state.lastDiskContent };
+            let savedContent = content;
+            let result = await window.desktopBridge.writeFile(options);
+            if (result?.conflict) {
+                if (state.documentRevision !== documentRevision) return;
+                state.fileConflict = true;
+                renderDocName();
+                renderStatusHint();
+                if (!window.confirm('This file changed outside Asterism. Overwrite the disk version with your current document?')) {
+                    queuedSave = null;
+                    announce('File not saved');
+                    return;
+                }
+                savedContent = state.markdown;
+                result = await window.desktopBridge.writeFile({ ...options, content: savedContent, force: true });
+            }
+            if (!result?.canceled && state.documentRevision === documentRevision) {
+                markFileSaved(result.filePath || filePath, savedContent, documentRevision);
+                announce(state.markdown !== savedContent ? 'Saved previous edits · newer changes remain' : 'File saved');
+            }
         } catch (error) {
             console.error('Save failed:', error);
+            announce('Could not save this file');
         }
         return;
     }
-    const blob = new Blob([state.markdown], { type: 'text/markdown' });
+    if (window.desktopBridge?.saveFile) {
+        try {
+            const result = await window.desktopBridge.saveFile({
+                content,
+                defaultPath: filename,
+                filters: [{ name: 'Markdown', extensions: ['md', 'markdown'] }]
+            });
+            if (result?.canceled) queuedSave = null;
+            else if (state.documentRevision === documentRevision) {
+                markFileSaved(result.filePath, content, documentRevision);
+                announce(state.markdown !== content ? 'Saved previous edits · newer changes remain' : 'File saved');
+            }
+        } catch (error) {
+            console.error('Save failed:', error);
+            announce('Could not save this file');
+        }
+        return;
+    }
+    const blob = new Blob([content], { type: 'text/markdown' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
     announce(`Downloaded ${filename}`);
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+async function saveMarkdown({ saveAs = false } = {}) {
+    if (activeSavePromise) {
+        if (window.desktopBridge?.saveFile) queuedSave = { saveAs, revision: state.documentRevision };
+        return activeSavePromise;
+    }
+    const operation = performSaveMarkdown({ saveAs });
+    activeSavePromise = operation;
+    try {
+        await operation;
+    } finally {
+        activeSavePromise = null;
+        const next = queuedSave;
+        queuedSave = null;
+        if (next && next.revision === state.documentRevision &&
+            (next.saveAs || state.markdown !== state.lastSavedMarkdown || state.fileConflict)) {
+            void saveMarkdown({ saveAs: next.saveAs });
+        }
+    }
 }
 
 function inferDocumentKind(name, content, explicitKind) {
@@ -1014,13 +1458,101 @@ function inferDocumentKind(name, content, explicitKind) {
     return 'text';
 }
 
-function loadDocumentData({ name = '', content = '', kind = '' } = {}) {
+function isRelativeResource(value) {
+    const source = String(value || '').trim();
+    return Boolean(source && !source.startsWith('#') && !source.startsWith('/') && !source.includes('\\') &&
+        !source.startsWith('//') && !/^[a-z][a-z\d+.-]*:/i.test(source));
+}
+
+function hydrateLocalImages(root) {
+    const baseFilePath = state.currentFilePath;
+    if (!baseFilePath || !window.desktopBridge?.readRelativeImage) return;
+    const revision = state.documentRevision;
+    root.querySelectorAll('img[src]').forEach((image) => {
+        const src = image.getAttribute('src');
+        if (!isRelativeResource(src)) return;
+        image.setAttribute('data-asterism-relative-src', src);
+        image.removeAttribute('src');
+        const key = `${baseFilePath}\n${src}`;
+        if (!localImageCache.has(key)) {
+            if (localImageCache.size > 40) localImageCache.clear();
+            const request = window.desktopBridge.readRelativeImage({ baseFilePath, src });
+            localImageCache.set(key, request);
+        }
+        localImageCache.get(key).then((dataUrl) => {
+            if (state.documentRevision === revision && image.isConnected) image.src = dataUrl;
+        }).catch(() => {
+            localImageCache.delete(key);
+            if (image.isConnected) image.title = 'Local image could not be opened';
+        });
+    });
+}
+
+async function handleDocumentLinkClick(event) {
+    const anchor = event.target.closest?.('a[href]');
+    if (!anchor) return;
+    if (!elements.readerContent.contains(anchor) && !elements.richEditor.contains(anchor)) return;
+    if (state.view === 'edit' && !event.metaKey && !event.ctrlKey) return;
+    const href = anchor.getAttribute('href');
+    if (href.startsWith('#')) {
+        event.preventDefault();
+        if (state.view === 'edit') openReader();
+        let fragment;
+        try { fragment = decodeURIComponent(href.slice(1)); } catch { fragment = href.slice(1); }
+        const target = Array.from(elements.readerContent.querySelectorAll('[id]')).find((node) => node.id === fragment);
+        if (target) target.scrollIntoView({ block: 'start' });
+        else if (!fragment) elements.readerView.scrollTop = 0;
+        else announce('Heading not found');
+        return;
+    }
+    if (!isRelativeResource(href)) return;
+    event.preventDefault();
+    if (!/\.(md|markdown|txt|html?)$/i.test(href.split(/[?#]/)[0])) {
+        announce('This linked file type cannot be opened here');
+        return;
+    }
+    if (!state.currentFilePath || !window.desktopBridge?.openRelativeFile) {
+        announce('Open local document links in the Mac app');
+        return;
+    }
+    try {
+        const documentRevision = state.documentRevision;
+        const result = await window.desktopBridge.openRelativeFile({ baseFilePath: state.currentFilePath, href });
+        if (result && !result.canceled && state.documentRevision === documentRevision) loadDocumentData(result);
+    } catch (error) {
+        console.error('Linked document could not be opened:', error);
+        announce('Linked document could not be opened');
+    }
+}
+
+function confirmReplaceDocument() {
+    if (!state.markdown) return true;
+    if (state.currentFilePath && state.markdown === state.lastSavedMarkdown) return true;
+    const message = state.currentFilePath && state.markdown !== state.lastSavedMarkdown
+        ? `Discard unsaved changes to ${state.currentFileName} and open another file?`
+        : 'Replace the current document with another file?';
+    return window.confirm(message);
+}
+
+function loadDocumentData({ name = '', filePath = '', content = '', kind = '' } = {}) {
+    if (!confirmReplaceDocument()) return;
+    localImageCache.clear();
+    state.documentRevision += 1;
     state.currentFileName = name;
+    state.currentFilePath = filePath;
     renderDocName();
     const resolvedKind = inferDocumentKind(name, content, kind);
+    state.currentFileKind = resolvedKind;
     if (resolvedKind === 'html') setDocumentFromHtml(content);
     else if (resolvedKind === 'markdown') setDocumentFromMarkdown(content);
     else setDocumentFromText(content);
+    state.lastSavedMarkdown = state.markdown;
+    state.lastDiskContent = String(content || '');
+    state.fileConflict = false;
+    state.recoveredDocument = false;
+    renderDocName();
+    renderStatusHint();
+    openReader();
     announce(name ? `Opened ${name}` : 'Document opened');
 }
 
@@ -1050,23 +1582,34 @@ function loadBrowserFile(file) {
 }
 
 async function pasteFromClipboard() {
-    state.currentFileName = '';
-    renderDocName();
     try {
+        let html = '';
         if (navigator.clipboard?.read) {
             const items = await navigator.clipboard.read();
             for (const item of items) {
                 if (item.types.includes('text/html')) {
-                    const html = await (await item.getType('text/html')).text();
-                    setDocumentFromHtml(html);
-                    elements.richEditor.focus();
-                    return;
+                    html = await (await item.getType('text/html')).text();
+                    break;
                 }
             }
         }
-        const text = await navigator.clipboard.readText();
-        if (text) setDocumentFromMarkdown(text);
-        else announce('Clipboard is empty');
+        const text = html ? '' : await navigator.clipboard.readText();
+        if (!html && !text) {
+            announce('Clipboard is empty');
+            return;
+        }
+        if (!confirmReplaceDocument()) return;
+        state.documentRevision += 1;
+        state.currentFileName = '';
+        state.currentFilePath = '';
+        state.currentFileKind = '';
+        state.lastSavedMarkdown = '';
+        state.lastDiskContent = '';
+        state.fileConflict = false;
+        state.recoveredDocument = false;
+        renderDocName();
+        if (html) setDocumentFromHtml(html);
+        else setDocumentFromMarkdown(text);
         elements.richEditor.focus();
     } catch {
         elements.richEditor.focus();
@@ -1136,7 +1679,20 @@ function cycleTheme() {
 function handleGlobalKeydown(event) {
     const modifier = event.metaKey || event.ctrlKey;
     const key = event.key.toLowerCase();
-    if (modifier && event.shiftKey && key === 'c') {
+    const inFindInput = [elements.findInput, elements.replaceInput].includes(document.activeElement);
+    if (modifier && key === 'z' && !inFindInput && !state.replacementNativeUndo && event.shiftKey && state.replacementRedoMarkdown !== null) {
+        event.preventDefault();
+        redoReplacement();
+    } else if (modifier && key === 'z' && !inFindInput && !state.replacementNativeUndo && !event.shiftKey && state.replacementUndoMarkdown !== null) {
+        event.preventDefault();
+        undoReplacement();
+    } else if (modifier && key === 'f') {
+        event.preventDefault();
+        openFind({ replace: event.altKey });
+    } else if (modifier && key === 'g') {
+        event.preventDefault();
+        moveFind(event.shiftKey ? -1 : 1);
+    } else if (modifier && event.shiftKey && key === 'c') {
         event.preventDefault();
         copyMarkdown();
     } else if (modifier && key === ',') {
@@ -1150,12 +1706,13 @@ function handleGlobalKeydown(event) {
         openDocument();
     } else if (modifier && key === 's') {
         event.preventDefault();
-        saveMarkdown();
+        saveMarkdown({ saveAs: event.shiftKey });
     } else if (modifier && key === 'n') {
         event.preventDefault();
-        clearNow();
+        clearNow({ confirmNew: true });
     } else if (event.key === 'Escape') {
-        if (state.settingsOpen) closeSettings();
+        if (state.findOpen) closeFind();
+        else if (state.settingsOpen) closeSettings();
         else if (state.view === 'reader') closeReader();
     }
 }
@@ -1195,9 +1752,14 @@ function setupDesktopIntegration() {
 
     window.desktopBridge?.onMenuAction?.((action) => {
         if (action === 'open-settings') openSettings();
-        else if (action === 'new-document') clearNow();
+        else if (action === 'new-document') clearNow({ confirmNew: true });
         else if (action === 'open-document') openDocument();
         else if (action === 'save-output') saveMarkdown();
+        else if (action === 'save-as') saveMarkdown({ saveAs: true });
+        else if (action === 'find') openFind();
+        else if (action === 'replace') openFind({ replace: true });
+        else if (action === 'find-next') moveFind(1);
+        else if (action === 'find-previous') moveFind(-1);
     });
 
     window.desktopBridge?.onOpenFile?.((fileData) => loadDocumentData(fileData));
@@ -1207,6 +1769,8 @@ function bindEvents() {
     elements.richEditor.addEventListener('input', () => syncFromRich());
     elements.richEditor.addEventListener('paste', insertRichClipboard);
     elements.richEditor.addEventListener('focus', () => {
+        state.lastEditor = 'rich';
+        refreshFind({ reset: true });
         elements.richPane.classList.add('is-focused');
         renderEmptyState();
     });
@@ -1218,7 +1782,11 @@ function bindEvents() {
     elements.markdownEditor.addEventListener('input', syncFromMarkdown);
     elements.markdownEditor.addEventListener('paste', insertPlainClipboard);
     elements.markdownEditor.addEventListener('scroll', syncMarkdownScroll);
-    elements.markdownEditor.addEventListener('focus', () => elements.markdownPane.classList.add('is-focused'));
+    elements.markdownEditor.addEventListener('focus', () => {
+        state.lastEditor = 'markdown';
+        refreshFind({ reset: true });
+        elements.markdownPane.classList.add('is-focused');
+    });
     elements.markdownEditor.addEventListener('blur', () => elements.markdownPane.classList.remove('is-focused'));
 
     document.querySelectorAll('.format-tool').forEach((button) => {
@@ -1243,7 +1811,32 @@ function bindEvents() {
     elements.settingsBackdrop.addEventListener('click', closeSettings);
     elements.clearSavedButton.addEventListener('click', clearSavedData);
     elements.fileInput.addEventListener('change', () => loadBrowserFile(elements.fileInput.files?.[0]));
+    elements.readerContent.addEventListener('click', handleDocumentLinkClick);
+    elements.richEditor.addEventListener('click', handleDocumentLinkClick);
+    elements.findInput.addEventListener('input', () => {
+        state.findQuery = elements.findInput.value;
+        refreshFind({ reset: true, scroll: true });
+    });
+    elements.findInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            moveFind(event.shiftKey ? -1 : 1);
+        }
+    });
+    elements.findPrevious.addEventListener('click', () => moveFind(-1));
+    elements.findNext.addEventListener('click', () => moveFind(1));
+    elements.findClose.addEventListener('click', closeFind);
+    elements.replaceOne.addEventListener('click', replaceOneMatch);
+    elements.replaceAll.addEventListener('click', replaceAllMatches);
+    elements.replaceUndo.addEventListener('click', undoReplacement);
     document.addEventListener('keydown', handleGlobalKeydown);
+    if (!window.desktopBridge) {
+        window.addEventListener('beforeunload', (event) => {
+            if (!hasUnpersistedDocument()) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
+    }
     document.addEventListener('selectionchange', renderFormatState);
     systemTheme.addEventListener?.('change', () => {
         if (state.preferences.appearance === 'auto') applyTheme({ animate: true });
@@ -1257,10 +1850,21 @@ function initialize() {
     applyTextSize();
     renderSettingsRows();
     renderStatusHint();
-    setDocumentFromMarkdown(loadDocument(), { persist: false });
+    const savedDocument = loadDocument();
+    if (savedDocument) {
+        const meta = readJsonStorage([STORAGE_KEYS.documentMeta]);
+        if (typeof meta?.name === 'string' && meta.name) {
+            state.currentFileName = meta.name;
+            state.recoveredDocument = true;
+        }
+    }
+    setDocumentFromMarkdown(savedDocument, { persist: false });
+    renderDocName();
+    renderStatusHint();
     bindEvents();
     setupDragAndDrop();
     setupDesktopIntegration();
+    if (savedDocument) openReader();
 }
 
 initialize();

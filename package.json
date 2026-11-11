@@ -2,7 +2,7 @@
   "name": "asterism",
   "productName": "Asterism",
   "version": "1.2.0",
-  "description": "A premium, privacy-first rich text and Markdown converter for the browser and macOS desktop.",
+  "description": "A minimal, local Markdown reader and editor with rich text conversion for browser and macOS.",
   "author": "Aditya Pandya",
   "license": "MIT",
   "homepage": "https://github.com/aditya-pandya/asterism",
