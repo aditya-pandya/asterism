@@ -342,12 +342,69 @@ fn build_menu(app: &tauri::App) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> 
     let find_previous = MenuItemBuilder::with_id("find-previous", "Find Previous")
         .accelerator("CmdOrCtrl+Shift+G")
         .build(app)?;
-    let reload = MenuItemBuilder::with_id("reload", "Reload")
-        .accelerator("CmdOrCtrl+R")
+    let bold = MenuItemBuilder::with_id("format-bold", "Bold")
+        .accelerator("CmdOrCtrl+B")
         .build(app)?;
-    let force_reload = MenuItemBuilder::with_id("force-reload", "Force Reload")
-        .accelerator("CmdOrCtrl+Shift+R")
+    let italic = MenuItemBuilder::with_id("format-italic", "Italic")
+        .accelerator("CmdOrCtrl+I")
         .build(app)?;
+    let link = MenuItemBuilder::with_id("format-link", "Insert Link…")
+        .accelerator("CmdOrCtrl+K")
+        .build(app)?;
+    let code = MenuItemBuilder::with_id("format-code", "Inline Code")
+        .accelerator("CmdOrCtrl+Alt+C")
+        .build(app)?;
+    let fenced_code = MenuItemBuilder::with_id("format-fencedCode", "Code Block")
+        .accelerator("CmdOrCtrl+Shift+K")
+        .build(app)?;
+    let strike = MenuItemBuilder::with_id("format-strike", "Strikethrough")
+        .accelerator("CmdOrCtrl+Shift+X")
+        .build(app)?;
+    let h1 = MenuItemBuilder::with_id("format-h1", "Heading 1")
+        .accelerator("CmdOrCtrl+Alt+1")
+        .build(app)?;
+    let h2 = MenuItemBuilder::with_id("format-h2", "Heading 2")
+        .accelerator("CmdOrCtrl+Alt+2")
+        .build(app)?;
+    let h3 = MenuItemBuilder::with_id("format-h3", "Heading 3")
+        .accelerator("CmdOrCtrl+Alt+3")
+        .build(app)?;
+    let h4 = MenuItemBuilder::with_id("format-h4", "Heading 4")
+        .accelerator("CmdOrCtrl+Alt+4")
+        .build(app)?;
+    let h5 = MenuItemBuilder::with_id("format-h5", "Heading 5")
+        .accelerator("CmdOrCtrl+Alt+5")
+        .build(app)?;
+    let h6 = MenuItemBuilder::with_id("format-h6", "Heading 6")
+        .accelerator("CmdOrCtrl+Alt+6")
+        .build(app)?;
+    let paragraph = MenuItemBuilder::with_id("format-paragraph", "Paragraph")
+        .accelerator("CmdOrCtrl+Alt+0")
+        .build(app)?;
+    let ordered_list = MenuItemBuilder::with_id("format-orderedList", "Numbered List")
+        .accelerator("CmdOrCtrl+Shift+7")
+        .build(app)?;
+    let bullet_list = MenuItemBuilder::with_id("format-bulletList", "Bulleted List")
+        .accelerator("CmdOrCtrl+Shift+8")
+        .build(app)?;
+    let task_list = MenuItemBuilder::with_id("format-taskList", "Task List")
+        .accelerator("CmdOrCtrl+Shift+9")
+        .build(app)?;
+    let blockquote = MenuItemBuilder::with_id("format-blockquote", "Blockquote").build(app)?;
+    let copy_formatted = MenuItemBuilder::with_id("copy-formatted", "Copy Formatted").build(app)?;
+    let jump_heading = MenuItemBuilder::with_id("jump-heading", "Jump to Heading…")
+        .accelerator("CmdOrCtrl+Shift+O")
+        .build(app)?;
+    let toggle_reader = MenuItemBuilder::with_id("toggle-reader", "Toggle Reader View")
+        .accelerator("CmdOrCtrl+E")
+        .build(app)?;
+    let print_document = MenuItemBuilder::with_id("print-document", "Print Document…")
+        .accelerator("CmdOrCtrl+P")
+        .build(app)?;
+    let show_shortcuts = MenuItemBuilder::with_id("show-shortcuts", "Keyboard Shortcuts…")
+        .accelerator("CmdOrCtrl+/")
+        .build(app)?;
+    #[cfg(debug_assertions)]
     let toggle_devtools = MenuItemBuilder::with_id("toggle-devtools", "Toggle Developer Tools")
         .accelerator("Alt+CmdOrCtrl+I")
         .build(app)?;
@@ -380,12 +437,37 @@ fn build_menu(app: &tauri::App) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> 
         .separator()
         .item(&save_output)
         .item(&save_as)
+        .separator()
+        .item(&print_document)
         .build()?;
     let find_menu = SubmenuBuilder::new(app, "Find")
         .item(&find)
         .item(&replace)
         .item(&find_next)
         .item(&find_previous)
+        .build()?;
+    let format_menu = SubmenuBuilder::new(app, "Format")
+        .item(&bold)
+        .item(&italic)
+        .item(&link)
+        .item(&code)
+        .item(&fenced_code)
+        .item(&strike)
+        .separator()
+        .item(&h1)
+        .item(&h2)
+        .item(&h3)
+        .item(&h4)
+        .item(&h5)
+        .item(&h6)
+        .item(&paragraph)
+        .separator()
+        .item(&ordered_list)
+        .item(&bullet_list)
+        .item(&task_list)
+        .item(&blockquote)
+        .separator()
+        .item(&copy_formatted)
         .build()?;
     let edit_menu = SubmenuBuilder::new(app, "Edit")
         .undo()
@@ -400,11 +482,13 @@ fn build_menu(app: &tauri::App) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> 
         .separator()
         .item(&find_menu)
         .build()?;
-    let view_menu = SubmenuBuilder::new(app, "View")
-        .item(&reload)
-        .item(&force_reload)
-        .item(&toggle_devtools)
-        .separator()
+    let view_menu_builder = SubmenuBuilder::new(app, "View")
+        .item(&jump_heading)
+        .item(&toggle_reader)
+        .separator();
+    #[cfg(debug_assertions)]
+    let view_menu_builder = view_menu_builder.item(&toggle_devtools).separator();
+    let view_menu = view_menu_builder
         .item(&reset_zoom)
         .item(&zoom_in)
         .item(&zoom_out)
@@ -417,9 +501,20 @@ fn build_menu(app: &tauri::App) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> 
         .separator()
         .bring_all_to_front()
         .build()?;
+    let help_menu = SubmenuBuilder::new(app, "Help")
+        .item(&show_shortcuts)
+        .build()?;
 
     MenuBuilder::new(app)
-        .items(&[&app_menu, &file_menu, &edit_menu, &view_menu, &window_menu])
+        .items(&[
+            &app_menu,
+            &file_menu,
+            &edit_menu,
+            &format_menu,
+            &view_menu,
+            &window_menu,
+            &help_menu,
+        ])
         .build()
 }
 
@@ -430,12 +525,16 @@ fn handle_menu_event(app: &tauri::AppHandle, event: tauri::menu::MenuEvent) {
 
     match event.id().0.as_str() {
         action @ ("open-settings" | "new-document" | "open-document" | "save-output"
-        | "save-as" | "find" | "replace" | "find-next" | "find-previous") => {
+        | "save-as" | "find" | "replace" | "find-next" | "find-previous"
+        | "format-bold" | "format-italic" | "format-link" | "format-code"
+        | "format-fencedCode" | "format-strike" | "format-h1" | "format-h2"
+        | "format-h3" | "format-h4" | "format-h5" | "format-h6" | "format-paragraph"
+        | "format-orderedList" | "format-bulletList" | "format-taskList"
+        | "format-blockquote" | "jump-heading" | "toggle-reader" | "print-document"
+        | "show-shortcuts" | "copy-formatted") => {
             let _ = window.emit("menu-action", action);
         }
-        "reload" | "force-reload" => {
-            let _ = window.eval("location.reload()");
-        }
+        #[cfg(debug_assertions)]
         "toggle-devtools" => {
             if window.is_devtools_open() {
                 window.close_devtools();
@@ -492,7 +591,7 @@ pub fn run() {
             WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
                 .title("Asterism")
                 .inner_size(1440.0, 960.0)
-                .min_inner_size(1100.0, 760.0)
+                .min_inner_size(720.0, 560.0)
                 .title_bar_style(tauri::TitleBarStyle::Overlay)
                 .transparent(true)
                 .traffic_light_position(tauri::LogicalPosition::new(18.0, 20.0))

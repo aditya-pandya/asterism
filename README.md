@@ -10,19 +10,20 @@ Open a document to read it, then switch to Edit when you want to change it. The 
 
 ## Download
 
-The current macOS build is an unsigned Apple Silicon preview:
+Download the Apple Silicon preview:
 
-- [Download the latest release](https://github.com/aditya-pandya/asterism/releases/latest)
+- [Asterism-1.3.0-preview.1-arm64.dmg](https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.dmg)
+- [Asterism-1.3.0-preview.1-arm64.zip](https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.zip)
 - Supported Macs: Apple Silicon only
-- Build status: unsigned and not notarized
+- Signature: ad-hoc signed, not signed with a Developer ID certificate, and not notarized
 
-The linked v1.2.0 release predates the find, reader, and file-save improvements described below. Build this checkout from source to try them until a new preview is published.
+The v1.2.0 release predates the features described below. The preview has no Developer ID signature and is not notarized, so macOS may show a Gatekeeper warning.
 
 ### Why macOS warns you
 
-Asterism (formerly Inkdown) is a personal open-source project. I do not have a paid Apple Developer certificate, so the macOS app is not signed or notarized. Because of that, macOS Gatekeeper shows a warning the first time you open it. It does this for any app that is not signed and notarized.
+Asterism (formerly Inkdown) is a personal open-source project. The preview is ad-hoc signed, but it does not have a Developer ID signature or notarization. macOS Gatekeeper may show a warning the first time you open it.
 
-The warning means macOS cannot verify the developer identity of this build. Review the source and the checks below before deciding whether to open an unsigned app.
+The warning means macOS cannot verify a Developer ID identity for this build. Review the source and checks below before deciding whether to open it.
 
 ### How to inspect it
 
@@ -37,7 +38,7 @@ You do not have to take my word for it. Here is what you can check yourself:
 
 ### How to open it
 
-1. Download `Asterism-1.2.0-arm64.dmg`.
+1. Download `Asterism-1.3.0-preview.1-arm64.dmg` using the link above.
 2. Open the DMG and move Asterism to Applications.
 3. Control-click or right-click Asterism, choose Open, then confirm Open.
 
@@ -49,10 +50,14 @@ If macOS still blocks it, open System Settings, go to Privacy & Security, and ch
 - Edit formatted text and Markdown side by side, using one document source
 - Find in Read and Edit, with next/previous matches and Markdown replace
 - Use one text-size setting across reading and editing
-- Choose Default, Paper, or Sage for light appearance, and Default or Midnight for dark appearance; Auto uses the selected palette for the system appearance
+- Choose Paper or Sage light palettes and Midnight dark palette, alongside Default, with Light, Dark, or Auto appearance
 - Save opened Markdown files back to the same file on macOS, or use Save As
+- In supported browsers, open Markdown with the browser file picker and save in place or with Save As; changed or missing files are protected by a conflict check. Other browsers download a copy instead. Link a folder to load nearby images and Markdown links
 - Follow local Markdown links and view nearby images in the macOS app; jump to headings from in-document links
-- Convert pasted rich text to Markdown, then copy or save it
+- Jump to any heading from a searchable heading list
+- Convert pasted rich text to Markdown, then copy Markdown or copy the rendered formatting
+- Print the rendered document
+- Use formatting shortcuts, native document shortcuts, and smart Enter behavior for Markdown lists
 - Run fully offline with bundled libraries and local assets
 
 Before the first formatted edit, Asterism checks for common source-only syntax such as HTML comments and blocks (including `<details>`), link and footnote definitions, and YAML front matter outside code. It offers the Markdown pane or an explicit conversion choice, with the option to restore the original source during that session. This guard catches common cases, but it does not cover every construct. The Markdown pane preserves exact source; formatted editing is an explicit conversion and may rewrite other syntax. Turning Auto-save off stops new recovery snapshots but keeps the last snapshot until you clear saved data in Settings.
@@ -63,10 +68,12 @@ On macOS, a recovered draft can offer **Reconnect file**. Choose the same file a
 
 You can also use Asterism as a static browser app:
 
+Open the hosted browser app at [asterism.adityapandya.com/app](https://asterism.adityapandya.com/app/), or run it locally:
+
 1. Clone or download this repository.
 2. Open [index.html](./index.html) in a modern browser.
-3. Open a file, or paste or type your content.
-4. Read, edit, find, copy, or download Markdown. Browser saves download a file rather than writing back to the original.
+3. Open a file with Open when the browser supports the File System Access API, or paste or type your content. Other browsers can use the file input.
+4. Read, edit, find, copy, or save. Supported browsers can save an opened Markdown file in place with conflict protection, use Save As, and link a folder for nearby images and links. Other browsers download a copy instead.
 
 ```bash
 git clone https://github.com/aditya-pandya/asterism.git
@@ -108,7 +115,7 @@ The app can open normal external links only when you explicitly click them. It d
 
 ## Release Notes
 
-See [v1.2.0 Asterism](./docs/release-notes/v1.2.0.md). Older notes: [v1.1.0 Apple Silicon Preview](./docs/release-notes/v1.1.0.md).
+See [v1.3.0-preview.1](./docs/release-notes/v1.3.0-preview.1.md) for the preview notes, [v1.2.0 Asterism](./docs/release-notes/v1.2.0.md), and [v1.1.0 Apple Silicon Preview](./docs/release-notes/v1.1.0.md).
 
 The [core product audit](./docs/CORE_AUDIT.md) records the current baseline, competitor references, and remaining gaps.
 

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asterism: open Markdown to read, edit when you need to</title>
+<meta name="description" content="Asterism is a minimal, local Markdown reader and editor for the browser and Apple Silicon Macs. Open a file to read it, switch to Edit to change it. MIT licensed.">
+<link rel="canonical" href="https://asterism.adityapandya.com/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#fbfbfa">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Asterism">
+<meta property="og:description" content="Open Markdown to read. Edit when you need to. Local, no account, MIT.">
+<meta property="og:url" content="https://asterism.adityapandya.com/">
+<meta property="og:image" content="https://asterism.adityapandya.com/assets/asterism-reader.png">
+<meta property="og:image:alt" content="Asterism showing a Markdown document in Read view">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="./"><img src="assets/asterism-mark.svg" alt="" width="28" height="28"><span>Asterism</span></a>
+  <nav aria-label="Page">
+    <a href="#how">How it works</a>
+    <a href="#faq">Questions</a>
+    <a href="https://github.com/aditya-pandya/asterism/tree/v1.3.0-preview.1">Source</a>
+  </nav>
+</header>
+
+<main id="main">
+<section class="intro" aria-labelledby="h-title">
+  <div class="intro-text">
+    <h1 id="h-title">Open a Markdown file and read it. Edit when you need to.</h1>
+    <p>Asterism is a small Markdown reader and editor that runs in your browser or as a Mac app. Files stay on your device.</p>
+    <p class="actions">
+      <a class="btn" href="/app/">Open in browser</a>
+      <a class="textlink" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.zip">Download Mac preview</a>
+    </p>
+    <p class="note">Apple Silicon macOS preview (v1.3.0-preview.1). The build is not notarized, so macOS will warn on first open; see <a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.1/README.md#how-to-open-it">how to open it</a>.</p>
+  </div>
+  <figure class="shot">
+    <img src="assets/asterism-reader.png" width="1280" height="768" alt="Asterism in Read view showing a formatted Markdown document">
+    <figcaption>
+      <span>Read view, Paper theme.</span>
+      <span class="themes" role="group" aria-label="Theme screenshots">
+        <span>Theme screenshots:</span>
+        <a href="assets/asterism-reader.png" target="_blank" rel="noopener">Paper</a>
+        <a href="assets/sage.png" target="_blank" rel="noopener">Sage</a>
+        <a href="assets/midnight.png" target="_blank" rel="noopener">Midnight</a>
+      </span>
+    </figcaption>
+  </figure>
+</section>
+
+<section class="how" id="how" aria-labelledby="h-how">
+  <h2 id="h-how">Read a README, fix a line, save it</h2>
+  <ol class="steps">
+    <li><h3>Open</h3><p>Choose a Markdown, text or HTML file. It opens in <strong>Read</strong>, with headings you can jump between and links that scroll to their target.</p></li>
+    <li><h3>Edit</h3><p>Switch to <strong>Edit</strong> for two panes on one document: Markdown source and formatted text. Find works in Read and Edit; replace text in Markdown. The usual keyboard shortcuts apply.</p></li>
+    <li><h3>Save</h3><p>On the Mac, Save writes back to the file you opened, or use Save As. In the browser, supported browsers can save in place; others download a copy.</p></li>
+  </ol>
+</section>
+
+<section class="prose" aria-labelledby="h-honest">
+  <h2 id="h-honest">Source or formatted: what changes your file</h2>
+  <p>The Markdown pane keeps your source exactly as written. Editing in the formatted pane converts the document, which can rewrite syntax Asterism does not model, so it first checks for common cases (HTML, link definitions, footnotes, front matter) and lets you stay in Markdown or convert. If you convert, you can restore the original for the rest of that session, and with Auto-save on, recovery drafts reopen on the next launch.</p>
+  <p>You can also paste rich text and get clean Markdown to copy or save.</p>
+  <p>Pick a theme: Default, Paper or Sage for light, Default or Midnight for dark, or follow the system. One text-size setting covers reading and editing.</p>
+</section>
+
+<section class="prose" aria-labelledby="h-local">
+  <h2 id="h-local">Where your documents go</h2>
+  <p>Asterism has no account and does not upload your document. Recovery drafts are stored on your device, and turning Auto-save off stops new snapshots. Remote images referenced by a document can still load from their servers.</p>
+</section>
+
+<section class="prose faq" id="faq" aria-labelledby="h-faq">
+  <h2 id="h-faq">Questions</h2>
+  <dl>
+    <dt>Which Macs does the preview run on?</dt>
+    <dd>Apple Silicon only. The build is not notarized, so Gatekeeper asks you to confirm the first launch.</dd>
+    <dt>What does the browser version lack?</dt>
+    <dd>Where the browser supports the File System Access API, Save writes back to the file and Link folder lets Asterism resolve local images and relative Markdown links inside the folder you pick. Elsewhere, Save downloads a copy and local images and relative links are not resolved.</dd>
+    <dt>Is it finished?</dt>
+    <dd>It is a personal open-source project and this is a preview. Feedback is welcome on GitHub.</dd>
+  </dl>
+</section>
+</main>
+
+<footer>
+  <p><img src="assets/asterism-mark.svg" alt="" width="18" height="18"> Asterism, MIT licensed.</p>
+  <p><a href="https://github.com/aditya-pandya/asterism/tree/v1.3.0-preview.1">Source</a> · <a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.1/LICENSE">License</a> · <a href="https://github.com/aditya-pandya/asterism/releases">Releases</a> · <a href="https://github.com/aditya-pandya/asterism/issues">Feedback</a></p>
+</footer>
+</body>
+</html>

@@ -145,8 +145,8 @@ function createMainWindow() {
   const mainWindow = new BrowserWindow({
     width: 1440,
     height: 960,
-    minWidth: 1100,
-    minHeight: 760,
+    minWidth: 720,
+    minHeight: 560,
     backgroundColor: '#fdfdfc',
     title: pkg.productName,
     titleBarStyle: 'hiddenInset',
@@ -249,6 +249,12 @@ function buildMenu() {
           label: 'Save As…',
           accelerator: 'CommandOrControl+Shift+S',
           click: () => sendMenuAction('save-as')
+        },
+        { type: 'separator' },
+        {
+          label: 'Print Document…',
+          accelerator: 'CommandOrControl+P',
+          click: () => sendMenuAction('print-document')
         }
       ]
     },
@@ -293,17 +299,66 @@ function buildMenu() {
       ]
     },
     {
+      label: 'Format',
+      submenu: [
+        { label: 'Bold', accelerator: 'CommandOrControl+B', click: () => sendMenuAction('format-bold') },
+        { label: 'Italic', accelerator: 'CommandOrControl+I', click: () => sendMenuAction('format-italic') },
+        { label: 'Insert Link…', accelerator: 'CommandOrControl+K', click: () => sendMenuAction('format-link') },
+        { label: 'Inline Code', accelerator: 'CommandOrControl+Alt+C', click: () => sendMenuAction('format-code') },
+        { label: 'Code Block', accelerator: 'CommandOrControl+Shift+K', click: () => sendMenuAction('format-fencedCode') },
+        { label: 'Strikethrough', accelerator: 'CommandOrControl+Shift+X', click: () => sendMenuAction('format-strike') },
+        { type: 'separator' },
+        ...Array.from({ length: 6 }, (_, index) => {
+          const level = index + 1;
+          return {
+            label: `Heading ${level}`,
+            accelerator: `CommandOrControl+Alt+${level}`,
+            click: () => sendMenuAction(`format-h${level}`)
+          };
+        }),
+        { label: 'Paragraph', accelerator: 'CommandOrControl+Alt+0', click: () => sendMenuAction('format-paragraph') },
+        { type: 'separator' },
+        { label: 'Numbered List', accelerator: 'CommandOrControl+Shift+7', click: () => sendMenuAction('format-orderedList') },
+        { label: 'Bulleted List', accelerator: 'CommandOrControl+Shift+8', click: () => sendMenuAction('format-bulletList') },
+        { label: 'Task List', accelerator: 'CommandOrControl+Shift+9', click: () => sendMenuAction('format-taskList') },
+        { label: 'Blockquote', click: () => sendMenuAction('format-blockquote') },
+        { type: 'separator' },
+        { label: 'Copy Formatted', click: () => sendMenuAction('copy-formatted') }
+      ]
+    },
+    {
       label: 'View',
       submenu: [
-        { role: 'reload' },
-        { role: 'forceReload' },
-        { role: 'toggleDevTools' },
-        { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
         { role: 'zoomOut' },
         { type: 'separator' },
+        {
+          label: 'Jump to Heading…',
+          accelerator: 'CommandOrControl+Shift+O',
+          click: () => sendMenuAction('jump-heading')
+        },
+        {
+          label: 'Toggle Reader View',
+          accelerator: 'CommandOrControl+E',
+          click: () => sendMenuAction('toggle-reader')
+        },
+        ...(!app.isPackaged ? [
+          { type: 'separator' },
+          { role: 'toggleDevTools' }
+        ] : []),
+        { type: 'separator' },
         { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'Keyboard Shortcuts…',
+          accelerator: 'CommandOrControl+/',
+          click: () => sendMenuAction('show-shortcuts')
+        }
       ]
     },
     {
