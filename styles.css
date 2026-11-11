@@ -612,9 +612,58 @@ kbd {
 }
 
 .pane-info {
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
     color: var(--text-faint);
-    cursor: help;
-    font-size: 12px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.pane-info:hover,
+.pane-info[aria-expanded="true"] {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.source-guard {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 40px;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-alt);
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.source-guard[hidden] { display: none; }
+.source-guard strong { font-weight: 600; }
+.source-guard p { margin: 0; color: var(--text-secondary); }
+.source-guard-copy { flex: 1; min-width: 0; }
+.source-guard-copy p { margin-top: 4px; }
+.source-guard-actions { display: flex; flex: none; gap: 8px; }
+.source-guard-primary,
+.source-guard-secondary { min-height: 34px; white-space: nowrap; }
+.source-guard-primary { border-color: var(--text-primary); }
+.source-guard-secondary { background: transparent; }
+.source-guard.is-help { justify-content: flex-start; }
+.source-guard.is-converted { align-items: center; }
+
+@media (max-width: 639px) {
+    .source-guard { align-items: flex-start; flex-wrap: wrap; padding: 12px 20px; }
+    .source-guard-copy { flex-basis: 100%; }
+    .source-guard-actions { flex-wrap: wrap; }
 }
 
 .pane.is-focused .pane-label {
@@ -892,6 +941,17 @@ kbd {
     overflow: hidden;
     text-align: center;
     text-overflow: ellipsis;
+}
+
+.recovery-action {
+    flex: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.recovery-action:hover {
+    background: var(--bg-alt);
+    color: var(--text-primary);
 }
 
 .footer-action {

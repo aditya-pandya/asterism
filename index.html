@@ -69,9 +69,9 @@
                 <div class="pane-header">
                     <div class="pane-heading">
                         <span class="pane-label" id="richLabel">Rich text</span>
-                        <span class="pane-info" aria-hidden="true" title="Formatted edits may simplify Markdown syntax. Use the Markdown pane to preserve exact source.">ⓘ</span>
+                        <button class="pane-info" id="richHelpButton" type="button" aria-expanded="false" aria-controls="sourceGuard">ⓘ<span class="sr-only">Formatted editing help</span></button>
                     </div>
-                    <span class="sr-only" id="richEditorNote">Formatted edits may simplify Markdown syntax. Use the Markdown pane to preserve exact source.</span>
+                    <span class="sr-only" id="richEditorNote">Formatted edits can simplify Markdown syntax. Use the Markdown pane to preserve exact source.</span>
                     <div class="pane-actions">
                         <div class="format-toolbar" role="toolbar" aria-label="Formatting">
                             <button class="format-tool tool-bold" data-command="bold" title="Bold  ⌘B" aria-label="Bold">B</button>
@@ -103,6 +103,7 @@
                         </button>
                     </div>
                 </div>
+                <div class="source-guard" id="sourceGuard" hidden></div>
                 <div class="pane-body">
                     <div class="rich-editor prose" id="richEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="richLabel" aria-describedby="richEditorNote" data-placeholder="Start typing…"></div>
                     <div class="empty-state" id="emptyState">
@@ -150,6 +151,7 @@
         <footer class="statusbar" aria-label="Document status">
             <span class="document-stats" id="documentStats">0 words · 0 characters</span>
             <span class="status-hint" id="hintText">Saved on this device</span>
+            <button class="footer-action recovery-action" id="reconnectFileButton" hidden>Reconnect file…</button>
             <button class="footer-action" id="clearButton" title="Clear the document  ⌘N">Clear</button>
         </footer>
 
@@ -195,7 +197,7 @@
 
                 <div class="settings-meta">
                     <p>Everything stays on this device. Offline, no account.</p>
-                    <p>Asterism 1.2.0 · © 2026 Aditya Pandya · <a href="mailto:feedback@inkdown.app">Send feedback</a></p>
+                    <p>Asterism 1.2.0 · © 2026 Aditya Pandya · <a href="https://github.com/aditya-pandya/asterism/issues" target="_blank" rel="noopener noreferrer">Send feedback</a></p>
                 </div>
             </section>
         </div>

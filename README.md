@@ -54,7 +54,9 @@ If macOS still blocks it, open System Settings, go to Privacy & Security, and ch
 - Convert pasted rich text to Markdown, then copy or save it
 - Run fully offline with bundled libraries and local assets
 
-Formatted edits can simplify Markdown syntax, including comments and reference definitions. Use the Markdown pane when exact source matters. Turning Auto-save off stops new recovery snapshots but keeps the last snapshot until you clear saved data in Settings.
+Before the first formatted edit, Asterism checks for common source-only syntax such as HTML comments, link and footnote definitions, and YAML front matter outside fenced code blocks. It offers the Markdown pane or an explicit conversion choice with a way to restore the original source. This guard catches common cases, but it does not guarantee a lossless Markdown round trip; other syntax may still be rewritten. Use the Markdown pane when exact source matters. Turning Auto-save off stops new recovery snapshots but keeps the last snapshot until you clear saved data in Settings.
+
+On macOS, a recovered draft can offer **Reconnect file**. Choose the same file and Asterism reconnects only when its raw contents still match the saved recovery baseline. If they differ, use Save As to choose a destination. Reconnection is available for recovered Markdown drafts.
 
 ## Browser Version
 

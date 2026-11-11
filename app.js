@@ -1,6 +1,7 @@
 const STORAGE_KEYS = {
     document: 'inkdown.doc',
     documentMeta: 'inkdown.docMeta',
+    draftSnapshot: 'inkdown.draftSnapshot',
     preferences: 'inkdown.prefs',
     oldSettings: 'inkdown_settings',
     oldContent: 'inkdown_content',
@@ -47,6 +48,10 @@ const state = {
     lastDiskContent: '',
     fileConflict: false,
     recoveredDocument: false,
+    recoveredSourcePath: '',
+    recoveryBaseline: null,
+    recoveryLastSavedMarkdown: '',
+    recoveryKind: '',
     documentRevision: 0,
     undoMarkdown: null,
     undoFileName: '',
@@ -56,6 +61,10 @@ const state = {
     undoLastDiskContent: '',
     undoFileConflict: false,
     undoRecoveredDocument: false,
+    undoRecoveredSourcePath: '',
+    undoRecoveryBaseline: null,
+    undoRecoveryLastSavedMarkdown: '',
+    undoRecoveryKind: '',
     dragDepth: 0,
     lastFocusedElement: null,
     lastEditor: 'rich',
@@ -68,7 +77,10 @@ const state = {
     replacementUndoMarkdown: null,
     replacementRedoMarkdown: null,
     replacementNativeUndo: false,
-    programmaticReplace: false
+    programmaticReplace: false,
+    richEditAllowed: false,
+    sourceOnlySnapshot: null,
+    sourceGuardMode: ''
 };
 
 const elements = {
@@ -77,6 +89,8 @@ const elements = {
     editView: document.getElementById('editView'),
     richPane: document.getElementById('richPane'),
     richEditor: document.getElementById('richEditor'),
+    sourceGuard: document.getElementById('sourceGuard'),
+    richHelpButton: document.getElementById('richHelpButton'),
     markdownPane: document.getElementById('markdownPane'),
     markdownEditor: document.getElementById('markdownEditor'),
     markdownHighlight: document.getElementById('markdownHighlight'),
@@ -84,6 +98,7 @@ const elements = {
     readerContent: document.getElementById('readerContent'),
     documentStats: document.getElementById('documentStats'),
     hintText: document.getElementById('hintText'),
+    reconnectFileButton: document.getElementById('reconnectFileButton'),
     clearButton: document.getElementById('clearButton'),
     openButton: document.getElementById('openButton'),
     viewEditButton: document.getElementById('viewEditButton'),
@@ -459,6 +474,143 @@ function renderRichFromMarkdown() {
     highlightCode(elements.richEditor);
 }
 
+function findSourceOnlyMarkdown(markdown) {
+    const lines = String(markdown || '').split('\n');
+    const found = { comments: 0, references: 0, footnotes: 0, frontMatter: 0 };
+    let fence = '';
+    let commentOpen = false;
+    let frontMatterEnd = -1;
+    if (/^---\s*$/.test(lines[0] || '')) {
+        const end = lines.slice(1).findIndex((part) => /^(---|\.\.\.)\s*$/.test(part));
+        if (end >= 0) {
+            found.frontMatter = 1;
+            frontMatterEnd = end + 1;
+        }
+    }
+    lines.forEach((line, index) => {
+        if (index <= frontMatterEnd) return;
+        const fenceMatch = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+        if (fence) {
+            const close = line.match(/^ {0,3}(`+|~+)[ ]*$/);
+            if (close && close[1][0] === fence[0] && close[1].length >= fence.length) fence = '';
+            return;
+        }
+        if (fenceMatch) {
+            fence = fenceMatch[1];
+            return;
+        }
+        if (/^\s{0,3}\[\^[^\]]+\]:/.test(line)) found.footnotes += 1;
+        else if (/^\s{0,3}\[[^\]]+\]:/.test(line)) {
+            const hasInlineDestination = /^\s{0,3}\[[^\]]+\]:\s*\S/.test(line);
+            const hasContinuation = /^\s+\S/.test(lines[index + 1] || '');
+            if (hasInlineDestination || hasContinuation) found.references += 1;
+        }
+        if (commentOpen || line.includes('<!--')) found.comments += (line.match(/<!--/g) || []).length;
+        commentOpen = /<!--/.test(line) && !/-->/.test(line.slice(line.indexOf('<!--')));
+    });
+    return found;
+}
+
+function sourceOnlyCount(found) {
+    return found.comments + found.references + found.footnotes + found.frontMatter;
+}
+
+function sourceOnlyDescription(found) {
+    const parts = [];
+    [['comments', 'comment', 'comments'], ['references', 'link definition', 'link definitions'], ['footnotes', 'footnote definition', 'footnote definitions']]
+        .forEach(([key, singular, plural]) => {
+            if (found[key]) parts.push(`${found[key]} ${found[key] === 1 ? singular : plural}`);
+        });
+    if (found.frontMatter) parts.push(`${found.frontMatter} YAML front matter block${found.frontMatter === 1 ? '' : 's'}`);
+    return parts.join(', ').replace(/, ([^,]*)$/, ' and $1');
+}
+
+function hideSourceGuard() {
+    elements.richHelpButton.setAttribute('aria-expanded', 'false');
+    elements.sourceGuard.hidden = true;
+    elements.sourceGuard.replaceChildren();
+    state.sourceGuardMode = '';
+}
+
+function showSourceGuard(mode, { focus = false } = {}) {
+    const found = findSourceOnlyMarkdown(state.markdown);
+    if (!sourceOnlyCount(found) && mode !== 'help' && mode !== 'converted') {
+        hideSourceGuard();
+        return;
+    }
+    const guard = elements.sourceGuard;
+    guard.replaceChildren();
+    guard.hidden = false;
+    guard.className = `source-guard${mode === 'help' ? ' is-help' : ''}${mode === 'converted' ? ' is-converted' : ''}`;
+    guard.setAttribute('role', mode === 'warning' ? 'alert' : 'status');
+    guard.setAttribute('aria-live', mode === 'warning' ? 'assertive' : 'polite');
+    elements.richHelpButton.setAttribute('aria-expanded', 'false');
+    if (mode === 'help') {
+        const text = document.createElement('p');
+        text.textContent = 'Formatted edits can simplify comments, link and footnote definitions, and YAML front matter. The Markdown pane preserves exact source.';
+        guard.append(text);
+        state.sourceGuardMode = mode;
+        return;
+    }
+    if (mode === 'converted') {
+        const text = document.createElement('p');
+        text.textContent = 'The formatted view has converted some Markdown syntax. Restore replaces all formatted edits made since conversion.';
+        const restore = document.createElement('button');
+        restore.type = 'button';
+        restore.className = 'button source-guard-primary';
+        restore.textContent = 'Restore original Markdown';
+        restore.addEventListener('click', () => {
+            const original = state.sourceOnlySnapshot;
+            state.sourceOnlySnapshot = null;
+            state.richEditAllowed = false;
+            hideSourceGuard();
+            if (original !== null) setDocumentFromMarkdown(original);
+            elements.markdownEditor.focus();
+        });
+        guard.append(text, restore);
+        state.sourceGuardMode = mode;
+        return;
+    }
+    const title = document.createElement('strong');
+    title.textContent = 'The formatted view can’t keep some of this document’s syntax.';
+    const detail = document.createElement('p');
+    detail.textContent = `Editing here would remove ${sourceOnlyDescription(found)}. The Markdown pane keeps everything.`;
+    const copy = document.createElement('div');
+    copy.className = 'source-guard-copy';
+    copy.append(title, detail);
+    const actions = document.createElement('div');
+    actions.className = 'source-guard-actions';
+    const safe = document.createElement('button');
+    safe.type = 'button';
+    safe.className = 'button button-primary source-guard-primary';
+    safe.textContent = 'Edit in Markdown';
+    safe.addEventListener('click', () => {
+        hideSourceGuard();
+        elements.markdownEditor.focus();
+    });
+    const anyway = document.createElement('button');
+    anyway.type = 'button';
+    anyway.className = 'button source-guard-secondary';
+    anyway.textContent = 'Edit here anyway';
+    anyway.addEventListener('click', () => {
+        state.richEditAllowed = true;
+        hideSourceGuard();
+        elements.richEditor.focus();
+    });
+    actions.append(safe, anyway);
+    guard.append(copy, actions);
+    state.sourceGuardMode = mode;
+    elements.richHelpButton.setAttribute('aria-expanded', 'false');
+    if (focus) safe.focus();
+}
+
+function blockRichMutation(event) {
+    if (!sourceOnlyCount(findSourceOnlyMarkdown(state.markdown)) || state.richEditAllowed) return false;
+    if (event?.cancelable) event.preventDefault();
+    if (state.sourceGuardMode !== 'warning') showSourceGuard('warning', { focus: true });
+    return true;
+}
+
 // aria-disabled instead of the disabled attribute: a disabled button drops keyboard focus to <body>.
 // Handlers already no-op (or announce) on an empty document.
 function setActionEnabled(button, enabled) {
@@ -525,8 +677,12 @@ function hasUnpersistedDocument() {
 function renderStatusHint() {
     window.desktopBridge?.setUnsavedState?.({ needsPrompt: hasUnpersistedDocument() });
     if (state.copied) return;
+    elements.reconnectFileButton.hidden = !(state.recoveredDocument && state.recoveredSourcePath &&
+        state.recoveryKind === 'markdown' && typeof state.recoveryBaseline === 'string' && window.desktopBridge?.openFile);
     if (state.recoveredDocument) {
-        elements.hintText.textContent = 'Recovered draft · Save As to keep it';
+        elements.hintText.textContent = state.recoveredSourcePath
+            ? 'Recovered draft · reconnect the original file or Save As'
+            : 'Recovered draft · Save As to keep it';
     } else if (state.fileConflict) {
         elements.hintText.textContent = 'File changed outside Asterism · Save to resolve';
     } else if (state.currentFilePath && state.currentFileKind !== 'markdown') {
@@ -548,6 +704,16 @@ function persistDocument() {
     try {
         localStorage.setItem(STORAGE_KEYS.document, state.markdown);
         localStorage.setItem(STORAGE_KEYS.documentMeta, JSON.stringify({ name: state.currentFileName }));
+        const snapshot = {
+            version: 1,
+            markdown: state.markdown,
+            name: state.currentFileName,
+            filePath: state.currentFilePath || state.recoveredSourcePath,
+            kind: state.recoveredDocument ? state.recoveryKind : state.currentFileKind,
+            lastSavedMarkdown: state.recoveredDocument ? state.recoveryLastSavedMarkdown : state.lastSavedMarkdown,
+            lastDiskContent: state.recoveredDocument ? state.recoveryBaseline : state.lastDiskContent
+        };
+        localStorage.setItem(STORAGE_KEYS.draftSnapshot, JSON.stringify(snapshot));
     } catch (error) {
         console.warn('Unable to save the document:', error);
     }
@@ -562,6 +728,14 @@ function cancelUndoOnEdit() {
 }
 
 function syncFromRich({ flash = false } = {}) {
+    if (!state.richEditAllowed && sourceOnlyCount(findSourceOnlyMarkdown(state.markdown))) {
+        renderRichFromMarkdown();
+        showSourceGuard('warning', { focus: true });
+        return;
+    }
+    if (state.richEditAllowed && state.sourceOnlySnapshot === null && sourceOnlyCount(findSourceOnlyMarkdown(state.markdown))) {
+        state.sourceOnlySnapshot = state.markdown;
+    }
     cancelUndoOnEdit();
     clearReplacementUndo();
     if (!elements.richEditor.innerText.trim() && !elements.richEditor.querySelector('img, hr')) {
@@ -576,12 +750,16 @@ function syncFromRich({ flash = false } = {}) {
     renderStatusHint();
     refreshFind();
     pulseSyncMark();
+    if (state.sourceOnlySnapshot !== null) showSourceGuard('converted');
     if (flash) {
         elements.markdownHighlight.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'cubic-bezier(.4,0,.2,1)' });
     }
 }
 
 function syncFromMarkdown() {
+    state.richEditAllowed = false;
+    state.sourceOnlySnapshot = null;
+    hideSourceGuard();
     cancelUndoOnEdit();
     if (!state.programmaticReplace) clearReplacementUndo();
     state.markdown = getMarkdownEditorText();
@@ -597,6 +775,9 @@ function syncFromMarkdown() {
 }
 
 function setDocumentFromMarkdown(markdown, { persist = true } = {}) {
+    state.richEditAllowed = false;
+    state.sourceOnlySnapshot = null;
+    hideSourceGuard();
     state.markdown = String(markdown || '').replace(/\r\n?/g, '\n');
     elements.markdownEditor.textContent = state.markdown;
     renderMarkdownHighlight();
@@ -615,12 +796,18 @@ function bodyHtmlFromDocument(html) {
 }
 
 function setDocumentFromHtml(html) {
+    state.richEditAllowed = false;
+    state.sourceOnlySnapshot = null;
+    hideSourceGuard();
     elements.richEditor.innerHTML = sanitizeHtml(bodyHtmlFromDocument(html), { preserveStyles: true });
     syncFromRich({ flash: true });
     closeReader();
 }
 
 function setDocumentFromText(text) {
+    state.richEditAllowed = false;
+    state.sourceOnlySnapshot = null;
+    hideSourceGuard();
     elements.richEditor.textContent = String(text || '');
     syncFromRich({ flash: true });
     closeReader();
@@ -746,7 +933,7 @@ function setPreference(key, value) {
         updateStats();
     }
     if (key === 'autoSave') {
-        if (value) persistDocument();
+        persistDocument();
         renderStatusHint();
     }
     if (state.view === 'reader' && ['readerWidth', 'smartQuotes', 'flavor'].includes(key)) renderReader();
@@ -1189,6 +1376,9 @@ function clearNow({ withUndo = true, confirmNew = false } = {}) {
     clearTimeout(clearArmTimer);
     clearTimeout(undoTimer);
     state.clearArmed = false;
+    state.richEditAllowed = false;
+    state.sourceOnlySnapshot = null;
+    hideSourceGuard();
     state.undoMarkdown = withUndo ? state.markdown : null;
     state.undoFileName = withUndo ? state.currentFileName : '';
     state.undoFilePath = withUndo ? state.currentFilePath : '';
@@ -1197,6 +1387,10 @@ function clearNow({ withUndo = true, confirmNew = false } = {}) {
     state.undoLastDiskContent = withUndo ? state.lastDiskContent : '';
     state.undoFileConflict = withUndo ? state.fileConflict : false;
     state.undoRecoveredDocument = withUndo ? state.recoveredDocument : false;
+    state.undoRecoveredSourcePath = withUndo ? state.recoveredSourcePath : '';
+    state.undoRecoveryBaseline = withUndo ? state.recoveryBaseline : null;
+    state.undoRecoveryLastSavedMarkdown = withUndo ? state.recoveryLastSavedMarkdown : '';
+    state.undoRecoveryKind = withUndo ? state.recoveryKind : '';
     state.justCleared = withUndo && Boolean(state.markdown);
     state.markdown = '';
     state.documentRevision += 1;
@@ -1207,6 +1401,10 @@ function clearNow({ withUndo = true, confirmNew = false } = {}) {
     state.lastDiskContent = '';
     state.fileConflict = false;
     state.recoveredDocument = false;
+    state.recoveredSourcePath = '';
+    state.recoveryBaseline = null;
+    state.recoveryLastSavedMarkdown = '';
+    state.recoveryKind = '';
     localImageCache.clear();
     clearReplacementUndo();
     renderDocName();
@@ -1218,6 +1416,7 @@ function clearNow({ withUndo = true, confirmNew = false } = {}) {
     try {
         localStorage.removeItem(STORAGE_KEYS.document);
         localStorage.removeItem(STORAGE_KEYS.documentMeta);
+        localStorage.removeItem(STORAGE_KEYS.draftSnapshot);
     } catch (error) {
         console.warn('Unable to clear the saved document:', error);
     }
@@ -1247,6 +1446,10 @@ function undoClear() {
     state.lastDiskContent = state.undoLastDiskContent;
     state.fileConflict = state.undoFileConflict;
     state.recoveredDocument = state.undoRecoveredDocument;
+    state.recoveredSourcePath = state.undoRecoveredSourcePath;
+    state.recoveryBaseline = state.undoRecoveryBaseline;
+    state.recoveryLastSavedMarkdown = state.undoRecoveryLastSavedMarkdown;
+    state.recoveryKind = state.undoRecoveryKind;
     renderDocName();
     renderClearState();
     setDocumentFromMarkdown(markdown);
@@ -1358,6 +1561,10 @@ function markFileSaved(filePath, savedMarkdown, documentRevision) {
     state.lastDiskContent = savedMarkdown;
     state.fileConflict = false;
     state.recoveredDocument = false;
+    state.recoveredSourcePath = '';
+    state.recoveryBaseline = null;
+    state.recoveryLastSavedMarkdown = '';
+    state.recoveryKind = '';
     renderDocName();
     renderStatusHint();
     persistDocument();
@@ -1540,6 +1747,11 @@ function loadDocumentData({ name = '', filePath = '', content = '', kind = '' } 
     state.documentRevision += 1;
     state.currentFileName = name;
     state.currentFilePath = filePath;
+    state.recoveredDocument = false;
+    state.recoveredSourcePath = '';
+    state.recoveryBaseline = null;
+    state.recoveryLastSavedMarkdown = '';
+    state.recoveryKind = '';
     renderDocName();
     const resolvedKind = inferDocumentKind(name, content, kind);
     state.currentFileKind = resolvedKind;
@@ -1549,9 +1761,9 @@ function loadDocumentData({ name = '', filePath = '', content = '', kind = '' } 
     state.lastSavedMarkdown = state.markdown;
     state.lastDiskContent = String(content || '');
     state.fileConflict = false;
-    state.recoveredDocument = false;
     renderDocName();
     renderStatusHint();
+    persistDocument();
     openReader();
     announce(name ? `Opened ${name}` : 'Document opened');
 }
@@ -1568,6 +1780,50 @@ async function openDocument() {
     }
     elements.fileInput.value = '';
     elements.fileInput.click();
+}
+
+async function reconnectRecoveredFile() {
+    if (!state.recoveredDocument || !state.recoveredSourcePath || !window.desktopBridge?.openFile) return;
+    const documentRevision = state.documentRevision;
+    const expectedPath = state.recoveredSourcePath;
+    const expectedBaseline = state.recoveryBaseline;
+    try {
+        const result = await window.desktopBridge.openFile();
+        if (!result || result.canceled) return;
+        if (state.documentRevision !== documentRevision || !state.recoveredDocument ||
+            state.recoveredSourcePath !== expectedPath || state.recoveryBaseline !== expectedBaseline) return;
+        const kind = inferDocumentKind(result.name, result.content, result.kind);
+        if (result.filePath !== expectedPath) {
+            announce('That is a different file · use Save As');
+            return;
+        }
+        if (kind !== 'markdown') {
+            announce('That file is not Markdown · use Save As');
+            return;
+        }
+        if (result.content !== expectedBaseline) {
+            announce('The original file has changed · use Save As');
+            return;
+        }
+        state.currentFilePath = result.filePath;
+        state.currentFileName = result.name || result.filePath.split(/[\\/]/).pop();
+        state.currentFileKind = 'markdown';
+        state.lastSavedMarkdown = state.recoveryLastSavedMarkdown;
+        state.lastDiskContent = state.recoveryBaseline;
+        state.fileConflict = false;
+        state.recoveredDocument = false;
+        state.recoveredSourcePath = '';
+        state.recoveryBaseline = null;
+        state.recoveryLastSavedMarkdown = '';
+        state.recoveryKind = '';
+        renderDocName();
+        renderStatusHint();
+        persistDocument();
+        announce('File reconnected');
+    } catch (error) {
+        console.error('Reconnect failed:', error);
+        announce('Could not reconnect this file · use Save As');
+    }
 }
 
 function loadBrowserFile(file) {
@@ -1618,6 +1874,7 @@ async function pasteFromClipboard() {
 }
 
 function insertRichClipboard(event) {
+    if (blockRichMutation(event)) return;
     event.preventDefault();
     const html = event.clipboardData?.getData('text/html');
     if (html) {
@@ -1635,6 +1892,7 @@ function insertPlainClipboard(event) {
 }
 
 function runFormattingCommand(command) {
+    if (blockRichMutation()) return;
     elements.richEditor.focus();
     if (command === 'code') {
         const selection = window.getSelection();
@@ -1734,6 +1992,7 @@ function setupDragAndDrop() {
         if (state.dragDepth === 0) setDragOverlay(false);
     });
     window.addEventListener('drop', (event) => {
+        if (event.defaultPrevented) return;
         event.preventDefault();
         state.dragDepth = 0;
         setDragOverlay(false);
@@ -1766,7 +2025,21 @@ function setupDesktopIntegration() {
 }
 
 function bindEvents() {
-    elements.richEditor.addEventListener('input', () => syncFromRich());
+    elements.richEditor.addEventListener('beforeinput', (event) => blockRichMutation(event));
+    elements.richEditor.addEventListener('input', () => {
+        if (blockRichMutation()) {
+            renderRichFromMarkdown();
+            return;
+        }
+        syncFromRich();
+    });
+    elements.richEditor.addEventListener('compositionstart', (event) => blockRichMutation(event));
+    elements.richEditor.addEventListener('drop', (event) => {
+        if (blockRichMutation(event)) {
+            state.dragDepth = 0;
+            setDragOverlay(false);
+        }
+    });
     elements.richEditor.addEventListener('paste', insertRichClipboard);
     elements.richEditor.addEventListener('focus', () => {
         state.lastEditor = 'rich';
@@ -1788,6 +2061,28 @@ function bindEvents() {
         elements.markdownPane.classList.add('is-focused');
     });
     elements.markdownEditor.addEventListener('blur', () => elements.markdownPane.classList.remove('is-focused'));
+    elements.richHelpButton.addEventListener('click', () => {
+        const open = elements.richHelpButton.getAttribute('aria-expanded') === 'true';
+        elements.richHelpButton.setAttribute('aria-expanded', String(!open));
+        if (open) {
+            if (state.sourceGuardMode === 'converted') elements.sourceGuard.querySelector('.guard-help-note')?.remove();
+            else hideSourceGuard();
+        }
+        else if (state.sourceGuardMode === 'converted') {
+            const note = document.createElement('p');
+            note.className = 'guard-help-note';
+            note.textContent = 'Formatted edits can simplify comments, link and footnote definitions, and YAML front matter. The Markdown pane preserves exact source.';
+            elements.sourceGuard.prepend(note);
+        }
+        else showSourceGuard('help');
+    });
+    elements.sourceGuard.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && state.sourceGuardMode === 'warning') {
+            event.preventDefault();
+            hideSourceGuard();
+            elements.richEditor.focus();
+        }
+    });
 
     document.querySelectorAll('.format-tool').forEach((button) => {
         button.addEventListener('mousedown', (event) => event.preventDefault());
@@ -1810,6 +2105,7 @@ function bindEvents() {
     elements.themeButton.addEventListener('click', cycleTheme);
     elements.settingsBackdrop.addEventListener('click', closeSettings);
     elements.clearSavedButton.addEventListener('click', clearSavedData);
+    elements.reconnectFileButton.addEventListener('click', reconnectRecoveredFile);
     elements.fileInput.addEventListener('change', () => loadBrowserFile(elements.fileInput.files?.[0]));
     elements.readerContent.addEventListener('click', handleDocumentLinkClick);
     elements.richEditor.addEventListener('click', handleDocumentLinkClick);
@@ -1850,15 +2146,28 @@ function initialize() {
     applyTextSize();
     renderSettingsRows();
     renderStatusHint();
-    const savedDocument = loadDocument();
-    if (savedDocument) {
-        const meta = readJsonStorage([STORAGE_KEYS.documentMeta]);
-        if (typeof meta?.name === 'string' && meta.name) {
-            state.currentFileName = meta.name;
-            state.recoveredDocument = true;
-        }
+    const snapshot = readJsonStorage([STORAGE_KEYS.draftSnapshot]);
+    const legacyMeta = readJsonStorage([STORAGE_KEYS.documentMeta]);
+    const legacyDocument = loadDocument();
+    const validSnapshot = snapshot?.version === 1 && typeof snapshot.markdown === 'string';
+    const savedDocument = validSnapshot ? snapshot.markdown : legacyDocument;
+    if (validSnapshot) {
+        state.currentFileName = typeof snapshot.name === 'string' ? snapshot.name : '';
+        state.recoveredDocument = true;
+        state.recoveredSourcePath = typeof snapshot.filePath === 'string' ? snapshot.filePath : '';
+        state.recoveryBaseline = typeof snapshot.lastDiskContent === 'string' ? snapshot.lastDiskContent : null;
+        state.recoveryLastSavedMarkdown = typeof snapshot.lastSavedMarkdown === 'string' ? snapshot.lastSavedMarkdown : '';
+        state.recoveryKind = typeof snapshot.kind === 'string' ? snapshot.kind : '';
+    } else if (typeof legacyMeta?.name === 'string' && legacyMeta.name) {
+        // Legacy local drafts did not preserve a safe disk baseline; keep them detached.
+        state.currentFileName = legacyMeta.name;
+        state.recoveredDocument = true;
     }
     setDocumentFromMarkdown(savedDocument, { persist: false });
+    if (validSnapshot) {
+        state.lastSavedMarkdown = state.recoveryLastSavedMarkdown;
+        state.lastDiskContent = state.recoveryBaseline ?? '';
+    }
     renderDocName();
     renderStatusHint();
     bindEvents();
