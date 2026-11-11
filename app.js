@@ -11,6 +11,8 @@ const STORAGE_KEYS = {
 
 const DEFAULT_PREFERENCES = Object.freeze({
     appearance: 'light',
+    lightTheme: 'default',
+    darkTheme: 'default',
     flavor: 'GFM',
     readerWidth: '72',
     smartQuotes: true,
@@ -20,6 +22,8 @@ const DEFAULT_PREFERENCES = Object.freeze({
 
 const SETTING_DEFINITIONS = [
     { key: 'appearance', name: 'Appearance', values: ['light', 'dark', 'auto'], labels: ['Light', 'Dark', 'Auto'] },
+    { key: 'lightTheme', name: 'Light theme', values: ['default', 'paper', 'sage'], labels: ['Default', 'Paper', 'Sage'] },
+    { key: 'darkTheme', name: 'Dark theme', values: ['default', 'midnight'], labels: ['Default', 'Midnight'] },
     { key: 'flavor', name: 'Markdown', values: ['GFM', 'CommonMark'] },
     { key: 'readerWidth', name: 'Reader width', values: ['60', '72', 'Full'] },
     { key: 'smartQuotes', name: 'Smart quotes', values: [true, false], labels: ['On', 'Off'] },
@@ -239,6 +243,13 @@ function promoteInlineStyles(root) {
     });
 }
 
+function safeCodeLanguage(node) {
+    if (node?.tagName !== 'CODE') return '';
+    const classes = String(node.getAttribute('class') || '').split(/\s+/);
+    const language = classes.find((className) => /^language-[a-z0-9_+#.-]{1,32}$/i.test(className));
+    return language || '';
+}
+
 function sanitizeHtml(html, { preserveStyles = false } = {}) {
     const template = document.createElement('template');
     template.innerHTML = String(html || '');
@@ -267,6 +278,7 @@ function sanitizeHtml(html, { preserveStyles = false } = {}) {
         const src = node.tagName === 'IMG' ? safeUrl(node.getAttribute('src'), true) : '';
         const alt = node.tagName === 'IMG' ? node.getAttribute('alt') : '';
         const title = ['A', 'IMG'].includes(node.tagName) ? node.getAttribute('title') : '';
+        const codeLanguage = safeCodeLanguage(node);
         Array.from(node.attributes).forEach((attribute) => node.removeAttribute(attribute.name));
         if (href) {
             node.setAttribute('href', href);
@@ -276,6 +288,7 @@ function sanitizeHtml(html, { preserveStyles = false } = {}) {
         if (src) node.setAttribute('src', src);
         if (alt) node.setAttribute('alt', alt);
         if (title) node.setAttribute('title', title);
+        if (codeLanguage) node.setAttribute('class', codeLanguage);
     });
 
     return template.innerHTML;
@@ -285,7 +298,8 @@ function createTurndownService() {
     if (typeof TurndownService === 'undefined') return null;
     const fencedPreReplacement = (node, options) => {
         const code = node.textContent.replace(/\n$/, '');
-        return `\n\n${options.fence}\n${code}\n${options.fence}\n\n`;
+        const language = safeCodeLanguage(node.querySelector('code')).replace(/^language-/i, '');
+        return `\n\n${options.fence}${language ? ` ${language}` : ''}\n${code}\n${options.fence}\n\n`;
     };
     const service = new TurndownService({
         headingStyle: 'atx',
@@ -388,23 +402,22 @@ function richHtmlToMarkdown() {
 
 function applyHighlightTheme() {
     const mode = resolvedTheme();
-    const lightTheme = document.getElementById('highlight-light');
-    const darkTheme = document.getElementById('highlight-dark');
-    if (lightTheme) lightTheme.disabled = mode === 'dark';
-    if (darkTheme) darkTheme.disabled = mode !== 'dark';
+    const stylesheet = document.getElementById('highlight-theme');
+    if (!stylesheet) return;
+    const fileName = mode === 'dark' ? 'github-dark.min.css' : 'github.min.css';
+    const href = `vendor/highlight/${fileName}`;
+    if (stylesheet.getAttribute('href') !== href) stylesheet.setAttribute('href', href);
 }
 
 function loadHighlightAssets() {
     if (typeof hljs !== 'undefined') return Promise.resolve();
     if (highlightLoadPromise) return highlightLoadPromise;
 
-    ['github.min.css', 'github-dark.min.css'].forEach((fileName, index) => {
-        const stylesheet = document.createElement('link');
-        stylesheet.rel = 'stylesheet';
-        stylesheet.href = `vendor/highlight/${fileName}`;
-        stylesheet.id = index === 0 ? 'highlight-light' : 'highlight-dark';
-        document.head.appendChild(stylesheet);
-    });
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.id = 'highlight-theme';
+    stylesheet.href = `vendor/highlight/${resolvedTheme() === 'dark' ? 'github-dark.min.css' : 'github.min.css'}`;
+    document.head.appendChild(stylesheet);
     applyHighlightTheme();
 
     highlightLoadPromise = new Promise((resolve, reject) => {
@@ -474,11 +487,15 @@ function renderRichFromMarkdown() {
     highlightCode(elements.richEditor);
 }
 
+let sourceOnlyCacheText = null;
+let sourceOnlyCacheResult = null;
+
 function findSourceOnlyMarkdown(markdown) {
-    const lines = String(markdown || '').split('\n');
-    const found = { comments: 0, references: 0, footnotes: 0, frontMatter: 0 };
+    const source = String(markdown || '');
+    if (source === sourceOnlyCacheText && sourceOnlyCacheResult) return sourceOnlyCacheResult;
+    const lines = source.split('\n');
+    const found = { comments: 0, references: 0, footnotes: 0, frontMatter: 0, html: 0 };
     let fence = '';
-    let commentOpen = false;
     let frontMatterEnd = -1;
     if (/^---\s*$/.test(lines[0] || '')) {
         const end = lines.slice(1).findIndex((part) => /^(---|\.\.\.)\s*$/.test(part));
@@ -499,20 +516,44 @@ function findSourceOnlyMarkdown(markdown) {
             fence = fenceMatch[1];
             return;
         }
+        if (/^(?: {4,}|\t)/.test(line)) return;
         if (/^\s{0,3}\[\^[^\]]+\]:/.test(line)) found.footnotes += 1;
         else if (/^\s{0,3}\[[^\]]+\]:/.test(line)) {
             const hasInlineDestination = /^\s{0,3}\[[^\]]+\]:\s*\S/.test(line);
             const hasContinuation = /^\s+\S/.test(lines[index + 1] || '');
             if (hasInlineDestination || hasContinuation) found.references += 1;
         }
-        if (commentOpen || line.includes('<!--')) found.comments += (line.match(/<!--/g) || []).length;
-        commentOpen = /<!--/.test(line) && !/-->/.test(line.slice(line.indexOf('<!--')));
     });
+    if (typeof marked !== 'undefined' && typeof marked.lexer === 'function') {
+        const markdownBody = frontMatterEnd >= 0 ? lines.slice(frontMatterEnd + 1).join('\n') : source;
+        const countHtmlTokens = (value) => {
+            if (Array.isArray(value)) {
+                value.forEach(countHtmlTokens);
+                return;
+            }
+            if (!value || typeof value !== 'object') return;
+            if (value.type === 'html') {
+                const raw = String(value.raw || value.text || '');
+                found.comments += (raw.match(/<!--/g) || []).length;
+                if (raw.replace(/<!--[\s\S]*?-->/g, '').trim()) found.html += 1;
+            }
+            Object.values(value).forEach((child) => {
+                if (Array.isArray(child) || (child && typeof child === 'object')) countHtmlTokens(child);
+            });
+        };
+        try {
+            countHtmlTokens(marked.lexer(markdownBody));
+        } catch (error) {
+            console.warn('Unable to inspect Markdown HTML tokens:', error);
+        }
+    }
+    sourceOnlyCacheText = source;
+    sourceOnlyCacheResult = found;
     return found;
 }
 
 function sourceOnlyCount(found) {
-    return found.comments + found.references + found.footnotes + found.frontMatter;
+    return found.comments + found.references + found.footnotes + found.frontMatter + found.html;
 }
 
 function sourceOnlyDescription(found) {
@@ -521,6 +562,7 @@ function sourceOnlyDescription(found) {
         .forEach(([key, singular, plural]) => {
             if (found[key]) parts.push(`${found[key]} ${found[key] === 1 ? singular : plural}`);
         });
+    if (found.html) parts.push(`${found.html} HTML fragment${found.html === 1 ? '' : 's'}`);
     if (found.frontMatter) parts.push(`${found.frontMatter} YAML front matter block${found.frontMatter === 1 ? '' : 's'}`);
     return parts.join(', ').replace(/, ([^,]*)$/, ' and $1');
 }
@@ -574,7 +616,7 @@ function showSourceGuard(mode, { focus = false } = {}) {
     const title = document.createElement('strong');
     title.textContent = 'The formatted view can’t keep some of this document’s syntax.';
     const detail = document.createElement('p');
-    detail.textContent = `Editing here would remove ${sourceOnlyDescription(found)}. The Markdown pane keeps everything.`;
+    detail.textContent = `Editing here may remove or rewrite ${sourceOnlyDescription(found)}. The Markdown pane keeps everything.`;
     const copy = document.createElement('div');
     copy.className = 'source-guard-copy';
     copy.append(title, detail);
@@ -605,7 +647,7 @@ function showSourceGuard(mode, { focus = false } = {}) {
 }
 
 function blockRichMutation(event) {
-    if (!sourceOnlyCount(findSourceOnlyMarkdown(state.markdown)) || state.richEditAllowed) return false;
+    if (state.richEditAllowed || !sourceOnlyCount(findSourceOnlyMarkdown(state.markdown))) return false;
     if (event?.cancelable) event.preventDefault();
     if (state.sourceGuardMode !== 'warning') showSourceGuard('warning', { focus: true });
     return true;
@@ -815,11 +857,15 @@ function setDocumentFromText(text) {
 
 function normalizePreferences(candidate = {}) {
     const appearance = ['light', 'dark', 'auto'].includes(candidate.appearance) ? candidate.appearance : DEFAULT_PREFERENCES.appearance;
+    const lightTheme = ['default', 'paper', 'sage'].includes(candidate.lightTheme) ? candidate.lightTheme : DEFAULT_PREFERENCES.lightTheme;
+    const darkTheme = ['default', 'midnight'].includes(candidate.darkTheme) ? candidate.darkTheme : DEFAULT_PREFERENCES.darkTheme;
     const flavor = String(candidate.flavor || '').toLowerCase() === 'commonmark' ? 'CommonMark' : 'GFM';
     const readerWidth = ['60', '72', 'Full'].includes(String(candidate.readerWidth)) ? String(candidate.readerWidth) : DEFAULT_PREFERENCES.readerWidth;
     const textSize = ['14', '16', '18'].includes(String(candidate.textSize)) ? String(candidate.textSize) : DEFAULT_PREFERENCES.textSize;
     return {
         appearance,
+        lightTheme,
+        darkTheme,
         flavor,
         readerWidth,
         smartQuotes: typeof candidate.smartQuotes === 'boolean' ? candidate.smartQuotes : DEFAULT_PREFERENCES.smartQuotes,
@@ -908,9 +954,12 @@ function resolvedTheme() {
 
 function applyTheme({ animate = false } = {}) {
     const mode = resolvedTheme();
-    if (animate && document.documentElement.dataset.mode !== mode) animateThemeChange();
+    const palette = `${mode}-${state.preferences[mode === 'dark' ? 'darkTheme' : 'lightTheme']}`;
+    if (animate && (document.documentElement.dataset.mode !== mode || document.documentElement.dataset.palette !== palette)) animateThemeChange();
     document.documentElement.dataset.mode = mode;
     elements.app.dataset.mode = mode;
+    document.documentElement.dataset.palette = palette;
+    elements.app.dataset.palette = palette;
     const label = { light: 'Light', dark: 'Dark', auto: 'Auto (match system)' }[state.preferences.appearance];
     elements.themeButton.dataset.appearance = state.preferences.appearance;
     elements.themeButton.title = `Appearance: ${label}. Click to change`;
@@ -925,7 +974,7 @@ function applyTextSize() {
 function setPreference(key, value) {
     state.preferences[key] = value;
     savePreferences();
-    if (key === 'appearance') applyTheme({ animate: true });
+    if (['appearance', 'lightTheme', 'darkTheme'].includes(key)) applyTheme({ animate: true });
     if (key === 'textSize') applyTextSize();
     if (key === 'flavor') {
         configureConverters();
@@ -957,9 +1006,19 @@ function renderSettingsRows() {
             const option = document.createElement('button');
             option.className = 'setting-option';
             option.textContent = definition.labels ? definition.labels[index] : String(value);
+            option.dataset.settingKey = definition.key;
+            option.dataset.settingValue = String(value);
             option.classList.toggle('is-active', state.preferences[definition.key] === value);
             option.setAttribute('aria-pressed', String(state.preferences[definition.key] === value));
-            option.addEventListener('click', () => setPreference(definition.key, value));
+            option.addEventListener('click', () => {
+                const restoreFocus = state.settingsOpen;
+                setPreference(definition.key, value);
+                if (restoreFocus) {
+                    const selected = [...elements.settingsRows.querySelectorAll('.setting-option')]
+                        .find((button) => button.dataset.settingKey === definition.key && button.dataset.settingValue === String(value));
+                    selected?.focus();
+                }
+            });
             options.appendChild(option);
         });
 

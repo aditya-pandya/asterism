@@ -49,12 +49,13 @@ If macOS still blocks it, open System Settings, go to Privacy & Security, and ch
 - Edit formatted text and Markdown side by side, using one document source
 - Find in Read and Edit, with next/previous matches and Markdown replace
 - Use one text-size setting across reading and editing
+- Choose Default, Paper, or Sage for light appearance, and Default or Midnight for dark appearance; Auto uses the selected palette for the system appearance
 - Save opened Markdown files back to the same file on macOS, or use Save As
 - Follow local Markdown links and view nearby images in the macOS app; jump to headings from in-document links
 - Convert pasted rich text to Markdown, then copy or save it
 - Run fully offline with bundled libraries and local assets
 
-Before the first formatted edit, Asterism checks for common source-only syntax such as HTML comments, link and footnote definitions, and YAML front matter outside fenced code blocks. It offers the Markdown pane or an explicit conversion choice, with the option to restore the original source during that session. This guard catches common cases, but it does not guarantee a lossless Markdown round trip; other syntax may still be rewritten. Use the Markdown pane when exact source matters. Turning Auto-save off stops new recovery snapshots but keeps the last snapshot until you clear saved data in Settings.
+Before the first formatted edit, Asterism checks for common source-only syntax such as HTML comments and blocks (including `<details>`), link and footnote definitions, and YAML front matter outside code. It offers the Markdown pane or an explicit conversion choice, with the option to restore the original source during that session. This guard catches common cases, but it does not cover every construct. The Markdown pane preserves exact source; formatted editing is an explicit conversion and may rewrite other syntax. Turning Auto-save off stops new recovery snapshots but keeps the last snapshot until you clear saved data in Settings.
 
 On macOS, a recovered draft can offer **Reconnect file**. Choose the same file and Asterism reconnects only when its raw contents still match the saved recovery baseline. If they differ, use Save As to choose a destination. Reconnection is available for recovered Markdown drafts.
 
