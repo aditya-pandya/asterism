@@ -1,6 +1,6 @@
 [package]
 name = "asterism"
-version = "1.3.0-preview.1"
+version = "1.3.0-preview.2"
 description = "A premium, privacy-first rich text and Markdown converter."
 authors = ["Aditya Pandya"]
 license = "MIT"

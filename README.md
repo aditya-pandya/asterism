@@ -12,8 +12,8 @@ Open a document to read it, then switch to Edit when you want to change it. The 
 
 Download the Apple Silicon preview:
 
-- [Asterism-1.3.0-preview.1-arm64.dmg](https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.dmg)
-- [Asterism-1.3.0-preview.1-arm64.zip](https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.1/Asterism-1.3.0-preview.1-arm64.zip)
+- [Asterism-1.3.0-preview.2-arm64.dmg](https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.2/Asterism-1.3.0-preview.2-arm64.dmg)
+- [Asterism-1.3.0-preview.2-arm64.zip](https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.2/Asterism-1.3.0-preview.2-arm64.zip)
 - Supported Macs: Apple Silicon only
 - Signature: ad-hoc signed, not signed with a Developer ID certificate, and not notarized
 
@@ -38,7 +38,7 @@ You do not have to take my word for it. Here is what you can check yourself:
 
 ### How to open it
 
-1. Download `Asterism-1.3.0-preview.1-arm64.dmg` using the link above.
+1. Download `Asterism-1.3.0-preview.2-arm64.dmg` using the link above.
 2. Open the DMG and move Asterism to Applications.
 3. Control-click or right-click Asterism, choose Open, then confirm Open.
 
@@ -116,7 +116,7 @@ The app can open normal external links only when you explicitly click them. It d
 
 ## Release Notes
 
-See [v1.3.0-preview.1](./docs/release-notes/v1.3.0-preview.1.md) for the preview notes, [v1.2.0 Asterism](./docs/release-notes/v1.2.0.md), and [v1.1.0 Apple Silicon Preview](./docs/release-notes/v1.1.0.md).
+See [v1.3.0-preview.2](./docs/release-notes/v1.3.0-preview.2.md) for the current preview notes, [v1.3.0-preview.1](./docs/release-notes/v1.3.0-preview.1.md) for the preview notes, [v1.2.0 Asterism](./docs/release-notes/v1.2.0.md), and [v1.1.0 Apple Silicon Preview](./docs/release-notes/v1.1.0.md).
 
 The [core product audit](./docs/CORE_AUDIT.md) records the current baseline, competitor references, and remaining gaps.
 
