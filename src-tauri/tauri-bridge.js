@@ -1,13 +1,13 @@
 (() => {
+  const unsavedClock = Number.isFinite(performance.timeOrigin)
+    ? performance.timeOrigin + performance.now() : Date.now();
+  let unsavedRevision = Math.round(unsavedClock * 1000);
+  let lastNeedsPrompt = null;
   function tauri() {
     if (!window.__TAURI__) {
       throw new Error('Tauri APIs are unavailable');
     }
     return window.__TAURI__;
-  }
-
-  function basename(filePath) {
-    return filePath.split(/[\\/]/).pop();
   }
 
   function inferDocumentKind(filePath, content) {
@@ -42,40 +42,40 @@
     isElectron: true,
     isTauri: true,
     openFile: async () => {
-      const { dialog, fs } = tauri();
-      const filePath = await dialog.open({
-        multiple: false,
-        directory: false,
-        filters: [
-          { name: 'Supported Documents', extensions: ['md', 'markdown', 'html', 'htm', 'txt'] },
-          { name: 'Markdown', extensions: ['md', 'markdown'] },
-          { name: 'HTML', extensions: ['html', 'htm'] },
-          { name: 'Text', extensions: ['txt'] }
-        ]
-      });
-
-      if (!filePath || Array.isArray(filePath)) return { canceled: true };
-
-      const content = await fs.readTextFile(filePath);
+      const file = await tauri().core.invoke('open_document');
+      if (!file) return { canceled: true };
       return {
         canceled: false,
-        filePath,
-        name: basename(filePath),
-        kind: inferDocumentKind(filePath, content),
-        content
+        ...file,
+        kind: inferDocumentKind(file.filePath, file.content)
       };
     },
     saveFile: async (options = {}) => {
-      const { dialog, fs } = tauri();
-      const filePath = await dialog.save({
-        defaultPath: options.defaultPath || 'output.txt',
-        filters: options.filters || []
+      const filePath = await tauri().core.invoke('save_document_as', {
+        defaultPath: options.defaultPath || 'output.md',
+        content: options.content || ''
       });
-
       if (!filePath) return { canceled: true };
-
-      await fs.writeTextFile(filePath, options.content || '');
       return { canceled: false, filePath };
+    },
+    writeFile: async ({ filePath, content, expectedContent, force = false }) => {
+      const conflict = await tauri().core.invoke('write_document', { filePath, content, expectedContent, force });
+      return conflict ? { conflict: true } : { canceled: false, filePath };
+    },
+    openRelativeFile: async ({ baseFilePath, href }) => {
+      const file = await tauri().core.invoke('open_relative_file', { baseFilePath, href });
+      return { canceled: false, ...file, kind: inferDocumentKind(file.filePath, file.content) };
+    },
+    readRelativeImage: ({ baseFilePath, src }) => tauri().core.invoke('read_relative_image', { baseFilePath, src }),
+    setUnsavedState: ({ needsPrompt } = {}) => {
+      const next = needsPrompt === true;
+      if (next === lastNeedsPrompt) return;
+      lastNeedsPrompt = next;
+      tauri().core.invoke('set_unsaved_state', { needsPrompt: next, revision: ++unsavedRevision })
+        .catch(error => {
+          lastNeedsPrompt = null;
+          console.error('Could not update unsaved document state:', error);
+        });
     },
     startDragging: () => tauri().window.getCurrentWindow().startDragging(),
     setAppIconTheme: () => {},
