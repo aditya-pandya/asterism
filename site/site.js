@@ -215,7 +215,8 @@
 
   /* ---------- layout & live characters ---------- */
   var blocks = [], p = 0, anim = 0, ro = 0, geo = null;
-  function pos(e) { var x = 0, y = 0; while (e && e !== spread) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return [x, y]; }
+  /* fractional layout position (offsetLeft rounds to whole px, drifting glyphs off their measured advances) */
+  function pos(e) { var a = e.getBoundingClientRect(), b = spread.getBoundingClientRect(); return [a.left - b.left, a.top - b.top]; }
   function clearGhosts() { [lcSrc, lcRead].forEach(function (h) { Array.prototype.slice.call(h.querySelectorAll('.ghost')).forEach(function (n) { h.removeChild(n); }); }); }
 
   function build() {
@@ -385,7 +386,17 @@
   ]).catch(function () {}) : Promise.resolve();
   var timeout = new Promise(function (r) { setTimeout(r, 1500); });
 
-  Promise.race([fonts.then(function () { return document.fonts.ready; }), timeout]).then(function () {
+  var fontsReady = fonts.then(function () { return document.fonts.ready; });
+  var started = false, lateDone = false;
+  /* if the timeout won, rebuild once (bounded) when fonts finish; build() reuses current p, no re-init/replay */
+  fontsReady.then(function () {
+    if (lateDone || !started) return;
+    lateDone = true;
+    try { build(); } catch (e) { if (window.console) console.error(e); }
+  });
+
+  Promise.race([fontsReady, timeout]).then(function () {
+    started = true;
     try {
       editArea.value = DEFAULT_MD;
       load(DEFAULT_MD);

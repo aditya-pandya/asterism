@@ -41,7 +41,7 @@ a{color:inherit;text-underline-offset:.18em}
 .top nav .go:hover{background:#fff;text-decoration:none}
 .arr{width:16px;height:16px;flex:none;transition:transform .2s}
 .go:hover .arr,.btn.primary:hover .arr{transform:translateX(3px)}
-.top nav .line{box-shadow:inset 0 0 0 2px #fff}
+.top nav .line{box-shadow:inset 0 0 0 2px #fff;gap:.3em}/* flex strips the span's leading space; gap restores it, and vanishes with the hidden span on mobile */
 
 /* ---------- the field: source and page share one area ---------- */
 .spread{
@@ -76,8 +76,10 @@ a{color:inherit;text-underline-offset:.18em}
 .c{position:absolute;transform-origin:0 0;pointer-events:none;
   transform:translate(calc(var(--dx)*1px*var(--e)),calc(var(--dy)*1px*var(--e) - var(--lift)*1px*var(--e)*(1 - var(--e))*4))
     rotate(calc(var(--rot)*1deg*var(--e)*(1 - var(--e))*4)) scale(calc(1 + (var(--s) - 1)*var(--e)))}
-.c i{position:absolute;left:0;top:0;font-style:normal;white-space:pre;line-height:normal}
-.c .m{font:400 var(--fs)/normal var(--mono);color:#fff;opacity:calc(1 - var(--e)*2.5)}
+.c i{position:absolute;left:0;top:0;white-space:pre;line-height:normal}
+:where(.c i){font-style:normal}
+/* source glyph is always upright mono; the read glyph must NOT reset font-style, or .st-i/.rs-q italics lose to this rule and the upright glyph is placed on italic-measured advances (overlap) */
+.c .m{font:400 var(--fs)/normal var(--mono);font-style:normal;color:#fff;opacity:calc(1 - var(--e)*2.5)}
 .c .r{font-size:var(--fs);opacity:calc((var(--e) - .35)*2.2);color:#fff}
 .c.mk{transform:translate(calc(var(--rx)*1px*var(--e)),calc(var(--ry)*1px*var(--e))) rotate(calc(var(--rot)*8deg*var(--e))) scale(calc(1 - .85*var(--e)))}
 .c.mk .m{opacity:calc(1 - var(--e)*1.4)}
