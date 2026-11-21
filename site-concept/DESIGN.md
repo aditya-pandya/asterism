@@ -52,3 +52,37 @@ links are in the header and again below the fold.
 Self-hosted fonts and Marked, strict CSP, safe DOM construction, a semantic article for
 assistive tech (the animated layer is `aria-hidden`), and the full static article when
 JavaScript is off.
+
+## 21 November 2026 redesign
+
+The hero is unchanged in idea and engine. It now plays in 2.6 s, the field is centred
+between header and toolbar, and the ⁂ settles once with a single overshoot after landing.
+The toolbar hands off as you scroll (CSS scroll timeline; static where unsupported).
+
+Below the hero, each section has exactly one motion idea:
+
+1. **One source** — a live demo window built from the app's own chrome. On first view it
+   types a short Markdown sample; any key, pointer or focus finishes it and hands over.
+   Marked output is parsed into an inert document and rebuilt from a tag whitelist.
+   Edit/Read collapses the source pane (grid track transition).
+2. **Built for reading first** — the verbs are the headline. A scroll timeline brings the row
+   at the centre of the screen to full ink; its keycaps press as it crosses, and pressing the
+   real shortcut on the page presses the matching caps (only ⌘S is prevented).
+3. **Themes** — six miniature pages. Choosing one re-sets everything below the hero through a
+   circular view transition from the click point. The hero keeps its own pair.
+4. **Local** — the app's `connect-src 'none'` is the headline, typed once, then underlined.
+   Limits are stated at body size.
+5. **Close** — fixed colours, not themed. As it scrolls in, a dark front rises from the
+   bottom-right while three `*` fly from a small row into the ⁂: the page ends typeset, as
+   the hero does.
+
+Rules kept: one accent per surface (orange on navy, theme accent on paper), radius 0 for
+site chrome and 8 px for anything depicting the app, no grain, no decorative numbering,
+no window traffic lights. Motion tokens (`--ease-out`, `--ease-out-expo`, `--ease-inout`,
+`--ease-spring`) are shared with the app. Reduced motion lands every section in its end
+state; without JavaScript every section is complete and the demo ships pre-rendered.
+
+The app follows the same system: Hanken Grotesk chrome, Bricolage for display moments,
+Newsreader for documents, six refined palettes (Midnight uses the site navy, Paper the site
+cream), a book-like empty state with a drawn ⁂, ⁂ as the thematic break, and a circle
+reveal for theme changes when the window is visible and focused.

@@ -11,13 +11,23 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preload" href="fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+<meta property="og:title" content="Asterism: Markdown, set as a page">
+<meta property="og:description" content="A local Markdown reader and editor for the browser and Apple Silicon Macs.">
 <script src="boot.js"></script>
 <link rel="stylesheet" href="styles.css">
 <script src="vendor/marked.min.js" defer></script>
 <script src="site.js" defer></script>
+<script src="sections.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+<header class="bar" id="bar" aria-label="Asterism">
+  <a class="bar-brand" href="#main" aria-label="Back to top"><svg class="bar-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"><path d="M32 8v17M24.6 12.3l14.8 8.4M39.4 12.3l-14.8 8.4"/><path d="M17 36v17M9.6 40.3l14.8 8.4M24.4 40.3l-14.8 8.4"/><path d="M47 36v17M39.6 40.3l14.8 8.4M54.4 40.3l-14.8 8.4"/></g></svg>Asterism</a>
+  <nav aria-label="Sections">
+    <a href="#sync">Sync</a><a href="#index">Features</a><a href="#themes">Themes</a><a href="#local">Local</a>
+  </nav>
+  <a class="bar-go" href="https://asterism.adityapandya.com/app/">Open app<svg class="arr" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 8h11M8.5 3.5 13 8l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg></a>
+</header>
 
 <main id="main">
 <section class="stage" id="stage" aria-labelledby="doc-title">
@@ -31,7 +41,7 @@
     </a>
     <nav aria-label="Primary">
       <a class="go" href="https://asterism.adityapandya.com/app/">Open app<svg class="arr" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 8h11M8.5 3.5 13 8l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg></a>
-      <a class="line" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.2/Asterism-1.3.0-preview.2-arm64.zip">Download<span class="more-label"> for Mac</span></a>
+      <a class="line" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.3/Asterism-1.3.0-preview.3-arm64.zip">Download<span class="more-label"> for Mac</span></a>
       <a class="plain" href="https://github.com/aditya-pandya/asterism">GitHub</a>
     </nav>
   </header>
@@ -73,31 +83,108 @@
   </div>
 </section>
 
-<section class="get" id="get" aria-labelledby="get-title">
-  <div class="get-head">
-    <h2 id="get-title">1.3.0 preview</h2>
-    <p class="actions">
-      <a class="btn primary" href="https://asterism.adityapandya.com/app/">Open the app<svg class="arr" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 8h11M8.5 3.5 13 8l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg></a>
-      <a class="btn" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.2/Asterism-1.3.0-preview.2-arm64.zip">Download for Mac</a>
-      <a class="btn quiet" href="https://github.com/aditya-pandya/asterism/tree/v1.3.0-preview.2">Source on GitHub</a>
-    </p>
+<div class="themed" id="themed">
+
+<section class="sec sync" id="sync" aria-labelledby="sync-title">
+  <div class="sec-head">
+    <h2 id="sync-title">Formatted text and Markdown, <em>one source.</em></h2>
+    <p class="sec-lede">Type Markdown and the page sets itself beside it. In the app you can edit either side, paste rich text and copy it back out as Markdown.</p>
   </div>
-  <dl class="index">
-    <div><dt>Read</dt><dd>Markdown, text and HTML open as a formatted page.</dd></div>
-    <div><dt>Edit</dt><dd>Formatted text and Markdown stay in sync, side by side. Paste rich text and copy it back out as Markdown.</dd></div>
-    <div><dt>Find</dt><dd>In either view, with replace in Markdown.</dd></div>
-    <div><dt>Jump</dt><dd>To any heading from a searchable list.</dd></div>
-    <div><dt>Themes</dt><dd>Paper, Sage and Midnight, light, dark or auto.</dd></div>
-    <div><dt>Save</dt><dd>Back to the same file, or print the page.</dd></div>
-  </dl>
+  <div class="window" id="demo" role="group" aria-label="Live demo: Markdown on the left, the formatted page on the right">
+    <div class="win-bar">
+      <span class="win-file" aria-hidden="true">field-notes.md</span>
+      <span class="win-brand"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"><path d="M32 8v17M24.6 12.3l14.8 8.4M39.4 12.3l-14.8 8.4"/><path d="M17 36v17M9.6 40.3l14.8 8.4M24.4 40.3l-14.8 8.4"/><path d="M47 36v17M39.6 40.3l14.8 8.4M54.4 40.3l-14.8 8.4"/></g></svg>Asterism</span>
+      <span class="win-switch" role="group" aria-label="View">
+        <button type="button" class="on" id="demoEdit" aria-pressed="true">Edit</button>
+        <button type="button" id="demoRead" aria-pressed="false">Read</button>
+      </span>
+      <span class="win-words" id="demoCount" aria-hidden="true">31 words</span>
+    </div>
+    <div class="win-body" id="demoBody">
+      <div class="win-pane win-src">
+        <label class="win-label" for="demoSrc">Markdown</label>
+        <textarea id="demoSrc" spellcheck="false" maxlength="2400" aria-describedby="demoNote"># Field notes
+
+Markdown on the left, a **page** on the right.
+
+- Headings, lists and tables
+- *Italic*, `code` and [links](#sync)
+
+> Files stay on your machine.</textarea>
+        <p class="sr" id="demoNote">Editing here re-renders the page beside it. Text stays in this tab.</p>
+      </div>
+      <div class="win-pane win-page">
+        <span class="win-label" aria-hidden="true">Page</span>
+        <article class="win-out" id="demoOut" aria-label="Formatted page">
+          <h1>Field notes</h1>
+          <p>Markdown on the left, a <strong>page</strong> on the right.</p>
+          <ul><li>Headings, lists and tables</li><li><em>Italic</em>, <code>code</code> and <a href="#sync">links</a></li></ul>
+          <blockquote><p>Files stay on your machine.</p></blockquote>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec index quiet" id="index" aria-labelledby="index-title">
+  <div class="sec-head">
+    <h2 id="index-title">Built for reading first. <span>Open a document to read it, switch to Edit when you want to change it. Try the shortcuts on this page.</span></h2>
+  </div>
+  <ol class="verbs">
+    <li data-keys="mod+e"><span class="verb">Read</span><span class="verb-copy">Markdown, text and HTML open as a formatted page.</span><span class="caps"><kbd>⌘</kbd><kbd>E</kbd></span></li>
+    <li data-keys="mod+shift+c"><span class="verb">Edit</span><span class="verb-copy">Formatted text and Markdown side by side, one source. Paste rich text, copy it back out as Markdown.</span><span class="caps"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd></span></li>
+    <li data-keys="mod+f"><span class="verb">Find</span><span class="verb-copy">In either view, with next, previous and replace in Markdown.</span><span class="caps"><kbd>⌘</kbd><kbd>F</kbd></span></li>
+    <li data-keys="mod+shift+o"><span class="verb">Jump</span><span class="verb-copy">To any heading from a searchable list.</span><span class="caps"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>O</kbd></span></li>
+    <li data-keys="mod+alt+o"><span class="verb">Outline</span><span class="verb-copy">A collapsible outline that tracks the section you are in.</span><span class="caps"><kbd>⌘</kbd><kbd>⌥</kbd><kbd>O</kbd></span></li>
+    <li data-keys="mod+s"><span class="verb">Save</span><span class="verb-copy">Back to the same file, or Save As. Print the rendered page.</span><span class="caps"><kbd>⌘</kbd><kbd>S</kbd></span></li>
+  </ol>
+</section>
+
+<section class="sec themes quiet" id="themes" aria-labelledby="themes-title">
+  <div class="sec-head">
+    <h2 id="themes-title">Three light themes and three dark. <span>Light, Dark or Auto. Pick one to see this page in it.</span></h2>
+  </div>
+  <div class="swatches" role="group" aria-label="Preview a theme on this page">
+    <p class="sw-group">Light</p>
+    <button type="button" class="sw" data-theme="default" aria-pressed="false"><span class="sw-page" aria-hidden="true"><b>Field notes</b><span>Markdown on the left, a page on the right.</span><u>Open the file</u></span><span class="sw-name">Default</span></button>
+    <button type="button" class="sw" data-theme="paper" aria-pressed="false"><span class="sw-page" aria-hidden="true"><b>Field notes</b><span>Markdown on the left, a page on the right.</span><u>Open the file</u></span><span class="sw-name">Paper</span></button>
+    <button type="button" class="sw" data-theme="sage" aria-pressed="false"><span class="sw-page" aria-hidden="true"><b>Field notes</b><span>Markdown on the left, a page on the right.</span><u>Open the file</u></span><span class="sw-name">Sage</span></button>
+    <p class="sw-group">Dark</p>
+    <button type="button" class="sw" data-theme="midnight" aria-pressed="false"><span class="sw-page" aria-hidden="true"><b>Field notes</b><span>Markdown on the left, a page on the right.</span><u>Open the file</u></span><span class="sw-name">Midnight</span></button>
+    <button type="button" class="sw" data-theme="onyx" aria-pressed="false"><span class="sw-page" aria-hidden="true"><b>Field notes</b><span>Markdown on the left, a page on the right.</span><u>Open the file</u></span><span class="sw-name">Onyx</span></button>
+    <button type="button" class="sw" data-theme="ember" aria-pressed="false"><span class="sw-page" aria-hidden="true"><b>Field notes</b><span>Markdown on the left, a page on the right.</span><u>Open the file</u></span><span class="sw-name">Ember</span></button>
+  </div>
+  <p class="sw-reset js-only"><button type="button" id="themeReset" hidden>Back to the site colours</button></p>
+</section>
+
+</div>
+
+<section class="sec local" id="local" aria-labelledby="local-title">
+  <div class="sec-head csp">
+    <h2 id="local-title" class="csp-h"><span class="sr">Local by construction: </span><code class="csp-line" id="cspLine">connect-src <span class="csp-none">'none'</span></code></h2>
+    <p class="csp-cap">Local by construction. The app's Content-Security-Policy gives it no network connections to make; you can read it in <a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.3/index.html">index.html</a>.</p>
+    <p class="facts"><strong>No account.</strong> <strong>No content upload.</strong> <strong>Runs offline,</strong> with bundled libraries, fonts and icons. Files open and save on your machine; recovery drafts stay in local storage.</p>
+  </div>
   <div class="limits">
-    <h3>Limits</h3>
-    <p>The Mac preview runs on Apple Silicon only. It is ad-hoc signed and not notarized, so macOS may block the first launch. The README explains how to open it anyway.</p>
-    <p>Your text stays on your machine and Asterism does not upload it. Images in a document can still load from the web. Converting pasted rich text is best effort, and complex layouts may not survive.</p>
-    <p class="more"><a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.2/README.md">Full notes in the README</a></p>
+    <h3>Limits, plainly</h3>
+    <p>Images in a document can still load from the web. Converting pasted rich text is best effort, and complex layouts may not survive.</p>
+    <p>The Mac preview runs on Apple Silicon only. It is ad-hoc signed and not notarized, so macOS may block the first launch. <a href="https://github.com/aditya-pandya/asterism/blob/v1.3.0-preview.3/README.md">The README explains how to open it.</a></p>
+  </div>
+</section>
+
+<section class="close" id="close" aria-labelledby="close-title">
+  <div class="close-night" id="closeNight" aria-hidden="true"></div>
+  <div class="close-stars" id="closeStars" aria-hidden="true"><span class="cs cs1">*</span><span class="cs cs2">*</span><span class="cs cs3">*</span></div>
+  <div class="close-copy">
+    <h2 id="close-title">Open a file. <em>Read it as a page.</em></h2>
+    <p class="actions">
+      <a class="btn primary" href="https://asterism.adityapandya.com/app/"><span>Open the app</span><svg class="arr" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 8h11M8.5 3.5 13 8l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg></a>
+      <a class="btn" href="https://github.com/aditya-pandya/asterism/releases/download/v1.3.0-preview.3/Asterism-1.3.0-preview.3-arm64.zip"><span>Download for Mac</span></a>
+    </p>
+    <p class="meta"><span>1.3.0-preview.3</span><span>Apple Silicon</span><span>MIT</span><a href="https://github.com/aditya-pandya/asterism/tree/v1.3.0-preview.3">Source on GitHub</a></p>
   </div>
 </section>
 </main>
-<footer class="foot"><span>Asterism, formerly Inkdown. MIT licensed.</span></footer>
+<footer class="foot"><span>Asterism, formerly Inkdown. MIT licensed.</span><span>⁂ is three asterisks, the punctuation Markdown is built on.</span></footer>
 </body>
 </html>

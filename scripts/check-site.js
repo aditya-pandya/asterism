@@ -27,6 +27,7 @@ async function collectHtml(directory) {
 }
 
 function localTarget(siteRelativePath, reference) {
+  reference = reference.trim().replace(/&amp;/gi, '&');
   if (/^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(reference)) return null;
   const pathname = decodeURIComponent(reference.split(/[?#]/, 1)[0]);
   if (!pathname) return null;
@@ -37,20 +38,47 @@ function localTarget(siteRelativePath, reference) {
   return target;
 }
 
+async function checkReference(siteRelativePath, reference) {
+  let target;
+  try {
+    target = localTarget(siteRelativePath, reference);
+  } catch {
+    errors.push(`${siteRelativePath}: invalid local reference: ${reference}`);
+    return;
+  }
+  if (!target) return;
+  const found = await exists(target) || await exists(path.join(target, 'index.html'));
+  if (!found) errors.push(`${siteRelativePath}: local reference does not exist: ${reference}`);
+}
+
+function* htmlReferences(contents) {
+  const attributes = /\b(src|href|srcset)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+  for (const [, attribute, doubleQuoted, singleQuoted, unquoted] of contents.matchAll(attributes)) {
+    const value = doubleQuoted ?? singleQuoted ?? unquoted;
+    if (attribute.toLowerCase() !== 'srcset') {
+      yield value;
+      continue;
+    }
+    // A URL ends at whitespace; trailing commas separate candidates without
+    // descriptors. Commas inside data URLs remain part of the URL.
+    let remaining = value;
+    while (remaining) {
+      remaining = remaining.replace(/^[\s,]+/, '');
+      const url = remaining.match(/^\S+/)?.[0];
+      if (!url) break;
+      remaining = remaining.slice(url.length);
+      yield url.replace(/,+$/, '');
+      if (!url.endsWith(',')) remaining = remaining.replace(/^[^,]*(?:,|$)/, '');
+    }
+  }
+}
+
 async function main() {
   const required = [
     'index.html',
     'styles.css',
-    'boot.js',
     'site.js',
     'favicon.svg',
-    'fonts/BricolageGrotesque-OFL.txt',
-    'fonts/Newsreader-OFL.txt',
-    'fonts/bricolage-grotesque-latin.woff2',
-    'fonts/newsreader-italic-latin.woff2',
-    'fonts/newsreader-latin.woff2',
-    'vendor/marked-LICENSE.md',
-    'vendor/marked.min.js',
     '_headers',
     'app/index.html',
     'app/styles.css',
@@ -82,13 +110,16 @@ async function main() {
     for (const htmlFile of htmlFiles) {
       const contents = await fs.readFile(htmlFile, 'utf8');
       const siteRelativePath = path.relative(siteDirectory, htmlFile);
-      for (const [, reference] of contents.matchAll(/\b(?:href|src)\s*=\s*["']([^"']+)["']/gi)) {
-        const target = localTarget(siteRelativePath, reference);
-        if (!target) continue;
-        const found = await exists(target) || await exists(path.join(target, 'index.html'));
-        if (!found) {
-          errors.push(`${siteRelativePath}: local reference does not exist: ${reference}`);
-        }
+      for (const reference of htmlReferences(contents)) {
+        await checkReference(siteRelativePath, reference);
+      }
+    }
+    for (const entry of await fs.readdir(siteDirectory, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith('.css')) continue;
+      const contents = await fs.readFile(path.join(siteDirectory, entry.name), 'utf8');
+      const withoutComments = contents.replace(/\/\*[\s\S]*?\*\//g, '');
+      for (const [, doubleQuoted, singleQuoted, unquoted] of withoutComments.matchAll(/\burl\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]*))\s*\)/gi)) {
+        await checkReference(entry.name, doubleQuoted ?? singleQuoted ?? unquoted);
       }
     }
   } else {
@@ -100,7 +131,7 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  console.log('Site check passed: required assets and local HTML references exist.');
+  console.log('Site check passed: required assets and local HTML/CSS references exist.');
 }
 
 main().catch((error) => {

@@ -175,7 +175,8 @@ let undoBrowserDocument = null;
 let browserFolderLinked = false;
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const MOTION_EASE = 'cubic-bezier(.4,0,.2,1)';
+const MOTION_EASE = 'cubic-bezier(.22,1,.36,1)';
+const MOTION_EASE_EXPO = 'cubic-bezier(.16,1,.3,1)';
 
 function softEnter(element, { duration = 180, rise = 4 } = {}) {
     if (reducedMotion.matches || !element?.animate) return;
@@ -186,6 +187,31 @@ function softEnter(element, { duration = 180, rise = 4 } = {}) {
 }
 
 let themeTransitionTimer = null;
+let themeRevealPoint = null;
+let themeCommitToken = 0;
+
+// The circle reveal grows from wherever the change was requested (theme button or a settings swatch).
+function themeRevealOrigin() {
+    if (themeRevealPoint && performance.now() - themeRevealPoint.time < 1500) return themeRevealPoint;
+    const rect = elements.themeButton.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+}
+
+function canRevealTheme() {
+    return !reducedMotion.matches && typeof document.startViewTransition === 'function' && document.visibilityState === 'visible' && document.hasFocus();
+}
+
+function revealTheme(commit) {
+    const { x, y } = themeRevealOrigin();
+    const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+    const transition = document.startViewTransition(commit);
+    transition.ready.then(() => {
+        document.documentElement.animate(
+            { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+            { duration: 620, easing: MOTION_EASE_EXPO, pseudoElement: '::view-transition-new(root)' }
+        );
+    }).catch(() => {});
+}
 
 function animateThemeChange() {
     if (reducedMotion.matches) return;
@@ -803,24 +829,31 @@ function renderStatusHint() {
     if (state.copied) return;
     elements.reconnectFileButton.hidden = !(state.recoveredDocument && state.recoveredSourcePath &&
         state.recoveryKind === 'markdown' && typeof state.recoveryBaseline === 'string' && window.desktopBridge?.openFile);
+    let saveState = 'saved';
     if (state.recoveredDocument) {
+        saveState = 'unsaved';
         elements.hintText.textContent = state.recoveredSourcePath && window.desktopBridge
             ? 'Recovered draft · reconnect the original file or Save As'
             : 'Recovered draft · Save As to keep it';
     } else if (state.fileConflict) {
+        saveState = 'warning';
         elements.hintText.textContent = 'File changed outside Asterism · Save to resolve';
     } else if (state.currentFilePath && state.currentFileKind !== 'markdown') {
+        saveState = 'unsaved';
         elements.hintText.textContent = 'Imported document · save as Markdown to keep edits';
     } else if (state.currentFilePath && state.markdown !== state.lastSavedMarkdown) {
+        saveState = 'unsaved';
         elements.hintText.textContent = state.preferences.autoSave
             ? 'Unsaved file changes · recovery saved on this device'
             : 'Unsaved file changes';
     } else if (state.currentFilePath) {
         elements.hintText.textContent = 'File saved';
     } else {
+        if (!state.preferences.autoSave) saveState = state.markdown ? 'unsaved' : 'off';
         elements.hintText.textContent = state.preferences.autoSave ? 'Saved on this device'
             : state.markdown ? 'Unsaved document · Save to keep it' : 'Auto-save off';
     }
+    elements.hintText.dataset.state = saveState;
 }
 
 function persistDocument() {
@@ -1044,16 +1077,27 @@ function resolvedTheme() {
 function applyTheme({ animate = false } = {}) {
     const mode = resolvedTheme();
     const palette = `${mode}-${state.preferences[mode === 'dark' ? 'darkTheme' : 'lightTheme']}`;
-    if (animate && (document.documentElement.dataset.mode !== mode || document.documentElement.dataset.palette !== palette)) animateThemeChange();
-    document.documentElement.dataset.mode = mode;
-    elements.app.dataset.mode = mode;
-    document.documentElement.dataset.palette = palette;
-    elements.app.dataset.palette = palette;
+    const changed = document.documentElement.dataset.mode !== mode || document.documentElement.dataset.palette !== palette;
     const label = { light: 'Light', dark: 'Dark', auto: 'Auto (match system)' }[state.preferences.appearance];
     elements.themeButton.dataset.appearance = state.preferences.appearance;
     elements.themeButton.title = `Appearance: ${label}. Click to change`;
     elements.themeButton.setAttribute('aria-label', `Appearance: ${label}`);
-    applyHighlightTheme();
+    // A reveal commits asynchronously; a newer theme choice invalidates any commit still queued.
+    const token = ++themeCommitToken;
+    const commit = () => {
+        if (token !== themeCommitToken) return;
+        document.documentElement.dataset.mode = mode;
+        elements.app.dataset.mode = mode;
+        document.documentElement.dataset.palette = palette;
+        elements.app.dataset.palette = palette;
+        applyHighlightTheme();
+    };
+    if (animate && changed && canRevealTheme()) {
+        revealTheme(commit);
+        return;
+    }
+    if (animate && changed) animateThemeChange();
+    commit();
 }
 
 function applyTextSize() {
@@ -1137,9 +1181,9 @@ function closeSettings() {
         overlay.hidden = true;
     } else {
         panel?.animate([
-            { transform: 'translateY(0)' },
-            { transform: 'translateY(4px)' }
-        ], { duration: 140, easing: MOTION_EASE });
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(16px)' }
+        ], { duration: 160, easing: MOTION_EASE });
         overlay.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: MOTION_EASE, fill: 'forwards' });
         setTimeout(() => {
             if (state.settingsOpen) return;
@@ -1211,7 +1255,7 @@ function openReader() {
     renderReader();
     elements.editView.hidden = true;
     elements.readerView.hidden = false;
-    softEnter(elements.readerView);
+    softEnter(elements.readerView, { duration: 420, rise: 12 });
     renderViewSwitch();
     refreshFind({ reset: true });
 }
@@ -1223,6 +1267,7 @@ function renderViewSwitch() {
     elements.viewEditButton.setAttribute('aria-pressed', String(!reading));
     elements.viewReadButton.setAttribute('aria-pressed', String(reading));
     elements.viewEditButton.parentElement?.classList.toggle('is-reading', reading);
+    updateScrolledChrome();
     outlineLastScroll = '';
     scheduleOutlineActive();
 }
@@ -1233,7 +1278,7 @@ function closeReader() {
     state.view = 'edit';
     elements.readerView.hidden = true;
     elements.editView.hidden = false;
-    softEnter(elements.editView, { rise: 0 });
+    softEnter(elements.editView, { duration: 320, rise: 0 });
     renderViewSwitch();
     refreshFind({ reset: true });
 }
@@ -3072,7 +3117,7 @@ function renderShortcutList() {
     });
     if (!IS_MAC) {
         document.querySelectorAll('[title]').forEach((node) => { node.title = platformLabel(node.title); });
-        elements.emptyPasteButton.querySelectorAll('kbd').forEach((node) => { node.textContent = platformLabel(node.textContent); });
+        elements.emptyState.querySelectorAll('kbd').forEach((node) => { node.textContent = platformLabel(node.textContent); });
     }
 }
 
@@ -3455,9 +3500,32 @@ function bindEvents() {
         });
     }
     document.addEventListener('selectionchange', renderFormatState);
+    bindChromeMotion();
     systemTheme.addEventListener?.('change', () => {
         if (state.preferences.appearance === 'auto') applyTheme({ animate: true });
     });
+}
+
+// Top bar hairline only once content scrolls under it.
+function updateScrolledChrome() {
+    const top = state.view === 'reader'
+        ? elements.readerView.scrollTop
+        : Math.max(elements.richEditor.scrollTop, elements.markdownEditor.scrollTop);
+    elements.app.classList.toggle('is-scrolled', top > 2);
+}
+
+function bindChromeMotion() {
+    [elements.richEditor, elements.markdownEditor, elements.readerView].forEach((node) => {
+        node.addEventListener('scroll', updateScrolledChrome, { passive: true });
+    });
+    // Formatting tools recede while a person types and come back on pointer movement.
+    elements.richEditor.addEventListener('keydown', (event) => {
+        if (!event.metaKey && !event.ctrlKey && event.key.length === 1) elements.app.classList.add('is-typing');
+    });
+    document.addEventListener('pointermove', () => elements.app.classList.remove('is-typing'), { passive: true });
+    document.addEventListener('pointerdown', (event) => {
+        themeRevealPoint = { x: event.clientX, y: event.clientY, time: performance.now() };
+    }, { capture: true, passive: true });
 }
 
 function initialize() {

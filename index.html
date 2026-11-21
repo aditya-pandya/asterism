@@ -130,11 +130,12 @@
                 <div class="pane-body">
                     <div class="rich-editor prose" id="richEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="richLabel" aria-describedby="richEditorNote" data-placeholder="Start typing…"></div>
                     <div class="empty-state" id="emptyState">
-                        <p class="empty-title">Write or paste to begin</p>
-                        <p class="empty-copy">Edit formatted text here or Markdown on the right. Both stay in sync.</p>
+                        <svg class="empty-mark" viewBox="0 0 64 64" aria-hidden="true"><path class="star star-1" pathLength="1" d="M32 6v18M24.2 10.5l15.6 9M39.8 10.5l-15.6 9"/><path class="star star-2" pathLength="1" d="M17 36v18M9.2 40.5l15.6 9M24.8 40.5l-15.6 9"/><path class="star star-3" pathLength="1" d="M47 36v18M39.2 40.5l15.6 9M54.8 40.5l-15.6 9"/></svg>
+                        <p class="empty-title">Write, paste or open.</p>
+                        <p class="empty-copy">Formatted text here, Markdown on the right. Both stay in sync.</p>
                         <div class="empty-actions">
-                            <button class="button button-primary" id="emptyPasteButton">Paste <kbd>⌘V</kbd></button>
-                            <button class="button" id="emptyOpenButton">Open file…</button>
+                            <button class="empty-key" id="emptyPasteButton"><span>Paste from clipboard</span> <kbd>⌘V</kbd></button>
+                            <button class="empty-key" id="emptyOpenButton"><span>Open a file…</span> <kbd>⌘O</kbd></button>
                         </div>
                         <p class="empty-hint">or drop a .md, .txt or .html file anywhere</p>
                     </div>
@@ -162,7 +163,7 @@
                 </div>
                 <div class="pane-body markdown-stack">
                     <div class="markdown-highlight" id="markdownHighlight" aria-hidden="true"></div>
-                    <div class="markdown-editor" id="markdownEditor" contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-labelledby="markdownLabel" spellcheck="false" data-placeholder="…or write Markdown here. It renders on the left as you type."></div>
+                    <div class="markdown-editor" id="markdownEditor" contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-labelledby="markdownLabel" spellcheck="false" data-placeholder="# Or start in Markdown&#10;&#10;It renders on the left as you type.&#10;&#10;- **bold**, *italic*, `code`&#10;- [links](https://) and tables"></div>
                 </div>
             </section>
         </main>
@@ -214,7 +215,7 @@
 
                 <div class="settings-meta">
                     <p>Everything stays on this device. Offline, no account.</p>
-                    <p>Asterism 1.3.0-preview.2 · © 2026 Aditya Pandya · <a href="https://github.com/aditya-pandya/asterism/issues" target="_blank" rel="noopener noreferrer">Send feedback</a></p>
+                    <p>Asterism 1.3.0-preview.3 · © 2026 Aditya Pandya · <a href="https://github.com/aditya-pandya/asterism/issues" target="_blank" rel="noopener noreferrer">Send feedback</a></p>
                 </div>
             </section>
         </div>

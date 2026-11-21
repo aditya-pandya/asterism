@@ -301,14 +301,21 @@
     btnSrc.classList.toggle('on', p < .5); btnRead.classList.toggle('on', p >= .5);
   }
 
+  /* once the page lands, the ⁂ settles with a single overshoot */
+  function settle(on) {
+    stage.classList.remove('settled');
+    if (on && !reduce.matches) { void stage.offsetWidth; stage.classList.add('settled'); }
+  }
   function tween(to, ms) {
     cancelAnimationFrame(anim);
+    settle(false);
     if (reduce.matches || ms <= 0) { p = to; apply(); return; }
     var from = p, t0 = performance.now();
     (function step(now) {
       var t = Math.min(1, (now - t0) / ms), e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       p = from + (to - from) * e; apply();
       if (t < 1) anim = requestAnimationFrame(step);
+      else if (to === 1) settle(true);
     })(t0);
   }
 
@@ -365,10 +372,10 @@
   function load(src) { blocks = parse(src); assign(blocks); semantic(); build(); }
 
   /* ---------- wiring ---------- */
-  range.addEventListener('input', function () { cancelAnimationFrame(anim); p = range.value / 1000; apply(); });
+  range.addEventListener('input', function () { cancelAnimationFrame(anim); settle(false); p = range.value / 1000; apply(); });
   document.getElementById('toSrc').addEventListener('click', function () { tween(0, 1800); });
   document.getElementById('toRead').addEventListener('click', function () { tween(1, 1800); });
-  replay.addEventListener('click', function () { cancelAnimationFrame(anim); p = 0; apply(); if (reduce.matches) { p = 1; apply(); } else setTimeout(function () { tween(1, 3400); }, 250); });
+  replay.addEventListener('click', function () { cancelAnimationFrame(anim); p = 0; apply(); if (reduce.matches) { p = 1; apply(); } else setTimeout(function () { tween(1, 2600); }, 250); });
   var editTimer = 0;
   editToggle.addEventListener('click', function () {
     var open = editPanel.hidden; editPanel.hidden = !open; editToggle.setAttribute('aria-expanded', String(open));
@@ -402,7 +409,7 @@
       load(DEFAULT_MD);
       root.classList.add('ready');
       if (reduce.matches) { p = 1; apply(); }
-      else { p = 0; apply(); setTimeout(function () { tween(1, 3400); }, 450); }
+      else { p = 0; apply(); setTimeout(function () { tween(1, 2600); }, 450); }
     } catch (e) { root.classList.remove('js'); root.classList.remove('ready'); paper.style.clipPath = ''; if (window.console) console.error(e); }
   });
 })();

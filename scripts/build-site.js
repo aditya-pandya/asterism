@@ -13,23 +13,14 @@ const appFiles = [
   'browser-files.js',
   'favicon.svg',
 ];
-// Public landing-page inputs. The approved production copy in site/ is the
-// source of truth; its headers carry the production policy.
-const landingFiles = [
-  'index.html',
-  'styles.css',
-  'boot.js',
-  'site.js',
-  'favicon.svg',
-  '_headers',
-  'fonts/BricolageGrotesque-OFL.txt',
-  'fonts/Newsreader-OFL.txt',
-  'fonts/bricolage-grotesque-latin.woff2',
-  'fonts/newsreader-italic-latin.woff2',
-  'fonts/newsreader-latin.woff2',
-  'vendor/marked-LICENSE.md',
-  'vendor/marked.min.js',
-];
+
+async function includeSiteSource(source) {
+  const name = path.basename(source);
+  if (name.startsWith('.')) return false;
+  const stat = await fs.lstat(source);
+  if (stat.isDirectory()) return name !== 'drafts' && name !== 'tmp';
+  return !/\.md$/i.test(name) || /LICENSE|OFL/i.test(name);
+}
 
 async function requireFile(relativePath) {
   const filePath = path.join(root, relativePath);
@@ -54,20 +45,17 @@ async function requireDirectory(relativePath) {
 }
 
 async function main() {
-  const siteDirectory = await requireFile('site/index.html');
-  const productionHeaders = await requireFile('site/_headers');
-  await Promise.all(landingFiles.filter((file) => file !== '_headers').map((file) => requireFile(`site/${file}`)));
+  await requireFile('site/index.html');
+  await requireFile('site/_headers');
   await Promise.all(appFiles.map((file) => requireFile(file)));
   await Promise.all(['assets', 'vendor'].map(requireDirectory));
 
   await fs.rm(destination, { recursive: true, force: true });
   await fs.mkdir(destination, { recursive: true });
-  for (const file of landingFiles) {
-    const source = file === '_headers' ? productionHeaders : path.join(path.dirname(siteDirectory), file);
-    const target = path.join(destination, file);
-    await fs.mkdir(path.dirname(target), { recursive: true });
-    await fs.copyFile(source, target);
-  }
+  await fs.cp(path.join(root, 'site'), destination, {
+    recursive: true,
+    filter: includeSiteSource,
+  });
 
   const appDirectory = path.join(destination, 'app');
   await fs.mkdir(appDirectory, { recursive: true });
